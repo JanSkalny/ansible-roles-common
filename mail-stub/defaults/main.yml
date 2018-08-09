@@ -1,2 +1,6 @@
 mail_db_user: "postfix"
 mail_db_name: "postfix"
+
+# Uncomment and fill these variables accordingly
+#mail_db_password: "superSecret"
+#mail_domain: "example.org"
