@@ -1,0 +1,54 @@
+- name: install dependencies
+  apt: name={{ item }}
+  with_items:
+  - git
+  - php-mbstring
+  - composer
+
+- name: test if vimbadmin is already installed, if so, perform an upgrade
+  stat: path=/var/www/mailadmin
+  register: mailadmin_present
+
+- name: prepare installation directory
+  file:
+    path=/var/www/mailadmin
+    state=directory
+    owner=www-data group=www-data mode=750
+  when: mailadmin_present.stat.exists == False
+
+- name: install vimbadmin
+  raw: composer create-project opensolutions/vimbadmin /var/www/mailadmin -s dev --keep-vcs
+  when: mailadmin_present.stat.exists == False
+
+- name: upgrade vimbadmin
+  raw: echo "TODO"
+  when: mailadmin_present.stat.exists == True
+
+- name: configure mailadmin (application.ini)
+  template:
+    src="application.ini"
+    dest="/var/www/mailadmin/application/configs/application.ini"
+
+- name: configure mailadmin (.htaccess)
+  template:
+    src="htaccess"
+    dest="/var/www/mailadmin/public/.htaccess"
+
+- name: fix permissions (1/2)
+  file: 
+    path=/var/www/mailadmin 
+    state=directory 
+    owner=www-data group=www-data recurse=true
+
+- name: fix permissions (2/2)
+  file: 
+    path=/var/www/mailadmin 
+    state=directory 
+    owner=www-data group=www-data mode=750
+
+- name: import mysql data into db
+  command: ./bin/doctrine2-cli.php orm:schema-tool:create
+    chdir=/var/www/mailadmin
+  when: mailadmin_db_present.changed == True
+
+

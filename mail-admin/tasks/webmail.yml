@@ -1,0 +1,14 @@
+- name: install dependencies
+  apt: name={{ item }}
+  with_items:
+  - roundcube-mysql
+  - roundcube-plugins
+  - roundcube-plugins-extra
+  - roundcube
+
+- name: configure roundcube (config.inc.php)
+  template:
+    src=config.inc.php
+    dest="/etc/roundcube/config.inc.php"
+    owner=root group=www-data mode=640
+

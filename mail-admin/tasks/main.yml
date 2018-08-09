@@ -1,0 +1,11 @@
+
+# create database and user
+- include: db.yml
+
+# install mailadmin, mailgraph and webmail
+- include: admin.yml
+- include: mailgraph.yml
+- include: webmail.yml
+
+# configure apache
+- include: apache.yml
