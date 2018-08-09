@@ -1,0 +1,18 @@
+- name: install dependencies
+  apt: name={{ item }}
+  with_items:
+  - apache2
+
+- name: create mail.{{ mail_domain }} subdomain
+  template: 
+    src="site.conf"
+    dest="/etc/apache2/sites-available/090-mail.conf"
+
+- name: enable 090-mail site 
+  command: a2ensite 090-mail
+
+- name: enable mod_cgi (for mailgraph)
+  command: a2enmod cgi
+
+- name: restart apache service
+  service: name=apache2 state=restarted

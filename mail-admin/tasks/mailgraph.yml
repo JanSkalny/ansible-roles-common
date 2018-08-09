@@ -1,0 +1,5 @@
+- name: install dependencies
+  apt: name={{ item }}
+  with_items:
+  - mailgraph
+

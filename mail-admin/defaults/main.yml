@@ -1,0 +1,6 @@
+mail_db_user: "postfix"
+mail_db_name: "postfix"
+
+mail_admin_salt1: "salt1"
+mail_admin_salt2: "salt2"
+mail_admin_salt3: "salt3"
