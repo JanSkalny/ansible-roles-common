@@ -1,0 +1,13 @@
+
+- name: include host in bacula-dir.conf
+  lineinfile:
+    path: "/etc/bacula/bacula-dir.conf"
+    regexp: '/{{backup_client}}\.conf$'
+    line: "@/etc/bacula/hosts/{{backup_client}}.conf"
+  notify: restart bacula-dir
+
+- name: generate host configuration
+  template:
+    src: host.conf
+    dest: "/etc/bacula/hosts/{{backup_client}}.conf"
+  notify: restart bacula-dir

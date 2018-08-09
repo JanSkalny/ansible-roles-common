@@ -1,0 +1,12 @@
+- name: install basic networking tools
+  package:
+    name: "{{item}}"
+    state: present
+  with_items:
+  - bridge-utils
+  - vlan
+
+- name: generate 70-persistent-net.rules
+  template:
+    src: 70-persistent-net.rules
+    dest: /etc/udev/rules.d/70-persistent-net.rules

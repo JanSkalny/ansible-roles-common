@@ -1,0 +1,6 @@
+user = {{ mail_db_user }}
+password = {{ mail_db_password }}
+hosts = 127.0.0.1:3306
+dbname = {{ mail_db_name }}
+
+query = SELECT access FROM access WHERE source='%s' AND type='sender'

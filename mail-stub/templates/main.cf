@@ -1,0 +1,86 @@
+
+smtpd_banner = $myhostname ESMTP $mail_name
+biff = no
+
+append_dot_mydomain = no
+
+#delay_warning_time = 4h
+
+readme_directory = no
+
+smtp_use_tls = yes
+smtp_tls_note_starttls_offer = yes
+smtp_tls_cert_file=/etc/letsencrypt/live/{{ mail_domain }}/fullchain.pem
+smtp_tls_key_file=/etc/letsencrypt/live/{{ mail_domain }}/privkey.pem
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+smtp_tls_mandatory_protocols = !SSLv2,!SSLv3
+
+smtpd_use_tls = yes
+smtpd_tls_received_header = yes
+smtpd_tls_auth_only = yes
+smtpd_tls_cert_file=/etc/letsencrypt/live/{{ mail_domain }}/fullchain.pem
+smtpd_tls_key_file=/etc/letsencrypt/live/{{ mail_domain }}/privkey.pem
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3
+
+# SASL
+smtpd_sasl_auth_enable = yes
+broken_sasl_auth_clients = yes
+smtpd_sasl_local_domain =
+smtpd_sasl_security_options = noanonymous
+smtpd_sasl_authenticated_header = yes
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+
+# FTP/HTTP proxy servers
+smtpd_forbidden_commands = CONNECT,GET,POST,USER,PASS
+
+mydomain = {{ mail_domain }}
+myhostname = mail.{{ mail_domain }}
+myorigin = /etc/mailname
+mydestination = mail.{{ mail_domain }}, localhost.{{ mail_domain }}, localhost
+relayhost = 
+mynetworks = mail.netvor.sk 92.240.244.109 relay1.netvor.sk 194.160.5.137 relay2.netvor.sk 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+
+message_size_limit = 104857600
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = all
+
+transport_maps = mysql:/etc/postfix/mysql/transport_maps.cf
+relay_domains = mysql:/etc/postfix/mysql/relay_domains_maps.cf
+alias_maps = mysql:/etc/postfix/mysql/virtual_alias_maps.cf
+virtual_alias_maps = mysql:/etc/postfix/mysql/virtual_alias_maps.cf
+virtual_gid_maps = static:801
+virtual_uid_maps = static:801
+virtual_minimum_uid = 801
+virtual_transport = dovecot
+virtual_mailbox_limit = 0
+virtual_mailbox_base = /var/vmail
+virtual_mailbox_maps = mysql:/etc/postfix/mysql/virtual_mailbox_maps.cf
+virtual_mailbox_domains = mysql:/etc/postfix/mysql/virtual_domains_maps.cf
+
+smtpd_recipient_restrictions =
+  permit_sasl_authenticated,
+  check_policy_service inet:127.0.0.1:10040,
+  permit_mynetworks,
+  reject_unauth_destination,
+  reject_unauth_pipelining,
+  check_recipient_access mysql:/etc/postfix/mysql/recipient.cf,
+  reject
+smtpd_sender_restrictions =
+  check_sender_access mysql:/etc/postfix/mysql/sender.cf
+smtpd_client_restrictions =
+  permit_mynetworks,
+  check_client_access mysql:/etc/postfix/mysql/client.cf
+smtpd_relay_restrictions =
+  permit_sasl_authenticated,
+  permit_mynetworks,
+  defer_unauth_destination
+
+smtpd_discard_ehlo_keywords = silent-discard, dsn
+
+dovecot_destination_recipient_limit = 1
+
+compatibility_level = 2
+

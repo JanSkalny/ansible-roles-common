@@ -1,0 +1,192 @@
+- name: install postfix and dovecot
+  apt: 
+    name: "{{ item }}"
+  with_items:
+  - mysql-server 
+  - postfix
+  - postfix-mysql
+  - dovecot-imapd
+  - dovecot-mysql
+  - dovecot-sieve
+  - dovecot-managesieved
+  - dovecot-lmtpd
+  - postfwd
+  - msmtp
+  - fail2ban
+
+- name: configure postfix (prepare directories)
+  file: 
+    path: /etc/postfix/mysql 
+    state: directory 
+    owner: root 
+    group: root 
+    mode: 750
+  notify: restart postfix
+
+- name: configure postfix (mysql/)
+  template: 
+    src: "postfix_mysql/{{ item }}"
+    dest: "/etc/postfix/mysql/{{ item }}"
+    owner: root 
+    group: root 
+    mode: 640
+  with_items:
+  - client.cf
+  - recipient.cf
+  - relay_domains_maps.cf
+  - sender.cf
+  - transport_maps.cf
+  - virtual_alias_maps.cf
+  - virtual_domains_maps.cf
+  - virtual_mailbox_maps.cf
+  notify: restart postfix
+
+- name: configure postfix (main and master)
+  template:
+    src: "{{ item }}"
+    dest: "/etc/postfix/{{ item }}"
+    owner: root 
+    group: root 
+    mode: 644
+  with_items:
+  - main.cf
+  - master.cf
+  notify: restart postfix
+
+- name: configure dovecot (sql)
+  template:
+    src: "dovecot-sql.conf.ext"
+    dest: "/etc/dovecot/dovecot-sql.conf.ext"
+    owner: root 
+    group: dovecot 
+    mode: 644
+  notify: restart dovecot
+
+- name: configure dovecot (conf.d)
+  template:
+    src: "dovecot_conf.d/{{ item }}"
+    dest: "/etc/dovecot/conf.d/{{ item }}"
+    owner: root 
+    group: dovecot 
+    mode: 644
+  with_items:
+  - 10-auth.conf
+  - 10-logging.conf
+  - 10-mail.conf
+  - 10-master.conf
+  - 10-ssl.conf
+  - 15-lda.conf
+  - 20-lmtp.conf
+  - 90-sieve.conf
+  notify: restart dovecot
+
+
+- name: create vmail group
+  group:
+    name: vmail
+    gid: 801
+
+- name: add postfix to vmail group
+  user:
+    name: postfix
+    groups: vmail
+    append: yes
+
+- name: create vmail user
+  user:
+    name: vmail
+    shell: /usr/sbin/nologin
+    uid: 801
+    group: vmail
+
+- name: create /var/vmail
+  file: 
+    path: /var/vmail
+    state: directory 
+    owner: vmail
+    group: vmail
+    mode: 770
+
+- name: configure msmtp delivery
+  copy:
+    src: msmtprc
+    dest: /etc/msmtprc
+    owner: root
+    group: root
+    mode: 644
+
+- name: prune-junk-mail
+  copy:
+    src: prune-junk-mail
+    dest: /etc/cron.daily/prune-junk-mail
+    owner: root
+    group: root
+    mode: 755
+  notify: restart cron
+
+- name: create sieve/ directory
+  file:
+    path: /var/lib/dovecot/sieve
+    state: directory 
+    owner: vmail
+    group: vmail
+    mode: 755
+
+- name: default.sieve
+  copy:
+    src: default.sieve
+    dest: /var/lib/dovecot/sieve/default.sieve
+    owner: vmail
+    group: vmail
+    mode: 644
+  notify: restart dovecot
+
+- name: fail2ban for postfix/dovecot
+  copy:
+    src: fail2ban-mail.conf
+    dest: /etc/fail2ban/jail.d/mail.conf
+    owner: root
+    group: root
+    mode: 644
+  notify: restart fail2ban
+
+- name: configure postfwd (postfwd.cf)
+  template:
+    src: postfwd.cf
+    dest: "/etc/postfix/postfwd.cf"
+    owner: root
+    group: postfw
+    mode: 640
+  notify: restart postfwd
+
+- name: configure postfwd (STARTUP: 1)
+  lineinfile:
+    dest: "/etc/default/postfwd"
+    regexp: "^STARTUP=1"
+    line: "STARTUP=1"
+
+- name: enable mail.warn logs
+  lineinfile:
+    dest: "/etc/rsyslog.d/50-default.conf"
+    regexp: "^mail.warn[ \t]+-/var/log/mail.warn"
+    line: "mail.warn -/var/log/mail.warn"
+  notify: restart rsyslog
+
+- name: make sure mail.warn exists
+  file:
+    path: "/var/log/mail.warn"
+    state: touch
+    owner: syslog
+    group: adm
+    mode: 640
+
+- name: restart services
+  service: 
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+  - postfix
+  - dovecot
+  - postfwd
+  - fail2ban
+

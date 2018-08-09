@@ -1,0 +1,10 @@
+- name: install vim-pathogen
+  apt:
+    name: vim-pathogen
+    state: present
+
+- name: install vim-vue
+  git:
+    repo: https://github.com/posva/vim-vue.git
+    dest: /root/.vim/bundle/vim-vue
+

@@ -1,0 +1,11 @@
+
+- name: install bacula and dependencies
+  package: 
+    name: "{{ item }}" 
+    state: present
+  with_items:
+  - mysql-server
+  - bacula-director-mysql
+  - bacula-sd-mysql
+  - bacula-fd
+  - bacula-client

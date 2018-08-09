@@ -1,0 +1,27 @@
+- name: install dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - pygpgme 
+  - yum-utils
+
+- name: install varnish41 yum repo
+  copy:
+    src: yum-varnish41-repo
+    dest: /etc/yum.repos.d/varnish41.repo
+
+- name: enable varnish41 repos
+  raw: "yum -q makecache -y --disablerepo='*' --enablerepo='{{ item }}'"
+  with_items:
+  - "varnish41"
+  - "varnish41-source"
+
+- name: install packages (redhat)
+  yum: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - pkgconfig 
+  - varnish-libs-devel 
+

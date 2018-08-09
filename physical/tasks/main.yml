@@ -1,0 +1,4 @@
+- include: smartmontools.yml
+- include: mdadm.yml
+- include: sensors.yml
+

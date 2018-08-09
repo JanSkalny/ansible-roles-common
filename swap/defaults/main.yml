@@ -1,0 +1,4 @@
+swap_file: /var/swap.img
+swap_file_size: 512M
+swappiness: 10
+

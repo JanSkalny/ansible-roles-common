@@ -1,0 +1,49 @@
+
+- name: install bacula-fd
+  package: 
+    name: bacula-fd 
+    state: present
+  notify: restart bacula-fd
+
+- name: configure bacula-fd
+  template: 
+    src: "bacula-fd.conf" 
+    dest: "/etc/bacula/bacula-fd.conf"
+  notify: restart bacula-fd
+
+- name: copy keys and certificates
+  copy: 
+    dest: "/etc/bacula/{{item.dst}}" 
+    src: "backup/{{backup_group}}/{{item.src}}" 
+    owner: "root" 
+    group: "root" 
+    mode: 0750
+  with_items:
+  - { src: "{{backup_host}}.crt", dst: "{{backup_host}}.crt" }
+  - { src: "{{backup_host}}.pem", dst: "{{backup_host}}.pem" }
+  - { src: "ca.crt", dst: "ca.crt" }
+  notify: restart bacula-fd
+
+- name: create mysql backup script
+  template: 
+    dest: "/etc/bacula/scripts/make_mysql_backup.sh" 
+    src: "make_mysql_backup.sh" 
+    owner: "root" 
+    group: "root" 
+    mode: 0750
+  when: backup_sql_password is defined
+
+- name: create mysql backup password
+  mysql_user:
+    name: "{{ backup_sql_user }}"
+    password: "{{ backup_sql_password }}"
+    priv: '*.*:ALL'
+    state: present
+    login_user: "{{ mysql_user }}"
+    login_password: "{{ mysql_password }}"
+  when: backup_sql_password is defined
+
+  service: 
+    name: bacula-fd 
+    state: restarted
+

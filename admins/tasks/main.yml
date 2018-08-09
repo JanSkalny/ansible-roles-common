@@ -1,0 +1,42 @@
+- name: install dependencies (sudo)
+  package: 
+    name: sudo 
+    state: present
+
+- name: add sudo group
+  group: 
+    name: sudo 
+    state: present
+
+- name: create sudoers.d
+  file:
+    path: /etc/sudoers.d
+    state: directory
+    mode: 0755
+    owner: root
+
+- name: passwordless sudoers
+  copy: 
+    src: sudoers 
+    dest: /etc/sudoers.d/system 
+    owner: root 
+    group: root 
+    mode: 0440
+
+- name: create user
+  user:
+    name: "{{ item }}"
+    shell: "{{ default_user_shell }}"
+    state: present
+    groups: sudo
+    createhome: yes
+  with_items : "{{ users }}"
+
+- name: add authorized_keys
+  authorized_key:
+    user: "{{ item }}"
+    state: present
+    key: "{{ lookup('file', root_dir+'/files/ssh-keys/'+item) }}"
+  with_items: "{{ users }}"
+
+

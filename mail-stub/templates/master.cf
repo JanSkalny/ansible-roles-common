@@ -1,0 +1,32 @@
+smtp       inet  n       -       y       -       -       smtpd
+smtps      inet  n       -       y       -       -       smtpd
+  -o syslog_name=postfix/smtps
+  -o smtpd_tls_wrappermode=yes
+  -o smtpd_sasl_auth_enable=yes
+  -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
+pickup     unix  n       -       y       60      1       pickup
+cleanup    unix  n       -       y       -       0       cleanup
+qmgr       unix  n       -       n       300     1       qmgr
+tlsmgr     unix  -       -       y       1000?   1       tlsmgr
+rewrite    unix  -       -       y       -       -       trivial-rewrite
+bounce     unix  -       -       y       -       0       bounce
+defer      unix  -       -       y       -       0       bounce
+trace      unix  -       -       y       -       0       bounce
+verify     unix  -       -       y       -       1       verify
+flush      unix  n       -       y       1000?   0       flush
+proxymap   unix  -       -       n       -       -       proxymap
+proxywrite unix  -       -       n       -       1       proxymap
+smtp       unix  -       -       y       -       -       smtp
+relay      unix  -       -       y       -       -       smtp
+showq      unix  n       -       y       -       -       showq
+error      unix  -       -       y       -       -       error
+retry      unix  -       -       y       -       -       error
+discard    unix  -       -       y       -       -       discard
+local      unix  -       n       n       -       -       local
+virtual    unix  -       n       n       -       -       virtual
+lmtp       unix  -       -       y       -       -       lmtp
+anvil      unix  -       -       y       -       1       anvil
+scache     unix  -       -       y       -       1       scache
+dovecot    unix  -       n       n       -       -       pipe
+  flags=DROhu user=vmail:vmail argv=/usr/lib/dovecot/deliver -f ${sender} -d ${user}@${nexthop}
