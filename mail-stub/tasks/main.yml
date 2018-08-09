@@ -159,7 +159,7 @@
     mode: 640
   notify: restart postfwd
 
-- name: configure postfwd (STARTUP: 1)
+- name: "configure postfwd (STARTUP: 1)"
   lineinfile:
     dest: "/etc/default/postfwd"
     regexp: "^STARTUP=1"
