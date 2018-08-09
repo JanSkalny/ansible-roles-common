@@ -141,6 +141,22 @@
     mode: 644
   notify: restart dovecot
 
+- name: fix typo in fail2ban jail.conf
+  replace:
+    dest: /etc/fail2ban/jail.conf
+    regexp: '^logpath  = logpath = %\(roundcube_errors_log\)s$'
+    replace: "logpath = %(roundcube_errors_log)s"
+
+- name: create missing roudncube logdir
+  file:
+    path: /var/log/roundcube
+    state: directory
+
+- name: create missing roudncube logfile
+  file:
+    path: /var/log/roundcube/errors
+    state: touch
+
 - name: fail2ban for postfix/dovecot
   copy:
     src: fail2ban-mail.conf
