@@ -1,0 +1,21 @@
+- name: install apcupsd
+  apt:
+    name: apcupsd
+    state: present
+
+- name: configure apcupsd
+  template:
+    src: "{{item}}"
+    dest: "/etc/apcupsd/{{item}}"
+  with_items:
+  - config
+  - apcupsd.conf
+  notify: restart apcupsd
+
+- name: enable apcupsd
+  lineinfile:
+    dest: "/etc/default/apcupsd"
+    regexp: "^ISCONFIGURED=.*"
+    line: "ISCONFIGURED=yes"
+  notify: restart apcupsd
+

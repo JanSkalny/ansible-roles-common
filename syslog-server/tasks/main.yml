@@ -1,0 +1,28 @@
+- name: remove rsyslog
+  package: 
+    name: "{{ item }}"
+    state: absent
+  with_items:
+  - rsyslog
+
+- name: install syslog-ng
+  package: 
+    name: "{{ item }}"
+    state: "present"
+  with_items:
+  - syslog-ng-core 
+  - syslog-ng
+  notify: restart syslog-ng
+
+- name: prepare remote syslog directory
+  file:
+    path: "/opt/logs"
+    state: "directory"
+  notify: restart syslog-ng
+
+- name: configure syslog-ng
+  template:
+    src: "server.conf"
+    dest: "/etc/syslog-ng/conf.d/remote-server.conf"
+  notify: restart syslog-ng
+

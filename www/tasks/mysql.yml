@@ -1,0 +1,25 @@
+
+- name: install packages
+  apt: 
+    name: "{{ item }}"
+  with_items:
+  - mysql-server 
+  - mysqltuner
+ 
+- name: configure mysqld
+  copy:
+    src: "mysqld.cnf"
+    dest: "/etc/mysql/mysql.conf.d/system.cnf"
+  notify: restart mysql
+
+#TODO: fail2ban
+
+- name: increase limits for mysqld
+  lineinfile: 
+    dest: "/etc/security/limits.conf"
+    line: "{{ item }}"
+  with_items:
+  - "mysql             soft    nofile           32000"
+  - "mysql             hard    nofile           48000"
+  notify: restart mysql
+

@@ -1,0 +1,25 @@
+- name: add hpe apt key
+  apt_key:
+    url: "{{item}}"
+    state: present
+  with_items:
+  - "https://downloads.linux.hpe.com/SDR/repo/mcp/GPG-KEY-mcp"
+  - "https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub"
+
+- name: add hpe respositories
+  apt_repository:
+    repo: "{{item}}"
+    state: present
+    update_cache: yes
+  with_items:
+  - "deb http://downloads.linux.hpe.com/SDR/repo/mcp xenial/current non-free"
+  - "deb http://downloads.linux.hpe.com/SDR/repo/mcp precise/current non-free"
+
+- name: install packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  #- hpacucli
+  - hp-health
+  - ssacli

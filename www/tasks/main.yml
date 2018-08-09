@@ -1,0 +1,12 @@
+
+# install php 
+- include_tasks: php.yml 
+  loop_control:
+    loop_var: php_version
+  with_items: "{{ php_versions }}"
+
+# install and secure apache
+- include_tasks: apache2.yml
+
+# install and configure mysql
+- include_tasks: mysql.yml

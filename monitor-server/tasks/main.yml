@@ -1,0 +1,64 @@
+
+- name: install dependencies
+  apt: name={{ item }}
+  with_items:
+  - python-mysqldb
+  - php-bcmath
+
+- name: check if zabbix-release is available
+  command: dpkg-query -W zabbix-release
+  register: res
+  failed_when: False
+
+- name: download zabbix release packae
+  get_url: 
+      url="http://repo.zabbix.com/zabbix/3.2/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.2-1+xenial_all.deb"
+    dest="/tmp/zabbix-release.deb"
+  when: res.rc == 1
+
+- name: install zabbix-release.deb
+  apt: deb="/tmp/zabbix-release.deb"
+  when: res.rc == 1
+
+- name: apt-get update
+  apt: update_cache=yes
+  when: res.rc == 1
+
+- name: install zabbix-server packages
+  apt: name={{ item }} state=present
+  with_items:
+  - zabbix-server-mysql
+  - zabbix-frontend-php
+
+- name: create zabbix database
+  mysql_db:
+    name={{ monitor_server_db_name }}
+    encoding=utf8
+    collation=utf8_bin
+    state=present
+  register: monitor_server_db_present
+
+- name: create zabbix user
+  mysql_user:
+    name={{ monitor_server_db_user }}
+    password={{ monitor_server_db_password }}
+    priv='{{ monitor_server_db_name }}.*:ALL'
+    state=present
+
+- name: import zabbix database
+  mysql_db:
+    name={{ monitor_server_db_name }}
+    state=import
+    target=/usr/share/doc/zabbix-server-mysql/create.sql.gz
+  when: monitor_server_db_present.changed == True
+
+- name: configure zabbix-server
+  template: src="zabbix_server.conf" dest="/etc/zabbix/zabbix_server.conf"
+
+- name: enable auto-start of zabbix-server
+  raw: systemctl enable zabbix-server
+
+- name: restart zabbix-server
+  service: name=zabbix-server state=restarted
+
+

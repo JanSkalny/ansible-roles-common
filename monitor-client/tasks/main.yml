@@ -1,0 +1,137 @@
+
+- name: install dependencies
+  apt: name={{ item }}
+  with_items:
+  - python-mysqldb
+  - logtail
+  - sudo
+  - jq
+
+- name: make sure zabbix_agent.d directory is present
+  file:
+    path="/etc/zabbix/zabbix_agentd.d/"
+    state=directory
+    mode=755 owner=root group=root
+ 
+- name: check if zabbix-release is available
+  command: dpkg-query -W zabbix-release
+  register: res
+  ignore_errors: True
+
+- name: download zabbix release packae
+  get_url: 
+    url="http://repo.zabbix.com/zabbix/3.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.4-1+xenial_all.deb"
+    dest="/tmp/zabbix-release.deb"
+  when: res|failed 
+
+- name: install zabbix-release.deb
+  apt: deb="/tmp/zabbix-release.deb"
+  when: res|failed
+
+- name: apt-get update
+  apt: update_cache=yes
+  when: res|failed
+
+- name: install zabbix-agent
+  apt: name=zabbix-agent state=present
+
+- name: install zabbix-sender
+  apt: name=zabbix-sender state=present
+
+- name: configure zabbix-agent
+  template: src="zabbix_agentd.conf" dest="/etc/zabbix/zabbix_agentd.conf"
+
+- name: delete default user parameter files
+  file: 
+    path="/etc/zabbix/zabbix_agentd.d/{{item}}"
+    state=absent
+  with_items:
+  - userparameter_mysql.conf
+  - zabbix_mdraid.conf
+
+- name: custom user parameters
+  copy: 
+      src="{{ item }}" 
+      dest="/etc/zabbix/zabbix_agentd.d/{{ item }}" 
+      owner="root" group="zabbix" mode=0640
+  with_items:
+  - bind.conf
+  - mdraid.conf
+  - apache.conf
+  - mysql.conf
+  - postfix.conf
+  - kvm.conf
+  - apcupsd.conf
+  - smartctl.conf
+  - bacula.conf
+  - hplog.conf
+  - hpacucli.conf
+  - ssacli.conf
+  - openvpn.conf
+  - vfs.conf
+
+- name: custom user parameters (from templates)
+  template: 
+      src="{{ item }}" 
+      dest="/etc/zabbix/zabbix_agentd.d/{{ item }}" 
+      owner="root" group="zabbix" mode=0640
+  with_items:
+  - "ntp.conf"
+ 
+- name: monitoring scripts
+  copy: src="{{ item }}" 
+      dest="/usr/local/bin/{{ item }}" 
+      owner="root" mode=0755
+  with_items:
+  - zabbix_mdraid.sh
+  - zabbix_bind_stats.py
+  - zabbix_check_apache
+  - zabbix_kvm.py
+  - zabbix_postfix.sh
+  - zabbix_smartctl.sh
+  - zabbix_hplog.sh
+  - zabbix_hpacucli.sh
+  - zabbix_ssacli.sh
+  - zabbix_openvpn.sh
+  - zabbix_bacula_discovery.sh
+  - zabbix_bacula_check_job.sh
+
+- name: make sure zabbix home directory is present
+  file:
+    path="/var/lib/zabbix/"
+    state=directory
+    mode=700 owner=zabbix group=zabbix
+   
+- name: create mysql user for monitoring
+  mysql_user:
+    name={{ monitor_sql_user }}
+    password={{ monitor_sql_password }}
+    priv='*.*:USAGE'
+    state=present
+    login_user={{ mysql_user }}
+    login_password={{ mysql_password }}
+  when: monitor_sql_password is defined
+
+- name: generate .my.cnf for monitoring
+  template: 
+    src="my.cnf"
+    dest="/var/lib/zabbix/.my.cnf"
+    owner="zabbix" group="zabbix" mode=0600
+  when: monitor_sql_password is defined
+
+- name: generate zabbix_agentd.psk
+  template:
+    src="zabbix_agentd.psk"
+    dest="/etc/zabbix/zabbix_agentd.psk"
+    owner="zabbix" group="zabbix" mode=0600
+  when: monitor_psk is defined
+
+- name: enable auto-start of zabbix-agent
+  raw: systemctl enable zabbix-agent
+
+- name: allow zabbix user to run specific commands as root
+  copy: src="zabbix_sudoers" dest="/etc/sudoers.d/zabbix" owner="root" mode=0640
+
+- name: restart zabbix-agent
+  service: name=zabbix-agent state=restarted
+

@@ -1,0 +1,22 @@
+php_versions:
+  - 7.2
+default_php_version: 7.2
+
+# PHP configuration variables (php.ini)
+php_post_max_size: "32M"
+php_upload_max_filesize: "10M"
+php_display_errors: "Off"
+php_file_uploads: "On"
+php_max_input_time: 60
+php_max_execution_time: 180
+php_memory_limit: "512M" 
+# or -1 for unlimited
+php_disable_functions: "pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,"
+php_open_basedir: ""
+php_session_save_path: "/var/lib/php/sessions"
+php_allow_url_fopen: "Off"
+
+#XXX: hardened PHP
+#php_open_basedir: "/var/www/XXX/public"
+#php_file_uploads: "On"
+#php_disable_functions: "php_uname, getmyuid, getmypid, passthru, leak, listen, diskfreespace, tmpfile, link, ignore_user_abord, shell_exec, dl, set_time_limit, exec, system, highlight_file, source, show_source, fpaththru, virtual, posix_ctermid, posix_getcwd, posix_getegid, posix_geteuid, posix_getgid, posix_getgrgid, posix_getgrnam, posix_getgroups, posix_getlogin, posix_getpgid, posix_getpgrp, posix_getpid, posix, _getppid, posix_getpwnam, posix_getpwuid, posix_getrlimit, posix_getsid, posix_getuid, posix_isatty, posix_kill, posix_mkfifo, posix_setegid, posix_seteuid, posix_setgid, posix_setpgid, posix_setsid, posix_setuid, posix_times, posix_ttyname, posix_uname, proc_open, proc_close, proc_get_status, proc_nice, proc_terminate, phpinfo"

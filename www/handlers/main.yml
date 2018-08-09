@@ -1,0 +1,15 @@
+ - name: restart apache2
+   service:
+     name: apache2
+     state: restarted
+
+ - name: restart php
+   service:
+     name: "php{{item}}-fpm"
+     state: restarted
+   with_items: "{{php_versions}}"
+
+ - name: restart mysql
+   service:
+     name: mysql
+     state: restarted

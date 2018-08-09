@@ -1,0 +1,4 @@
+- name: install open-vm tools
+  package: 
+    name: "open-vm-tools" 
+    state: present

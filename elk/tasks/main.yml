@@ -1,0 +1,53 @@
+- name: apt dependencies
+  apt: 
+    name: "{{item}}"
+  with_items:
+  - python-software-properties 
+  - software-properties-common
+  - apt-transport-https
+
+- name: add java repository
+  apt_repository: 
+    repo: ppa:webupd8team/java
+    state: present
+
+- name: install java
+  apt: 
+    name: oracle-java8-installer
+    state: present
+
+- name: add elasic apt keys
+  apt_key: 
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: add elastic repository
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/6.x/apt stable main"
+    filename: elastic
+    state: present
+
+- name: install elastic and kibana
+  apt: 
+    name: "{{ item }}"
+  with_items:
+  - elastic
+  - kibana
+
+- name: configure elastic
+  template:
+    src: "elasticsearch.yml"
+    dest: "/etc/elasticsearch/elasticserach.yml"
+  notify: restart elasticsearch
+
+#- name: enable service
+#- name: change mem limits MAX_LOCKED_MEMORY=unlimited and LimitMEMLOCK=infinity
+#- name: restart elasticsearch
+
+- name: configure kibana
+  template:
+    src: "kibana.yml"
+    dest: "/etc/kibana/kibana.yml"
+  notify: restart kibana
+
+

@@ -1,0 +1,41 @@
+Alias /php-fcgi-{{ www_user }} /usr/lib/cgi-bin/php-fcgi-{{ www_user }}
+FastCgiExternalServer /usr/lib/cgi-bin/php-fcgi-{{ www_user }} \
+  -socket /var/run/php-fpm-{{ www_user }}.sock \
+  -pass-header Authorization \
+  -idle-timeout 3600
+
+<Directory "/var/www/{{ www_domain }}">
+  AllowOverride All
+  Order Allow,Deny
+  Allow from All
+  Options SymLinksIfOwnerMatch
+
+  AddHandler php-fcgi-{{ www_user }} .php
+  Action php-fcgi-{{ www_user }} /php-fcgi-{{ www_user }}
+</Directory>
+
+<VirtualHost *:80>
+  ServerName {{ www_domain }}
+  ServerAlias *.{{ www_domain }}
+  VirtualDocumentRoot /var/www/{{ www_domain }}/%-3.0+
+
+  ErrorLog /var/log/apache2/{{ www_domain }}_error.log
+  CustomLog /var/log/apache2/{{ www_domain }}_access.log combined
+</VirtualHost>
+
+{% if www_domain_enable_ssl %}
+<VirtualHost *:443>
+  ServerName {{ www_domain }}
+  ServerAlias *.{{ www_domain }}
+  VirtualDocumentRoot /var/www/{{ www_domain }}/%-3.0+
+
+  ErrorLog /var/log/apache2/{{ www_domain }}_error.log
+  CustomLog /var/log/apache2/{{ www_domain }}_access.log combined
+
+  SSLEngine on
+  SSLCertificateFile /etc/letsencrypt/live/{{ www_domain }}/cert.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/{{ www_domain }}/privkey.pem
+  SSLCertificateChainFile /etc/letsencrypt/live/{{ www_domain }}/fullchain.pem
+</VirtualHost>
+{% endif %}
+

@@ -1,0 +1,11 @@
+- name: fancy .profile ({{ profile_file }})
+  lineinfile: 
+    dest: "{{ profile_file }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+  - { regexp: "^export HISTSIZE", line: "export HISTSIZE=2000" }
+  - { regexp: "^export HISTFILESIZE", line: "export HISTFILESIZE=2000" }
+  - { regexp: "^alias ll", line: "alias ll='ls -l'" }
+  - { regexp: "^alias la", line: "alias la='ls -lA'" }
+  - { regexp: "^PS1=", line: "PS1='\\[\\e[1;17m\\]\\u@\\h\\[\\e[0m\\] \\W > '" }

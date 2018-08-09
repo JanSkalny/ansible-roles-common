@@ -1,0 +1,31 @@
+
+# bring system up to date and make sure rest of ansible can work correctly
+#XXX: this can brake a lot of stuff... let's not run it everywhere
+#- include: upgrade.yml
+
+# allow passwordless acess via ssh keys
+#XXX: don't use dynamic updater when we have ansible access
+#- include: authorized_keys_dynamic.yml
+- include: authorized_keys_static.yml
+- include: passwordless_sudoers.yml
+
+# install usefull tools
+- include: tools.yml
+
+# configure ntp
+- include: ntp.yml
+
+# make sure this system is livable :)
+- include: sweeten.yml
+- include: fancy_profile.yml profile_file="/home/{{user}}/.profile"
+- include: fancy_profile.yml profile_file="/root/.profile"
+
+# tune everything! 
+- include: sysctl.yml
+
+# fail2ban
+- include: fail2ban.yml
+
+# secure ssh access 
+#XXX: keep this last.. maybe we'll cut ourselves out
+- include: secure_ssh.yml

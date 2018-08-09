@@ -1,0 +1,5 @@
+dependencies:
+ - { role: ansible-dependencies }
+ - { role: virtual, when: host_type == 'virtual' }
+ - { role: physical, when: host_type == 'physical' }
+

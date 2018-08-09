@@ -1,0 +1,46 @@
+- name: add ondrej php ppa
+  apt_repository:
+    repo: ppa:ondrej/php
+    state: present
+  register: new_php_ppa
+  
+- name: update repos
+  apt: 
+    update_cache: yes
+  when: new_php_ppa.changed
+
+- name: install packages
+  apt: name={{ item }}
+  with_items:
+  - "php{{php_version}}-fpm"
+  - "php{{php_version}}-cli"
+  - "php{{php_version}}-intl"
+  - "php{{php_version}}-curl"
+  - "php{{php_version}}-gd"
+  - "php{{php_version}}-mbstring"
+  - "php{{php_version}}-zip"
+  - "php{{php_version}}-mysql"
+  - php-mcrypt
+  - php-gettext
+  - php-imagick 
+  - imagemagick 
+  - composer
+  notify: restart php
+
+- name: configure php.ini for CLI and defaul FPM
+  template:
+    src: "php{{php_version}}.ini"
+    dest: "/etc/php/{{php_version}}/{{item}}/php.ini"
+    owner: root
+    mode: 755
+  with_items:
+  - fpm
+  - cli
+
+- name: enable php modules
+  shell: "php{{php_version}}enmod {{ item }} || true"
+  with_items:
+  - mcrypt
+  - mbstring
+  notify: restart php
+

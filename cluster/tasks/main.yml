@@ -1,0 +1,40 @@
+- name: install cluster sw
+  apt: 
+    name: "{{item}}"
+  with_items:
+  - pacemaker 
+  - corosync 
+  - fence-agents
+  - drbd-utils
+  - ocfs2-tools
+
+- name: prepare directories
+  file: 
+    path: "{{item}}"
+    state: directory
+    owner: root
+    group: root
+  with_items:
+  - "/etc/systemd/system/pacemaker.service.d/"
+  - "/opt/shared"
+
+- name: configure pacemaker systemd override
+  copy:
+    src: pacemaker_override.conf
+    dest: "/etc/systemd/system/pacemaker.service.d/override.conf"
+
+- name: reload systemd configuration
+  raw: systemctl daemon-reload
+
+- name: disable system services
+  raw: systemctl disable libvirt-guests
+
+- name: disable system services
+  raw: systemctl disable drbd
+
+# TODO:
+# configure drbd / ocfs
+# create-md on both
+# make primary + override on first
+# mkfs.ocfs2 -L "shared" //dev/drbd/by-res/shared
+#

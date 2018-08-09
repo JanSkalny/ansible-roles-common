@@ -1,0 +1,14 @@
+- name: secure sshd
+  lineinfile: 
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^{{ item }}"
+    line: "{{ item }}"
+  with_items:
+  - "PermitRootLogin no"
+  - "PermitEmptyPasswords no"
+  - "ChallengeResponseAuthentication no"
+  - "PasswordAuthentication no" 
+  - "X11Forwarding no"
+
+- name: restart sshd
+  service: name=ssh state=restarted

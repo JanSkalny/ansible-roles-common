@@ -1,0 +1,71 @@
+- name: install packages
+  apt: name={{ item }}
+  with_items:
+  - apache2 
+  - apache2-utils 
+  - libapache2-mod-fastcgi 
+  notify: restart apache2
+
+- name: enable apache2 modules
+  apache2_module: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - rewrite 
+  - ssl 
+  - actions 
+  - include 
+  - auth_digest 
+  - actions 
+  - fastcgi 
+  - alias
+  - vhost_alias  
+  notify: restart apache2
+
+- name: configure apache2 
+  template: 
+    src: "{{ item }}" 
+    dest: "/etc/apache2/conf-available/{{ item }}"
+  with_items:
+  - php-fpm.conf
+  - security.conf
+  - ssl.conf
+  notify: restart apache2
+
+- name: configure apache default sites 
+  copy: 
+    src: "000-default.conf" 
+    dest: "/etc/apache2/sites-available/000-default.conf"
+  notify: restart apache2
+
+- name: delete unused files
+  file: 
+    path: "{{ item }}" 
+    state: absent
+  with_items:
+  - "/var/www/html/index.html"
+  - "/etc/apache2/sites-available/default-ssl.conf"
+  - "/etc/apache2/sites-available/default-tls.conf"
+  notify: restart apache2
+
+#TODO: disable phpXXX-fpm.conf files
+
+- name: enable apache2 configs
+  shell: a2enconf {{ item }} || true
+  with_items:
+  - php-fpm
+  notify: restart apache2
+
+- name: disable mod_php and autoindex
+  apache2_module: 
+    name: "{{ item }}" 
+    force: true
+    state: absent
+  with_items:
+  - php5.6
+  - php7.0
+  - php7.1
+  - php7.2
+  - autoindex
+  notify: restart apache2
+

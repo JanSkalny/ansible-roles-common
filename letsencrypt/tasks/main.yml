@@ -1,0 +1,33 @@
+- name: create ssl directories
+  file: 
+    path="/root/ssl/"
+    state=directory owner=root group=root mode=0550
+
+- name: generate certbot config file
+  template:
+    src="cli.ini"
+    dest="/root/ssl/cli.ini"
+    owner=root group=root
+
+- name: copy certbot and other scripts
+  copy: 
+    src="{{item}}" 
+    dest="/root/ssl/{{item}}"
+    mode=0550
+  with_items:
+    - certbot-auto
+    - renew.sh
+    - sync.sh
+
+- name: generate gen.sh script (only once)
+  template:
+    src="gen.sh"
+    dest="/root/ssl/gen.sh"
+    mode=0550
+    force=no
+
+- name: generate host specific sync.sh script
+  blockinfile:
+    dest: "/root/ssl/sync.sh"
+    block: "{{ lookup('file', 'files/letsencrypt-sync.sh/{{ inventory_hostname }}') }}"
+  ignore_errors: yes

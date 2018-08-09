@@ -1,0 +1,10 @@
+- name: .ssh directory
+  file: path="/home/{{user}}/.ssh" state=directory owner="{{user}}" group="{{user}}" mode=0750
+
+- name: add authorized_keys
+  authorized_key: 
+    user={{ item }} 
+    state=present 
+    exclusive=yes
+    key="{{ lookup('file', './files/ssh-keys/'+item) }}"
+  with_items : "{{ user }}"

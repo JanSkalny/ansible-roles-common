@@ -1,0 +1,14 @@
+ - name: install curl
+   apt: 
+     name: curl 
+
+ - name: add nodejs repo
+   shell: curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+   creates: /etc/apt/sources.list.d/nodesource.list
+
+ - name: install nodejs
+   apt: 
+     name: nodejs 
+     update_cache: yes
+
+

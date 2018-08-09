@@ -1,0 +1,4 @@
+- name: install composer
+  apt: 
+    name: composer
+

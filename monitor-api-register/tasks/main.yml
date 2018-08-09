@@ -1,0 +1,31 @@
+- name: add host to monitor.netvor.sk
+  become: false
+  vars:
+    monitor_host: "{{ inventory_hostname }}"
+    monitor_addr: "{{ ansible_default_ipv4.address }}"
+  local_action:
+    module: zabbix_host
+    server_url: https://monitor.netvor.sk
+    login_user: "{{ monitor_admin_login }}"
+    login_password: "{{ monitor_admin_password }}"
+    host_name: "{{ monitor_host }}"
+    visible_name: "{{ monitor_host }}"
+    host_groups:
+      - "{{ monitor_group }}"
+    link_templates: 
+      "{{ monitor_templates | unique }}"
+    status: enabled
+    state: present
+    inventory_mode: automatic
+    interfaces:
+      - type: 1
+        main: 1
+        useip: 1
+        ip: "{{ monitor_addr }}"
+        dns: ""
+        port: 10050
+    tls_connect: "PSK"
+    tls_accept: ["PSK"]
+    tls_psk_identity: "{{ monitor_host }}"
+    tls_psk: "{{ monitor_psk }}"
+    proxy: "{{ monitor_proxy }}"

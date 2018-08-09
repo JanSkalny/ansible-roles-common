@@ -1,0 +1,6 @@
+- name: install openvpn and dependencies
+  apt: name={{item}}
+  with_items:
+  - openvpn
+  - openvpn-blacklist
+  - bridge-utils

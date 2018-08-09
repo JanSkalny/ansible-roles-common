@@ -1,0 +1,9 @@
+- name: vim is default editor
+  command: update-alternatives --set editor /usr/bin/vim.nox
+
+- name: configure vim
+  copy: src="vimrc" dest="/etc/vim/vimrc"
+
+- name: configure vim (cont)
+  file: path="/etc/vim/vimrc.local" state=absent
+
