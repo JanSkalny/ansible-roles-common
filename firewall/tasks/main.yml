@@ -1,0 +1,19 @@
+- name: install fw.sh
+  copy: 
+    src: "{{root_dir}}/files/firewall/{{ inventory_hostname }}"
+    dest: /etc/init.d/fw.sh 
+    owner: root
+    group: adm
+    mode: 0754
+  notify: reload firewall
+
+- name: load fw.sh on boot
+  file: 
+    src: /etc/init.d/fw.sh 
+    dest: /etc/rc2.d/S19fw 
+    owner: root
+    group: adm
+    state: link
+
+- name: reconfigure firewall
+  raw: /etc/init.d/fw.sh

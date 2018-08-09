@@ -1,0 +1,4 @@
+backup_director: "backup.netvor.sk"
+backup_address: "{{backup_client}}"
+backup_include: []
+backup_exclude: []

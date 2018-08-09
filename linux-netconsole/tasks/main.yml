@@ -1,0 +1,28 @@
+ - name: generate netconsole options
+   template:
+       src: netconsole.conf
+       dest: /etc/modprobe.d/netconsole.conf
+
+ - name: enable netconsole in /etc/modules
+   lineinfile:
+     path: /etc/modules
+     state: present
+     regexp: '^netconsole'
+     line: 'netconsole'
+
+ - name: remove silent from grub
+   lineinfile:
+     path: /etc/default/grub
+     state: present
+     regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+     line: 'GRUB_CMDLINE_LINUX_DEFAULT="debug ignore_loglevel"'
+   notify: update grub
+
+ - name: 2nd load of netconsole from rc.local
+   lineinfile:
+     path: /etc/rc.local
+     state: present
+     insertbefore: "^exit"
+     regexp: '^modprobe netconsole'
+     line: 'modprobe netconsole'
+

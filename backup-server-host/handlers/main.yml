@@ -1,0 +1,4 @@
+- name: restart bacula-dir
+  service: 
+    name: bacula-director 
+    state: restarted

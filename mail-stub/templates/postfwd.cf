@@ -1,0 +1,4 @@
+# rate limits
+id=RATE_001; sender=~/.*/; action=rate(sender/300/86400/REJECT only 300 messages per day for $$sender)
+id=RATE_002; sender=~/.*/; action=rate(sender/30/3600/REJECT only 30 messages per hour for $$sender)
+

@@ -1,0 +1,19 @@
+- name: install smartmontools
+  apt: 
+    name: smartmontools
+    state: present
+  notify: restart smartmontools
+
+- name: configure smartmontools
+  template: 
+    src: "smartd.conf.j2" 
+    dest: "/etc/smartd.conf"
+  notify: restart smartmontools
+
+- name: use smartd
+  lineinfile:
+    dest: "/etc/default/smartmontools"
+    regexp: "^start_smartd=yes"
+    line: "start_smartd=yes"
+  notify: restart smartmontools
+

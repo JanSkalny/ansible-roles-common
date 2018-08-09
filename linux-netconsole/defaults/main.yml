@@ -1,0 +1,4 @@
+netconsole_src_port: 6665
+netconsole_src_iface: dmz0
+netconsole_dst_port: 514
+

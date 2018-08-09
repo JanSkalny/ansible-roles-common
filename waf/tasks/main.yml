@@ -1,0 +1,109 @@
+
+- name: install packages (debian)
+  apt: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - libvarnishapi-dev 
+  - build-essential
+  - varnish 
+  - pkgconf
+  when: ansible_os_family == 'Debian'
+
+- name: centos / redhat enterprise
+  import_tasks: centos.yml
+  when: ansible_os_family == 'RedHat' or ansible_os_family == 'Sangoma'
+ 
+- name: install packages (common)
+  package: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - supervisor
+  - autoconf 
+  - libtool
+  - haproxy
+  - python-docutils
+  - git
+
+- name: create varnish dir
+  file:
+    path: "/opt/varnish"
+    state: directory
+
+- name: checkout varnish
+  git:
+    repo: "https://github.com/comotion/VSF.git"
+    force: yes
+    update: no
+    dest: "/opt/varnish"
+  register: git_clone_vsf
+
+- name: build varnish
+  make:
+    chdir: "/opt/varnish"
+  when: git_clone_vsf.changed
+
+- name: install varnish
+  make:
+    chdir: "/opt/varnish"
+    target: "install"
+  when: git_clone_vsf.changed
+  notify: restart varnish
+
+- name: configure varnish
+  template:
+    src: "default.vcl"
+    dest: "/etc/varnish/default.vcl"
+  notify: restart varnish
+
+- name: list all local varnish rules
+  connection: local
+  become: no
+  changed_when: false 
+  check_mode: no
+  command: "ls \"{{ role_path }}/files/rules/\""
+  register: varnish_rules
+
+- name: copy varnish rules
+  copy:
+    src: "rules/{{ item }}"
+    dest: "/etc/varnish/security/rules/{{ item }}"
+  with_items: "{{ varnish_rules.stdout_lines }}"
+  notify: restart varnish
+
+- name: configure vsf
+  vars:
+    waf_include_rules: "{{ varnish_rules.stdout_lines }}"
+  template:
+    src: "{{ item }}"
+    dest: "/etc/varnish/security/{{ item }}"
+  with_items:
+  - "config.vcl"
+  - "handlers.vcl"
+  notify: restart varnish
+
+- name: configure haproxy
+  template:
+    src: haproxy.cfg
+    dest: /etc/haproxy/haproxy.cfg
+  notify: restart haproxy
+
+- name: deploy varnish log parser
+  copy: 
+    src: varnisher.py
+    dest: /root/varnisher.py
+    owner: root
+    mode: 500
+  notify: restart varnish
+
+- name: supervisor config 
+  copy:
+    src: supervisor.conf
+    dest: "{{ supervisor_conf_d }}/varnisher{{ supervisor_conf_suffix }}"
+  notify: restart supervisor
+
+- name: enable supervisor service
+  service:
+    name: "{{ supervisor_service }}"
+    enabled: yes
