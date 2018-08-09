@@ -1,6 +1,9 @@
 mail_db_user: "postfix"
 mail_db_name: "postfix"
-
 # Uncomment and fill these variables accordingly
 #mail_db_password: "superSecret"
 #mail_domain: "example.org"
+
+# If you choose to enable tls, this role expects you to have letssencrypt
+# certificates available at /etc/letsencrypt/live/{{ mail_domain }}/
+mail_tls_enable: yes
