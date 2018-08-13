@@ -3,3 +3,28 @@
     name=rsyslog
     state=restarted
 
+- name: restart postfix
+  service: 
+    name=postfix
+    state=restarted
+
+- name: restart dovecot
+  service: 
+    name=dovecot
+    state=restarted
+
+- name: restart cron
+  service: 
+    name=cron
+    state=restarted
+
+- name: restart fail2ban
+  service: 
+    name=fail2ban
+    state=restarted
+
+- name: restart postfwd
+  service: 
+    name=postfwd
+    state=restarted
+
