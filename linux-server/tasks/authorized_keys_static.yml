@@ -6,5 +6,5 @@
     user={{ item }} 
     state=present 
     exclusive=yes
-    key="{{ lookup('file', './files/ssh-keys/'+item) }}"
+    key="{{ lookup('file', '{{ root_dir }}/files/ssh-keys/'+item) }}"
   with_items : "{{ user }}"
