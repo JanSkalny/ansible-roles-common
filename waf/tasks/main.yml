@@ -101,6 +101,11 @@
   tags: configure
   notify: restart varnish
 
+- name: enable varnishlog service
+  service:
+    name: "varnishlog"
+    enabled: yes
+
 - name: configure haproxy
   template:
     src: haproxy.cfg
