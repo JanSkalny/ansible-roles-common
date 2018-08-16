@@ -2,13 +2,8 @@
   apt_repository:
     repo: ppa:ondrej/php
     state: present
-  register: new_php_ppa
-  
-- name: update repos
-  apt: 
     update_cache: yes
-  when: new_php_ppa.changed
-
+  
 - name: install packages
   apt: name={{ item }}
   with_items:
