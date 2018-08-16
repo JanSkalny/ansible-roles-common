@@ -1,0 +1,9 @@
+request:
+  provider: https://acme-v01.api.letsencrypt.org/directory
+  key:
+    type: ecdsa
+    ecdsa-curve: nistp256
+  challenge:
+    http-ports:
+    - "402"
+    http-self-test: false

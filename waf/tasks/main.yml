@@ -56,6 +56,7 @@
     name: letsencrypt-want 
   vars:
     domain: "{{ item }}"
+    aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
   with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
   tags: 
   - configure

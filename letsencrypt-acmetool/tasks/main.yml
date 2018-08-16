@@ -9,10 +9,18 @@
     name: acmetool
     state: present
 
+- name: make sure /var/lib/acme/conf directory is present
+  file:
+    path: /var/lib/acme/conf/
+    state: directory
+
 - name: configure acmetool
   template:
-    src: acmetool
-    dest: /var/lib/acme/conf/responses
+    src: "{{ item }}"
+    dest: "/var/lib/acme/conf/{{ item }}"
+  with_items:
+  - responses
+  - target
   register: acmetool_config
   tags: configure
 

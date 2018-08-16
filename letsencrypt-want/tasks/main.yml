@@ -1,11 +1,11 @@
-- name: check if certificate is present
-  stat:
-    path: "/var/lib/acme/live/{{ domain }}/haproxy"
-  register: certificate
-  tags: configure
+#- name: check if certificate is present
+#  stat:
+#    path: "/var/lib/acme/live/{{ domain }}/haproxy"
+#  register: certificate
+#  tags: configure
 
 - name: "acmetool want {{ domain }}"
   shell:
-    "acmetool want {{ domain }} {{ aliases | join (' ') }}"
-  when: certificate.stat.exists == False
+      "acmetool want {{ domain }} {{ aliases | join(' ') }}"
+#  when: certificate.stat.exists == False
   tags: configure
