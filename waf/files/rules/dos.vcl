@@ -2,9 +2,9 @@
 import vsthrottle;
 
 sub sec_throttle {
-    if (vsthrottle.is_denied(req.http.X-Actual-IP, 10, 1s) ||
-        vsthrottle.is_denied(req.http.X-Actual-IP, 30, 30s) ||
-        vsthrottle.is_denied(req.http.X-Actual-IP, 100, 5m)) {
+    if (vsthrottle.is_denied(req.http.X-Actual-IP, 15, 1s) ||
+        vsthrottle.is_denied(req.http.X-Actual-IP, 100, 30s) ||
+        vsthrottle.is_denied(req.http.X-Actual-IP, 300, 5m)) {
         return (synth(429, "Calm down"));
         # or reset the connection
 				#vsf.conn_reset();
