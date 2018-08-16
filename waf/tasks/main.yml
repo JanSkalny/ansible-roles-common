@@ -51,12 +51,26 @@
   when: git_clone_vsf.changed
   notify: restart varnish
 
+- name: generate letsencrypt certificates for each https enabled domain
+  include_role:
+    name: letsencrypt-want 
+  vars:
+    domain: "{{ item }}"
+  with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
+  tags: 
+  - configure
+  - letsencrypt-want
+
 - name: configure varnish
   template:
-    src: "default.vcl"
-    dest: "/etc/varnish/default.vcl"
+    src: "{{ item }}"
+    dest: "/etc/varnish/{{ item }}"
   notify: restart varnish
-
+  with_items:
+  - default.vcl
+  - letsencrypt.vcl
+  tags: configure
+  
 - name: list all local varnish rules
   connection: local
   become: no
@@ -64,6 +78,7 @@
   check_mode: no
   command: "ls \"{{ role_path }}/files/rules/\""
   register: varnish_rules
+  tags: configure
 
 - name: copy varnish rules
   copy:
@@ -71,6 +86,7 @@
     dest: "/etc/varnish/security/rules/{{ item }}"
   with_items: "{{ varnish_rules.stdout_lines }}"
   notify: restart varnish
+  tags: configure
 
 - name: configure vsf
   vars:
@@ -81,12 +97,14 @@
   with_items:
   - "config.vcl"
   - "handlers.vcl"
+  tags: configure
   notify: restart varnish
 
 - name: configure haproxy
   template:
     src: haproxy.cfg
     dest: /etc/haproxy/haproxy.cfg
+  tags: configure
   notify: restart haproxy
 
 - name: deploy varnish log parser
@@ -102,6 +120,7 @@
     src: supervisor.conf
     dest: "{{ supervisor_conf_d }}/varnisher{{ supervisor_conf_suffix }}"
   notify: restart supervisor
+  tags: configure
 
 - name: enable supervisor service
   service:

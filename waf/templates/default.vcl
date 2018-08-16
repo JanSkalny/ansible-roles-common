@@ -3,6 +3,9 @@
 vcl 4.0;
 
 include "/etc/varnish/security/vsf.vcl";
+{% if waf_letsencrypt == true %}
+include "/etc/varnish/letsencrypt.vcl";
+{% endif %}
 
 import directors;
 

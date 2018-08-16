@@ -1,0 +1,24 @@
+- name: add hlandau/rhea ppa
+  apt_repository:
+    repo: ppa:hlandau/rhea
+    state: present
+    update_cache: yes
+
+- name: install acmetool
+  package:
+    name: acmetool
+    state: present
+
+- name: configure acmetool
+  template:
+    src: acmetool
+    dest: /var/lib/acme/conf/responses
+  register: acmetool_config
+  tags: configure
+
+- name: reconfigure acmetool
+  shell:
+    acmetool quickstart --batch
+  when: acmetool_config.changed  
+  tags: configure
+

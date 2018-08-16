@@ -1,1 +1,2 @@
 waf_directors: []
+waf_letsencrypt: true
