@@ -1,0 +1,29 @@
+- name: check if swap file exists
+  stat: 
+    path: "{{ swap_file }}"
+  register: swap_file_check
+
+- name: turn off swap
+  command: swapoff -a
+  when: swap_file_check.stat.exists
+ 
+- name: remove swap entry from fstab
+  mount: 
+    name: none
+    src: "{{ swap_file }}"
+    fstype: swap
+    opts: sw
+    passno: 0
+    dump: 0
+    state: absent
+
+- name: remove swap file
+  file: 
+    path: "{{swap_file}}"
+    state: absent
+
+- name: set swappiness
+  sysctl:
+    name: vm.swappiness
+    value: "{{ swappiness }}"
+

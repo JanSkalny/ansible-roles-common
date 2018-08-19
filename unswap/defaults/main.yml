@@ -1,0 +1,3 @@
+swap_file: /var/swap.img
+swappiness: 0
+
