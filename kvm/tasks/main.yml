@@ -8,3 +8,8 @@
   - unar
   - bridge-utils
   - vlan
+
+- name: configure qemu-kvm
+  template:
+    src: qemu-kvm.defaults
+    dest: /etc/default/qemu-kvm
