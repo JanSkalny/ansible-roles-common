@@ -12,6 +12,7 @@
   with_items:
   - syslog-ng-core 
   - syslog-ng
+  - logrotate
   notify: restart syslog-ng
 
 - name: prepare remote syslog directory
@@ -26,3 +27,7 @@
     dest: "/etc/syslog-ng/conf.d/remote-server.conf"
   notify: restart syslog-ng
 
+- name: configure logrotate
+  template:
+    src: "logrotate.conf"
+    dest: "/etc/logrotate.d/opt-logs"
