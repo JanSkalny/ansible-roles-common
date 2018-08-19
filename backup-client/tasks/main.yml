@@ -43,7 +43,3 @@
     login_password: "{{ mysql_password }}"
   when: backup_sql_password is defined
 
-  service: 
-    name: bacula-fd 
-    state: restarted
-
