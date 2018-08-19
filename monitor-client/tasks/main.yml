@@ -1,6 +1,8 @@
 
 - name: install dependencies
-  apt: name={{ item }}
+  package:
+    name: "{{ item }}"
+    state: present
   with_items:
   - python-mysqldb
   - logtail
@@ -9,51 +11,62 @@
 
 - name: make sure zabbix_agent.d directory is present
   file:
-    path="/etc/zabbix/zabbix_agentd.d/"
-    state=directory
-    mode=755 owner=root group=root
- 
+    path: "/etc/zabbix/zabbix_agentd.d/"
+    state: directory
+    mode: 0755
+
 - name: check if zabbix-release is available
   command: dpkg-query -W zabbix-release
   register: res
   ignore_errors: True
 
 - name: download zabbix release packae
-  get_url: 
-    url="http://repo.zabbix.com/zabbix/3.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.4-1+xenial_all.deb"
-    dest="/tmp/zabbix-release.deb"
-  when: res|failed 
+  get_url:
+    url: "http://repo.zabbix.com/zabbix/3.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.4-1+xenial_all.deb"
+    dest: "/tmp/zabbix-release.deb"
+  when: res|failed
 
 - name: install zabbix-release.deb
-  apt: deb="/tmp/zabbix-release.deb"
+  apt:
+    deb: "/tmp/zabbix-release.deb"
   when: res|failed
 
 - name: apt-get update
-  apt: update_cache=yes
+  apt:
+    update_cache: yes
   when: res|failed
 
-- name: install zabbix-agent
-  apt: name=zabbix-agent state=present
-
-- name: install zabbix-sender
-  apt: name=zabbix-sender state=present
+- name: install zabbix packages
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - zabbix-agent
+  - zabbix-sender
+  notify: restart zabbix-agent
 
 - name: configure zabbix-agent
-  template: src="zabbix_agentd.conf" dest="/etc/zabbix/zabbix_agentd.conf"
+  template:
+    src: "zabbix_agentd.conf"
+    dest: "/etc/zabbix/zabbix_agentd.conf"
+  notify: restart zabbix-agent
 
 - name: delete default user parameter files
-  file: 
-    path="/etc/zabbix/zabbix_agentd.d/{{item}}"
-    state=absent
+  file:
+    path: "/etc/zabbix/zabbix_agentd.d/{{item}}"
+    state: absent
   with_items:
   - userparameter_mysql.conf
   - zabbix_mdraid.conf
+  notify: restart zabbix-agent
 
 - name: custom user parameters
-  copy: 
-      src="{{ item }}" 
-      dest="/etc/zabbix/zabbix_agentd.d/{{ item }}" 
-      owner="root" group="zabbix" mode=0640
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/zabbix/zabbix_agentd.d/{{ item }}"
+    owner: "root"
+    group: "zabbix"
+    mode: 0640
   with_items:
   - bind.conf
   - mdraid.conf
@@ -69,19 +82,26 @@
   - ssacli.conf
   - openvpn.conf
   - vfs.conf
+  - sockstat.conf
+  notify: restart zabbix-agent
 
 - name: custom user parameters (from templates)
-  template: 
-      src="{{ item }}" 
-      dest="/etc/zabbix/zabbix_agentd.d/{{ item }}" 
-      owner="root" group="zabbix" mode=0640
+  template:
+    src: "{{ item }}"
+    dest: "/etc/zabbix/zabbix_agentd.d/{{ item }}"
+    owner: "root"
+    group: "zabbix"
+    mode: 0640
   with_items:
   - "ntp.conf"
- 
+  notify: restart zabbix-agent
+
 - name: monitoring scripts
-  copy: src="{{ item }}" 
-      dest="/usr/local/bin/{{ item }}" 
-      owner="root" mode=0755
+  copy:
+    src: "{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    owner: "root"
+    mode: 0755
   with_items:
   - zabbix_mdraid.sh
   - zabbix_bind_stats.py
@@ -95,43 +115,55 @@
   - zabbix_openvpn.sh
   - zabbix_bacula_discovery.sh
   - zabbix_bacula_check_job.sh
+  notify: restart zabbix-agent
 
 - name: make sure zabbix home directory is present
   file:
-    path="/var/lib/zabbix/"
-    state=directory
-    mode=700 owner=zabbix group=zabbix
-   
+    path: "/var/lib/zabbix/"
+    state: directory
+    mode: 0700
+    owner: zabbix
+    group: zabbix
+
 - name: create mysql user for monitoring
   mysql_user:
-    name={{ monitor_sql_user }}
-    password={{ monitor_sql_password }}
-    priv='*.*:USAGE'
-    state=present
-    login_user={{ mysql_user }}
-    login_password={{ mysql_password }}
+    name: "{{ monitor_sql_user }}"
+    password: "{{ monitor_sql_password }}"
+    priv: '*.*:USAGE'
+    state: present
+    login_user: "{{ mysql_user }}"
+    login_password: "{{ mysql_password }}"
   when: monitor_sql_password is defined
 
 - name: generate .my.cnf for monitoring
-  template: 
-    src="my.cnf"
-    dest="/var/lib/zabbix/.my.cnf"
-    owner="zabbix" group="zabbix" mode=0600
+  template:
+    src: "my.cnf"
+    dest: "/var/lib/zabbix/.my.cnf"
+    owner: "zabbix"
+    group: "zabbix"
+    mode: 0600
   when: monitor_sql_password is defined
 
 - name: generate zabbix_agentd.psk
   template:
-    src="zabbix_agentd.psk"
-    dest="/etc/zabbix/zabbix_agentd.psk"
-    owner="zabbix" group="zabbix" mode=0600
+    src: "zabbix_agentd.psk"
+    dest: "/etc/zabbix/zabbix_agentd.psk"
+    owner: "zabbix"
+    group: "zabbix"
+    mode: 0600
   when: monitor_psk is defined
+  notify: restart zabbix-agent
 
-- name: enable auto-start of zabbix-agent
-  raw: systemctl enable zabbix-agent
+- name: enable zabbix-agent service
+  service:
+    name: "zabbix-agent"
+    enabled: yes
+  notify: restart zabbix-agent
 
 - name: allow zabbix user to run specific commands as root
-  copy: src="zabbix_sudoers" dest="/etc/sudoers.d/zabbix" owner="root" mode=0640
-
-- name: restart zabbix-agent
-  service: name=zabbix-agent state=restarted
+  copy:
+    src: "zabbix_sudoers"
+    dest: "/etc/sudoers.d/zabbix"
+    owner: "root"
+    mode: 0640
 
