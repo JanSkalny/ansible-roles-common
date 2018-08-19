@@ -13,8 +13,8 @@
 
 - name: copy keys and certificates
   copy: 
+    src: "{{root_dir}}/files/backup/{{backup_group}}/{{item.src}}" 
     dest: "/etc/bacula/{{item.dst}}" 
-    src: "backup/{{backup_group}}/{{item.src}}" 
     owner: "root" 
     group: "root" 
     mode: 0750
@@ -26,8 +26,8 @@
 
 - name: create mysql backup script
   template: 
-    dest: "/etc/bacula/scripts/make_mysql_backup.sh" 
     src: "make_mysql_backup.sh" 
+    dest: "/etc/bacula/scripts/make_mysql_backup.sh" 
     owner: "root" 
     group: "root" 
     mode: 0750
