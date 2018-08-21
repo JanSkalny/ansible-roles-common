@@ -1,0 +1,8 @@
+- name: install compact-memory cron job
+  copy:
+    src: compact-memory
+    dest: /etc/cron.daily/compact-memory
+    owner: root
+    mode: 0755
+  notify: restart cron
+
