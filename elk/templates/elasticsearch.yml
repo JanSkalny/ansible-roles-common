@@ -1,0 +1,7 @@
+cluster.name: "{{ elk_cluter_name }}"
+node.name: "{{ elk_node_name }}"
+
+bootstrap.memory_lock: true
+network.host: 127.0.0.1
+http.port: 9200
+

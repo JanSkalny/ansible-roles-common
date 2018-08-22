@@ -1,0 +1,2 @@
+elk_cluter_name: "netvor"
+elk_node_name: "{{ ansible_hostname }}"

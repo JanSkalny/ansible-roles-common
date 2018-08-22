@@ -37,12 +37,10 @@
 - name: configure elastic
   template:
     src: "elasticsearch.yml"
-    dest: "/etc/elasticsearch/elasticserach.yml"
+    dest: "/etc/elasticsearch/elasticsearch.yml"
   notify: restart elasticsearch
 
-#- name: enable service
 #- name: change mem limits MAX_LOCKED_MEMORY=unlimited and LimitMEMLOCK=infinity
-#- name: restart elasticsearch
 
 - name: configure kibana
   template:
@@ -50,4 +48,11 @@
     dest: "/etc/kibana/kibana.yml"
   notify: restart kibana
 
+- name: enable services
+  service:
+    name: "{{ item }}"
+    enabled: yes
+  with_items:
+  - elasticsearch
+  - kibana
 
