@@ -9,7 +9,7 @@
   - sudo
   - jq
 
-- name: make sure zabbix_agent.d directory is present
+- name: make sure zabbix_agentd.d directory is present
   file:
     path: "/etc/zabbix/zabbix_agentd.d/"
     state: directory
@@ -62,7 +62,7 @@
 
 - name: custom user parameters
   copy:
-    src: "{{ item }}"
+    src: "conf/{{ item }}"
     dest: "/etc/zabbix/zabbix_agentd.d/{{ item }}"
     owner: "root"
     group: "zabbix"
@@ -83,6 +83,7 @@
   - openvpn.conf
   - vfs.conf
   - sockstat.conf
+  - varnish.conf
   notify: restart zabbix-agent
 
 - name: custom user parameters (from templates)
@@ -98,7 +99,7 @@
 
 - name: monitoring scripts
   copy:
-    src: "{{ item }}"
+    src: "scripts/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     owner: "root"
     mode: 0755
@@ -115,6 +116,7 @@
   - zabbix_openvpn.sh
   - zabbix_bacula_discovery.sh
   - zabbix_bacula_check_job.sh
+  - zabbix_varnish_cache.py
   notify: restart zabbix-agent
 
 - name: make sure zabbix home directory is present
