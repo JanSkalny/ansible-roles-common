@@ -1,0 +1,29 @@
+- name: introduce elastic config file
+  template:
+    src: "elasticsearch.yml"
+    dest: "/etc/elasticsearch/elasticsearch.yml"
+  tags: configure
+
+- name: remove limitations on memory
+  template:
+    src: "elastic_limits.conf"
+    dest: "/etc/security/limits.d/elastic_limits.conf"
+  tags: configure
+
+- name: load limits on session login
+  lineinfile:
+    path: "/etc/pam.d/common-session"
+    line: "session required pam_limits.so"
+  tags: configure
+
+- name: create data storage
+  file:
+    path: "{{ elastic.data_path }}"
+    owner: "{{ elastic.user }}"
+    state: directory
+  notify: restart elasticsearch
+  tags: configure
+
+#- name: change mem limits MAX_LOCKED_MEMORY=unlimited and LimitMEMLOCK=infinity
+
+

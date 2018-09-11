@@ -159,3 +159,12 @@
     owner: "root"
     mode: 0640
 
+- name: install logging dependencies
+  package:
+    name: logrotate
+    state: present
+
+- name: rotate zabbix logs
+  copy:
+    src: zabbix-agent-logrotate
+    dest: /etc/logrotate.d/zabbix-agent

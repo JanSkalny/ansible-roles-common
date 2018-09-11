@@ -1,10 +1,17 @@
 - name: install packages
-  apt: name={{ item }}
+  apt:
+    name: "{{ item }}"
   with_items:
   - apache2 
   - apache2-utils 
   - libapache2-mod-fastcgi 
   notify: restart apache2
+
+# ## used in Ubuntu server >= 18.04
+#- name: install fastcgi Apache module
+#  apt:
+#    deb: "http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb"
+#  notify: restart apache2
 
 - name: enable apache2 modules
   apache2_module: 

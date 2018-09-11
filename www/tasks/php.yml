@@ -3,7 +3,21 @@
     repo: ppa:ondrej/php
     state: present
     update_cache: yes
-  
+
+# ## used in Ubuntu server >= 18.04
+#- name: add php repo
+#  block:
+#    - name: add repo key
+#      apt_key: 
+#        url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x4F4EA0AAE5267A6C"
+#        state: present
+#
+#   - name: add php repo
+#      apt_repository:
+#        repo: "deb http://ppa.launchpad.net/ondrej/php/ubuntu {{ ansible_distribution_release }} main"
+#        filename: php
+#        state: present
+ 
 - name: install packages
   apt: name={{ item }}
   with_items:

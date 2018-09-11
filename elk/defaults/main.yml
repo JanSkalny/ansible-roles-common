@@ -1,2 +1,19 @@
-elk_cluter_name: "netvor"
-elk_node_name: "{{ ansible_hostname }}"
+elastic:
+  user: "elasticsearch"
+
+  host: "127.0.0.1"
+  port: "9200"
+
+  cluster_name: "test"
+  node_name: "{{ ansible_hostname }}"
+
+  log_path: "/var/log/elasticsearch"
+  data_path: "/var/data/elasticsearch"
+
+kibana:
+  host: "0.0.0.0"
+  port: "5601"
+
+logstash:
+  beats_pipeline_port: "5044"
+  config_path: "/etc/logstash/conf.d/"

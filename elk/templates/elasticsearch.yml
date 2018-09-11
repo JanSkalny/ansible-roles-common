@@ -1,7 +1,12 @@
-cluster.name: "{{ elk_cluter_name }}"
-node.name: "{{ elk_node_name }}"
+cluster.name: "{{ elastic.cluster_name }}"
+
+node.name: "{{ elastic.node_name }}"
+
+path:
+  logs: "{{ elastic.log_path }}"
+  data: "{{ elastic.data_path }}"
 
 bootstrap.memory_lock: true
-network.host: 127.0.0.1
-http.port: 9200
+network.host: "{{ elastic.host }}"
+http.port: "{{ elastic.port }}"
 

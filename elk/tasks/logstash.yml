@@ -1,0 +1,19 @@
+- name: install logstash
+  package:
+    name: logstash
+    state: present
+  tags: install
+
+- name: configure logstash pipeline from beats to elastic
+  template:
+    src: logstash_beats_pipeline.conf
+    dest: "{{ logstash.config_path }}/logstash_beats_pipeline.conf"
+    mode: "u=rw,go=r"
+  tags: configure
+
+- name: setup configured pipelines
+  systemd:
+    name: logstash
+    enabled: yes
+    state: restarted
+  tags: configure

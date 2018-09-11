@@ -1,0 +1,9 @@
+galaxy_info:
+  author: Tibor Csoka
+
+  min_ansible_version: 2.6
+
+  platforms:
+  - name: Ubuntu server
+    versions:
+    - 16.04
