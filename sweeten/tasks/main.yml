@@ -1,0 +1,42 @@
+- name: make sure vim-nox is installed
+  package:
+    name: vim-nox
+    state: present
+  tags: install
+
+- name: check for default editor
+  stat:
+    path: /etc/alternatives/editor
+  tags: configure
+  check_mode: no
+  register: alternatives_editor
+  when: ansible_os_family == 'Debian'
+
+- name: make sure vim is default editor
+  shell: 
+    update-alternatives --set editor /usr/bin/vim.nox
+  when: 
+  - ansible_os_family == 'Debian'
+  - alternatives_editor.stat.lnk_target != '/usr/bin/vim.nox'
+  tags: configure
+
+- name: configure vim
+  copy: 
+    src: "vimrc" 
+    dest: "/etc/vim/vimrc"
+  tags: configure
+
+- name: remove old vim configuration
+  file: 
+    path: "/etc/vim/vimrc.local" 
+    state: absent
+  tags: configure
+
+- name: fancy .profile for root
+  copy: 
+    src: dotprofile
+    dest: "/root/.profile"
+    owner: "root"
+    group: "root"
+    mode: 0640
+  tags: configure

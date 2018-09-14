@@ -39,4 +39,12 @@
     key: "{{ lookup('file', root_dir+'/files/ssh-keys/'+item) }}"
   with_items: "{{ users }}"
 
-
+- name: "fancy .profile for user {{ item }}"
+  copy: 
+    src: dotprofile
+    dest: "/home/{{ item }}/.profile"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: 0640
+  with_items : "{{ users }}"
+  tags: configure

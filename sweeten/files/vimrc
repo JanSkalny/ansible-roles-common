@@ -1,0 +1,61 @@
+" This line should not be removed as it ensures that various options are
+" properly set to work with the Vim-related packages available in Debian.
+runtime! debian.vim
+
+" just in case... (these should be default on modern systems anyways)
+set nocompatible
+set backspace=indent,eol,start	
+
+" syntax hilighting (if any)
+if has("syntax")
+	syntax on
+endif
+
+" re-opening file will restore position
+if has("autocmd")
+	au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+endif
+
+" default identation
+set ts=4 sw=4 sts=4 noexpandtab
+
+if has("autocmd")
+	" automatic identation according to file type
+	filetype plugin indent on
+
+	" custom per filetype configuration
+	autocmd FileType python set ts=2|set sw=2|set sts=2|set expandtab
+	autocmd FileType yaml set ts=2|set sw=2|set sts=2|set expandtab
+endif 
+
+" vim sugar
+set background=light	" iTerm2
+set showcmd				" Show (partial) command in status line.
+set showmatch			" Show matching brackets.
+set incsearch			" Incremental search
+set nu					" show line numbers
+set ruler				" display position within file
+set autoindent			" auto-identation
+set smartindent			" better auto-identation
+
+" better history and no backup files
+set nobackup
+set nowritebackup
+set history=50
+set hlsearch
+
+" discourage user from long lines
+"""highlight OverLength ctermbg=237
+"""match OverLength /\%121v.\+/
+
+" run pathogen (if present)
+silent! call pathogen#infect()
+
+" slovak spell checking
+"""set spell spelllang=sk
+
+" nicer vim-diff
+highlight DiffAdd    cterm=bold ctermfg=10 ctermbg=17 gui=none guifg=bg guibg=Red
+highlight DiffDelete cterm=bold ctermfg=10 ctermbg=17 gui=none guifg=bg guibg=Red
+highlight DiffChange cterm=bold ctermfg=10 ctermbg=17 gui=none guifg=bg guibg=Red
+highlight DiffText   cterm=bold ctermfg=10 ctermbg=88 gui=none guifg=bg guibg=Red

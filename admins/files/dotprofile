@@ -1,0 +1,6 @@
+#PATH="$HOME/bin:$HOME/.local/bin:$PATH"
+export HISTSIZE=2000
+export HISTFILESIZE=2000
+alias ll='ls -l'
+alias la='ls -lA'
+PS1='\[\e[1;17m\]\u@\h\[\e[0m\] \W > '

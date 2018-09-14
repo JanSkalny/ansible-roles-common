@@ -1,0 +1,33 @@
+# TODO:
+# overit na centos, bsd a mozno aj macos
+
+- name: cleanup old ssh files
+  file:
+    path: "/etc/ssh/{{ item }}"
+    state: absent
+  with_items:
+  - ssh_config~orig
+  - sshd_config~
+  - sshd_config~previous
+  - sshd_config.ucf-old
+  notify: ssh restart
+  tags: configure
+
+- name: harden ssh(d)
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/ssh/{{ item }}"
+  with_items:
+  - ssh_config
+  - sshd_config
+  notify: ssh restart
+  tags: configure
+
+- name: init defaults
+  copy:
+    src: "defaults"
+    dest: "/etc/default/ssh"
+  when: ansible_os_family == "Debian"
+  notify: ssh restart
+  tags: configure
+

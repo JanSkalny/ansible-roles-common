@@ -1,0 +1,5 @@
+ - import_tasks: debian.yml
+   when: ansible_os_family == 'Debian'
+
+ - import_tasks: centos.yml
+   when: ansible_os_family == 'RedHat' or ansible_os_family == 'Sangoma'

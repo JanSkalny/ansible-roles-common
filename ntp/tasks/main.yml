@@ -1,0 +1,43 @@
+- name: install ntp
+  package: 
+    name: "{{item}}"
+    state: present
+  with_items: 
+  - ntp
+  - ntpdate
+  tags: install
+
+- name: stop ntp
+  service:
+    name: "{{ ntp_service }}"
+    state: stopped
+  notify: restart ntp
+  tags: 
+  - ntpdate
+  - configure
+
+- name: syncronize time
+  command: ntpdate {{ ntp_servers[0] | quote }} 
+  ignore_errors: true
+  tags: 
+  - ntpdate
+  - configure
+
+#TODO: centos/redhat
+- name: configure ntp
+  template:
+    src: "ntp.conf"
+    dest: "/etc/ntp.conf"
+    owner: root 
+    mode: 0640
+  tags: configure
+  notify: restart ntp
+
+#TODO: bionic?
+- name: remove ntpdate if-up script (blocks ntp on startup)
+  file:
+    path: "/etc/network/if-up.d/ntpdate"
+    state: absent
+  tags: configure
+  notify: restart ntp
+

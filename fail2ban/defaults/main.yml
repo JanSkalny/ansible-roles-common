@@ -1,0 +1,2 @@
+fail2ban_email: "{{ admin_email }}"
+fail2ban_ignoreip: ""

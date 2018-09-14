@@ -1,0 +1,25 @@
+- name: sysctl.conf permissions
+  file:
+     dest: "/etc/sysctl.conf"
+     owner: root
+     group: root
+     mode: 0644
+
+- name: sysctl.d permissions
+  file:
+     dest: "/etc/sysctl.d/"
+     recurse: yes
+     owner: root
+     group: root
+     mode: "go-w"
+
+- name: sysctl hardening 
+  sysctl:
+     name: "{{ item.key }}"
+     value: "{{ item.value }}"
+     sysctl_set: yes
+     reload: yes
+     state: present
+  with_dict: "{{ sysctl_config }}"
+  notify: sysctl flush routes
+
