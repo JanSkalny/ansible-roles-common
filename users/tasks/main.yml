@@ -1,0 +1,16 @@
+- name: create user
+  user:
+    name: "{{ item }}"
+    shell: "{{ default_user_shell }}"
+    state: present
+    createhome: yes
+  with_items : "{{ users }}"
+
+- name: add authorized_keys
+  authorized_key:
+    user: "{{ item }}"
+    state: present
+    key: "{{ lookup('file', root_dir+'/files/ssh-keys/'+item) }}"
+  with_items: "{{ users }}"
+
+
