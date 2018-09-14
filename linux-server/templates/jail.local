@@ -1,3 +1,0 @@
-[DEFAULT]
-destemail = {{ fail2ban_email }}
-ignoreip = 127.0.0.1/8 {{ fail2ban_ignoreip }}
