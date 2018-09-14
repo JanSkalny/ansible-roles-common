@@ -1,0 +1,21 @@
+- name: check if zabbix-release is available
+  command: dpkg-query -W zabbix-release
+  register: res
+  ignore_errors: True
+
+- name: download zabbix release packae
+  get_url:
+    url: "http://repo.zabbix.com/zabbix/3.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.4-1+{{ ansible_distribution_release }}_all.deb"
+    dest: "/tmp/zabbix-release.deb"
+  when: res is failed
+
+- name: install zabbix-release.deb
+  apt:
+    deb: "/tmp/zabbix-release.deb"
+  when: res is failed
+
+- name: apt-get update
+  apt:
+    update_cache: yes
+  when: res is failed
+

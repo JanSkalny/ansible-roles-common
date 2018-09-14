@@ -6,6 +6,7 @@ zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_smartctl_lld.py
 zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_bacula_discovery.sh
 zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_bacula_check_job.sh
 zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_openvpn.sh
+zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_varnish_cache.py
 zabbix ALL=(ALL) NOPASSWD: /usr/sbin/smartctl
 zabbix ALL=(ALL) NOPASSWD: /sbin/hplog
 zabbix ALL=(ALL) NOPASSWD: /usr/sbin/hpacucli

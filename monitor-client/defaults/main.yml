@@ -1,5 +1,6 @@
 monitor_srver_addr: "92.240.244.110"
 monitor_proxy_addr: "127.0.0.1"
 monitor_sql_user: "zabbix"
+monitor_varnish: false
 ntp_servers: 
  - "pool.ntp.org"

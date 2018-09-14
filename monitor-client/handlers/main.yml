@@ -3,3 +3,8 @@
     name: zabbix-agent 
     state: restarted
 
+- name: restart cron
+  service: 
+    name: cron
+    state: restarted
+
