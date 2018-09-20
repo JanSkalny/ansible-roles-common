@@ -11,6 +11,10 @@
     mode: preserve
   tags: install
 
+- name: update apt cache
+  apt:
+    update_cache: yes
+
 - name: install elastic
   import_tasks: "elastic/install.yml"
   tags: install
