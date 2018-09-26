@@ -1,0 +1,21 @@
+- name: install elastic
+  import_tasks: "elastic/install.yml"
+  tags: install
+
+- name: configure elastic
+  import_tasks: "elastic/configure.yml"
+  tags: configure
+
+- name: install kibana
+  import_tasks: "kibana.yml"
+  tags: [install,configure]
+
+- name: enable services
+  service:
+    name: "{{ item }}"
+    enabled: yes
+  with_items:
+  - elasticsearch
+  - kibana
+  tags: configure
+

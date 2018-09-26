@@ -1,0 +1,18 @@
+- name: ensure elasticsearch repo key presence
+  apt_key: 
+    url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+    state: present
+  tags: install
+
+- name: ensure elasticsearch repo presence
+  copy:
+    src: elastic-repo.list 
+    dest: /etc/apt/sources.list.d/elastic-6.x.list
+    mode: preserve
+  tags: install
+
+- name: udpate apt
+  apt:
+    update_cache: yes
+  tags: install
+
