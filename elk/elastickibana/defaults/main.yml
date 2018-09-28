@@ -8,7 +8,7 @@ elastic:
   node_name: "{{ ansible_hostname }}"
 
   log_path: "/var/log/elasticsearch"
-  data_path: "/var/data/elasticsearch"
+  data_path: "/var/lib/elasticsearch"
 
 kibana:
   host: "0.0.0.0"
