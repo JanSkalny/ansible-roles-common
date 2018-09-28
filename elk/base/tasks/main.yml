@@ -1,3 +1,9 @@
+- name: https transport for apt
+  apt:
+    name: apt-transport-https
+    state: present
+  tags: install
+
 - name: ensure elasticsearch repo key presence
   apt_key: 
     url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
