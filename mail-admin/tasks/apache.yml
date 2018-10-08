@@ -14,5 +14,8 @@
 - name: enable mod_cgi (for mailgraph)
   command: a2enmod cgi
 
+- name: enable actions
+  command: a2enmod actions
+
 - name: restart apache service
   service: name=apache2 state=restarted
