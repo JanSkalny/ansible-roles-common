@@ -17,11 +17,11 @@
   when: mailadmin_present.stat.exists == False
 
 - name: install vimbadmin
-  raw: composer create-project opensolutions/vimbadmin /var/www/mailadmin -s dev --keep-vcs
+  command: composer create-project opensolutions/vimbadmin /var/www/mailadmin -s dev --keep-vcs
   when: mailadmin_present.stat.exists == False
 
 - name: upgrade vimbadmin
-  raw: echo "TODO"
+  command: echo "TODO"
   when: mailadmin_present.stat.exists == True
 
 - name: configure mailadmin (application.ini)
