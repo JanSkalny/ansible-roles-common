@@ -3,12 +3,14 @@
     name: "{{item}}" 
     state: present
   with_items:
-  - vim-nox
+  - vim-tiny
   - tcpdump
+  - rsync
   - screen
   - bc
-  - tcptraceroute
   - debian-keyring
+  - ubuntu-keyring
+  - tcptraceroute
   - nmap
   - patch
   - iptraf
@@ -16,8 +18,7 @@
   - wget
   - cron
   - make
-  - openssl-blacklist
-  - mtr
+  - mtr-tiny
   - iotop
   - sysstat
   - whois
@@ -25,8 +26,17 @@
   - links
   - jq
   - vlan
+  - dnsutils
   #- netsniff-ng
   #- python-pip
   #- python3-pip
   tags: install
 
+- name: install usefull tools (non-bionic)
+  apt: 
+    name: "{{item}}" 
+    state: present
+  with_items:
+  - openssl-blacklist
+  when: ansible_distribution_version < '18.04'
+  tags: install

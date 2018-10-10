@@ -1,11 +1,14 @@
+
 - include_role:
     name: "{{ x_role_name }}"
   loop_control:
     loop_var: x_role_name
   with_items:
+  - common/linux-normalize-dist
   - common/harden-ssh
   - common/harden-sysctl
   - common/sweeten
   - common/tools
   - common/ntp
   - common/fail2ban
+  - common/linux-compact-memory

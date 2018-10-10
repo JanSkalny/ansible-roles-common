@@ -1,6 +1,6 @@
-- name: make sure vim-nox is installed
+- name: make sure vim-tiny is installed
   package:
-    name: vim-nox
+    name: vim-tiny
     state: present
   tags: install
 
@@ -14,10 +14,10 @@
 
 - name: make sure vim is default editor
   shell: 
-    update-alternatives --set editor /usr/bin/vim.nox
+    update-alternatives --set editor /usr/bin/vim.tiny
   when: 
   - ansible_os_family == 'Debian'
-  - alternatives_editor.stat.lnk_target != '/usr/bin/vim.nox'
+  - alternatives_editor.stat.lnk_target != '/usr/bin/vim.tiny'
   tags: configure
 
 - name: configure vim
