@@ -12,12 +12,13 @@
  */
 
 sub sec_default_handler {
-	#call sec_log;
-	# rick!
-	return (synth(777, "go away"));
+	call sec_log;
+
+	# redirect to rick!
+	#return (synth(777, "go away"));
 
 	# default is reject
-    #call sec_reject;
+    call sec_reject;
 }
 
 # Here you can specify what gets logged when a rule triggers.
