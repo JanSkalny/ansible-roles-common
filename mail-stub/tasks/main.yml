@@ -20,7 +20,7 @@
     state: directory 
     owner: root 
     group: root 
-    mode: 750
+    mode: "u=rwx,g=rx,o="
   notify: restart postfix
 
 - name: configure postfix (mysql/)
@@ -29,7 +29,7 @@
     dest: "/etc/postfix/mysql/{{ item }}"
     owner: root 
     group: root 
-    mode: 640
+    mode: "u=rw,g=r,o="
   with_items:
   - client.cf
   - recipient.cf
@@ -47,7 +47,7 @@
     dest: "/etc/postfix/{{ item }}"
     owner: root 
     group: root 
-    mode: 644
+    mode: "u=rw,go=r"
   with_items:
   - main.cf
   - master.cf
@@ -59,7 +59,7 @@
     dest: "/etc/dovecot/dovecot-sql.conf.ext"
     owner: root 
     group: dovecot 
-    mode: 644
+    mode: "u=rw,go=r"
   notify: restart dovecot
 
 - name: configure dovecot (conf.d)
@@ -68,7 +68,7 @@
     dest: "/etc/dovecot/conf.d/{{ item }}"
     owner: root 
     group: dovecot 
-    mode: 644
+    mode: "u=rw,go=r"
   with_items:
   - 10-auth.conf
   - 10-logging.conf
@@ -105,7 +105,7 @@
     state: directory 
     owner: vmail
     group: vmail
-    mode: 770
+    mode: "ug=rwx,o="
 
 - name: configure msmtp delivery
   copy:
@@ -113,7 +113,7 @@
     dest: /etc/msmtprc
     owner: root
     group: root
-    mode: 644
+    mode: "u=rw,go=r"
 
 - name: prune-junk-mail
   copy:
@@ -121,7 +121,7 @@
     dest: /etc/cron.daily/prune-junk-mail
     owner: root
     group: root
-    mode: 755
+    mode: "u=rwx,go=rx"
   notify: restart cron
 
 - name: create sieve/ directory
@@ -130,7 +130,7 @@
     state: directory 
     owner: vmail
     group: vmail
-    mode: 755
+    mode: "u=rwx,go=rx"
 
 - name: default.sieve
   copy:
@@ -138,7 +138,7 @@
     dest: /var/lib/dovecot/sieve/default.sieve
     owner: vmail
     group: vmail
-    mode: 644
+    mode: "u=rw,go=r"
   notify: restart dovecot
 
 - name: fix typo in fail2ban jail.conf
@@ -163,7 +163,7 @@
     dest: /etc/fail2ban/jail.d/mail.conf
     owner: root
     group: root
-    mode: 644
+    mode: "u=rw,go=r"
   notify: restart fail2ban
 
 - name: configure postfwd (postfwd.cf)
@@ -172,7 +172,7 @@
     dest: "/etc/postfix/postfwd.cf"
     owner: root
     group: postfw
-    mode: 640
+    mode: "u=rw,g=r,o="
   notify: restart postfwd
 
 - name: "configure postfwd (STARTUP: 1)"
@@ -194,7 +194,7 @@
     state: touch
     owner: syslog
     group: adm
-    mode: 640
+    mode: "u=rw,g=r,o="
 
 - name: restart services
   service: 
