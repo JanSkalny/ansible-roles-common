@@ -17,5 +17,8 @@
 - name: enable actions
   command: a2enmod actions
 
+- name: enable rewrite
+  command: a2enmod rewrite
+
 - name: restart apache service
   service: name=apache2 state=restarted
