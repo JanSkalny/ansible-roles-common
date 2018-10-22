@@ -1,0 +1,39 @@
+<Directory "/var/www/{{ document_root }}">
+  AllowOverride All
+  Order Allow,Deny
+  Allow from All
+  Options SymLinksIfOwnerMatch
+
+</Directory>
+
+{% if not www_domain_enable_ssl %}
+<VirtualHost *:80>
+  ServerName {{ www_domain }}
+  ServerAlias *.{{ www_domain }}
+  VirtualDocumentRoot /var/www/{{ document_root }}/
+
+  ErrorLog /var/log/apache2/{{ www_domain }}_error.log
+  CustomLog /var/log/apache2/{{ www_domain }}_access.log combined
+</VirtualHost>
+
+{% else %}
+<VirtualHost *:80>
+  ServerName {{ www_domain }}
+  Redirect / https://{{ www_domain }}
+</VirtualHost>
+
+<VirtualHost *:443>
+  ServerName {{ www_domain }}
+  ServerAlias *.{{ www_domain }}
+  VirtualDocumentRoot /var/www/{{ document_root }}/
+
+  ErrorLog /var/log/apache2/{{ www_domain }}_error.log
+  CustomLog /var/log/apache2/{{ www_domain }}_access.log combined
+
+  SSLEngine on
+  SSLCertificateFile {{ ssl_bundle_path }}/{{ www_domain }}/cert.pem
+  SSLCertificateKeyFile {{ ssl_bundle_path }}/{{ www_domain }}/privkey.pem
+  SSLCertificateChainFile {{ ssl_bundle_path }}/{{ www_domain }}/fullchain.pem
+</VirtualHost>
+{% endif %}
+

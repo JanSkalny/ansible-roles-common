@@ -1,0 +1,11 @@
+#www_domain: <Your owncloud domain>
+www_user: www-data
+www_domain_enable_ssl: yes
+#ssl_bundle_path: <Path to SSL certificates>
+document_root: owncloud # path relative to /var/www/
+
+#db_name: <Database name>
+#db_user: <Databse username>
+#db_pass: <Database password>
+
+#owncloud_pass: <Password for owncloud admin user>
