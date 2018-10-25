@@ -10,3 +10,10 @@
   template:
     src: 70-persistent-net.rules
     dest: /etc/udev/rules.d/70-persistent-net.rules
+
+- name: generate interfaces.d
+  template:
+    src: interface
+    dest: /etc/network/interfaces.d/{{ item.iface }}
+  with_items: "{{ networking }}"
+

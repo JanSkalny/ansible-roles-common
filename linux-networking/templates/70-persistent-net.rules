@@ -1,3 +1,5 @@
 {% for iface in networking %}
+{% if 'ether' in iface %}
 SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="{{iface.ether}}", NAME="{{iface.iface}}"
+{% endif %}
 {% endfor %}

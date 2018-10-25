@@ -1,0 +1,28 @@
+{% if 'address' in item and item.address != 'dhcp' %}
+auto {{ item.iface }}
+iface {{ item.iface }} inet static
+	address {{ item.address }}
+{% if 'gateway' in item %}
+	gateway {{ item.gateway }}
+{% endif %}
+{% if 'dns' in item %}
+	dns-nameservers {{ item.dns }}
+{% endif %}
+{% if 'dns-search' in item %}
+	dns-search {{ item['dns-search'] }}
+{% endif %}
+{% endif %}
+{% if 'address' in item and item.address == 'dhcp' %}
+auto {{ item.iface }}
+iface {{ item.iface }} inet dhcp
+{% endif %}
+{% if 'address' not in item %}
+auto {{ item.iface }}
+iface {{ item.iface }} inet manual
+{% endif %}
+{% if 'bridge_ports' in item %}
+	bridge_ports {{ item.bridge_ports }}
+	bridge_stp off
+	bridge_fd 0
+	bridge_maxwait 0
+{% endif %}
