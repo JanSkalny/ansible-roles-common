@@ -1,0 +1,107 @@
+- name: install dependencies
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - python-mysqldb
+    - php7.2-ldap
+  tags: install
+
+- name: add owncloud signing key
+  apt_key:
+    url: https://download.owncloud.org/download/repositories/production/Ubuntu_{{ ansible_distribution_version }}/Release.key
+    state: present
+  tags: install
+
+- name: add owncloud repository
+  apt_repository:
+    repo: deb http://download.owncloud.org/download/repositories/production/Ubuntu_{{ ansible_distribution_version }}/ /
+    update_cache: yes
+  tags: install
+
+- name: install owncloud
+  apt:
+    update_cache: yes
+    name: owncloud-files
+  tags: install
+
+- name: create db
+  mysql_db:
+    name: "{{ db_name }}"
+    state: present
+  tags: configure
+
+- name: create db user
+  mysql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_pass }}"
+    state: present
+    priv: '{{ db_name }}.*:ALL,GRANT'
+  tags: configure
+
+- name: configure apache vhost
+  template:
+    src: domain.conf.j2
+    dest: /etc/apache2/sites-available/{{ www_domain }}.conf
+  notify:
+    - restart apache
+  tags: configure
+
+- name: enable apache mods
+  apache2_module:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - proxy_fcgi
+    - setenvif
+  notify:
+    - restart apache
+  tags: configure
+
+- name: enable apache vhost
+  shell: a2ensite {{ www_domain }}
+  notify:
+    - restart apache
+  tags: configure
+
+- name: run initial owncloud configuration
+  shell: >
+    sudo -u {{ www_user }} php occ maintenance:install
+    --database "mysql" --database-name "{{ db_name }}"
+    --database-user "{{ db_user }}" --database-pass "{{ db_pass }}"
+    --admin-user "admin" --admin-pass "{{ owncloud_pass }}"
+  args:
+    chdir: "/var/www/{{ document_root }}"
+  tags: install
+
+- name: setup trusted domain for owncloud
+  shell: sudo -u {{ www_user }} php occ config:system:set trusted_domains 1 --value {{ www_domain }}
+  args:
+    chdir: "/var/www/{{ document_root }}"
+  tags: configure
+
+- name: configure owncloud cron job
+  cron:
+    name: Owncloud cronjob
+    user: www-data
+    minute: "*/15"
+    job: /usr/bin/php7.2 -f /var/www/owncloud/cron.php
+  tags: configure
+
+- name: configure owncloud db name
+  shell: sudo -u {{ www_user }} php occ config:system:set dbname --value {{ db_name }}
+  args:
+    chdir: "/var/www/{{ document_root }}"
+  tags: configure
+
+- name: configure owncloud db user
+  shell: sudo -u {{ www_user }} php occ config:system:set dbuser --value {{ db_user }}
+  args:
+    chdir: "/var/www/{{ document_root }}"
+  tags: configure
+
+- name: configure owncloud db password
+  shell: sudo -u {{ www_user }} php occ config:system:set dbpassword --value {{ db_pass }}
+  args:
+    chdir: "/var/www/{{ document_root }}"
+  tags: configure
+
