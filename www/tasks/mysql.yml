@@ -1,10 +1,9 @@
 
 - name: install packages
   apt: 
-    name: "{{ item }}"
-  with_items:
-  - mysql-server 
-  - mysqltuner
+    name:
+      - mysql-server 
+      - mysqltuner
  
 - name: configure mysqld
   copy:
