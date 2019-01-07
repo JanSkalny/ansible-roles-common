@@ -20,5 +20,8 @@
 - name: enable rewrite
   command: a2enmod rewrite
 
+- name: enable ssl
+  command: a2enmod ssl
+
 - name: restart apache service
   service: name=apache2 state=restarted
