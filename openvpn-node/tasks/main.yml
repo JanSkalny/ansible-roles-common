@@ -7,6 +7,9 @@
   template:
     src: "{{ 'server.ovpn' if is_server else 'client.ovpn'}}"
     dest: /etc/openvpn/{{ vpn_service_name }}.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=
   notify:
     - restart openvpn
 
