@@ -1,0 +1,19 @@
+- name: Install opvn
+  apt:
+    state: present
+    name: openvpn
+
+- name: Copy vpn config
+  template:
+    src: "{{ 'server.ovpn' if is_server else 'client.ovpn'}}"
+    dest: /etc/openvpn/{{ vpn_service_name }}.conf
+  notify:
+    - restart openvpn
+
+- name: Enable openvpn as a service
+  systemd:
+    name: openvpn@{{ vpn_service_name }}
+    enabled: true
+    state: started
+
+
