@@ -1,0 +1,4 @@
+- name: restart zabbix proxy
+  systemd:
+    name: zabbix-proxy
+    state: restarted
