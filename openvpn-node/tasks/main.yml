@@ -13,6 +13,28 @@
   notify:
     - restart openvpn
 
+- name: Upload "up" script
+  template:
+    src: "{{ up_script_local }}"
+    dest: "{{ up_script_remote }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=r,o=
+  when: up_script_local is defined
+  notify:
+    - restart openvpn
+
+- name: Upload "down" script
+  template:
+    src: "{{ down_script_local }}"
+    dest: "{{ down_script_remote }}"
+    owner: nobody
+    group: nogroup
+    mode: u=rwx,g=r,o=
+  when: down_script_local is defined
+  notify:
+    - restart openvpn
+
 - name: Enable openvpn as a service
   systemd:
     name: openvpn@{{ vpn_service_name }}

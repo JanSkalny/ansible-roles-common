@@ -8,6 +8,7 @@ use_tls_key: false            # defines whether tls PSK is used to harden initia
 # tls_key_path:               # needs to be filled on per-group basis if use_tls_key is enabled. Expects path to TLS PSK
 enable_compresion: yes
 vpn_cipher: AES-256-CBC
+script_security: 2
 
 #### Fill following values in host/group vars
 # vpn_server:                 # VPN server address
@@ -16,3 +17,9 @@ vpn_cipher: AES-256-CBC
 # vpn_cert:                   # Mutliline PEM encoded host certficate
 # priv_key:                   # Mutliline PEM encoded private key
 ####
+
+#### Optional parameters
+# up_script_local:            # Local path to "up" script, "up" script is executed on openvpn service start
+# up_script_remote:           # Path where "up" script should be stored on remote machine
+# down_script_local:          # Local path to "down" script, "down" script is executed on openvpn service stop
+# down_script_remote:         # Path where "down" script should be stored on remote machine
