@@ -1,0 +1,26 @@
+- name: install dependencies
+  package:
+    name: multipath-tools
+    state: present
+  tags: install
+
+- name: refresh iscsi targets
+  shell: iscsiadm -m node -R
+  tags: configure
+  #open_iscsi: 
+  #  show_nodes: yes
+  #  discover: yes
+
+- name: configure multipath.conf
+  template:
+      src: multipath.conf
+      dest: /etc/multipath.conf
+  register: multipath_conf
+  tags: configure
+
+- name: restart multipath
+  service:
+      name: multipath-tools
+      state: reloaded
+  when: multipath_conf.changed
+  tags: configure
