@@ -26,3 +26,7 @@ iface {{ item.iface }} inet manual
 	bridge_fd 0
 	bridge_maxwait 0
 {% endif %}
+{% if 'vlan-id' in item and 'vlan-iface' in item %}
+	pre-up ip link add link {{ item['vlan-iface'] }} name $IFACE type vlan id {{ item['vlan-id'] }}
+	post-down ip link del link dev $IFACE
+{% endif %}
