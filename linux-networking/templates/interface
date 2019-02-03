@@ -30,3 +30,6 @@ iface {{ item.iface }} inet manual
 	pre-up ip link add link {{ item['vlan-iface'] }} name $IFACE type vlan id {{ item['vlan-id'] }}
 	post-down ip link del link dev $IFACE
 {% endif %}
+{% if 'mtu' in item %}
+	mtu {{ item.mtu }}
+{% endif %}
