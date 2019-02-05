@@ -1,19 +1,33 @@
 - name: install basic networking tools
   package:
-    name: "{{item}}"
+    name: 
+    - bridge-utils
+    - vlan
     state: present
-  with_items:
-  - bridge-utils
-  - vlan
+  tags: install
+ 
+- name: remove resolvconf
+  package:
+    name: resolvconf
+    state: absent
+  register: removed_resolvconf
+  tags: install
 
 - name: generate 70-persistent-net.rules
   template:
     src: 70-persistent-net.rules
     dest: /etc/udev/rules.d/70-persistent-net.rules
+  tags: configure
 
 - name: generate interfaces.d
   template:
     src: interface
     dest: /etc/network/interfaces.d/{{ item.iface }}
   with_items: "{{ networking }}"
+  tags: configure
 
+- name: generate resolv.conf
+  template:
+    src: resolv.conf
+    dest: /etc/resolv.conf
+  tags: configure
