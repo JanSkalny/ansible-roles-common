@@ -1,0 +1,13 @@
+
+{% for zone in ns_master_zones %}
+zone "{{ zone }}" {
+  zone-statistics no;
+  type master;
+  file "master/{{ zone }}";
+};
+{% endfor %}
+
+statistics-channels {
+        inet 127.0.0.1 port 8653 allow { 127.0.0.1; };
+};
+

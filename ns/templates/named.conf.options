@@ -1,0 +1,31 @@
+options {
+  directory "/etc/bind";
+
+  forwarders {
+    {% for upstream in ns_upstream %}
+    {{ upstream }};
+    {% endfor %}
+  };
+
+  dnssec-validation auto;
+
+  auth-nxdomain no;
+  listen-on-v6 { any; };
+  listen-on { any; };
+
+  //match-clients { any; };
+
+  recursion yes;
+  allow-recursion {
+    127.0.0.1;
+    ::1;
+  {% for recursion in ns_recursion %}
+    {{ recursion }};
+  {% endfor %}
+  };
+  allow-query { any; };
+  allow-transfer { none; };
+  allow-update { none; };
+  allow-notify { none; };
+  allow-update-forwarding { none; };
+};

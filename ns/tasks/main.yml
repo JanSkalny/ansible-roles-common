@@ -1,0 +1,39 @@
+- name: install ns packages
+  apt: 
+    name: 
+    - bind9
+    - bind9utils
+  tags: install
+
+- name: configure bind
+  template: 
+    src: "{{ item }}"
+    dest: "/etc/bind/{{ item }}"
+  with_items:
+  - named.conf.local
+  - named.conf.options
+  notify: restart bind
+  tags: configure
+
+- name: prepare directories
+  file:
+      path: "{{ item }}"
+      state: directory
+      owner: bind 
+      group: bind 
+      mode: 0750
+  with_items:
+  - "/etc/bind/master/"
+  tags: install
+
+- name: generate zone files
+  template:
+    src: "{{ root_dir }}/files/ns-zones/{{ item }}"
+    dest: "/etc/bind/master/{{ item }}"
+    owner: bind 
+    group: bind 
+    mode: 0750
+  with_items: "{{ ns_master_zones }}"
+  notify: restart bind
+  tags: configure
+

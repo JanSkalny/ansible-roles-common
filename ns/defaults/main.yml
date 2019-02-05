@@ -1,0 +1,6 @@
+ns_upstream: 
+ - "8.8.8.8"
+ - "8.8.4.4"
+
+ns_master_zones: []
+ns_recursion: []
