@@ -1,0 +1,6 @@
+syslog_dir: "/opt/logs"
+syslog_bind: "0.0.0.0"
+syslog_max_connections: 500
+
+# override default from syslog-ng
+syslog_keep_hostname: "yes"

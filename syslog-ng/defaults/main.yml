@@ -1,0 +1,3 @@
+syslog_use_dns: "no"
+syslog_keep_hostname: "no"
+syslog_chain_hostnames: "no"

@@ -1,0 +1,22 @@
+- name: remove rsyslog
+  package: 
+    name: rsyslog
+    state: absent
+  tags: install
+
+- name: install syslog-ng
+  package: 
+    name: 
+    - syslog-ng-core 
+    - syslog-ng
+    - logrotate
+    state: present
+  tags: install
+  notify: restart syslog-ng
+
+- name: configure syslog-ng
+  template:
+    src: "options.conf"
+    dest: "/etc/syslog-ng/conf.d/options.conf"
+  tags: configure
+  notify: restart syslog-ng

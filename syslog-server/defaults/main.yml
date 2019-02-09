@@ -1,0 +1,3 @@
+syslog_dir: "/opt/logs"
+syslog_bind: "0.0.0.0"
+syslog_max_connections: 500

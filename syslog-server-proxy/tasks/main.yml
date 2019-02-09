@@ -1,6 +1,6 @@
 - name: configure syslog-ng
   template:
-    src: "remote.conf"
-    dest: "/etc/syslog-ng/conf.d/remote.conf"
+    src: "proxy.conf"
+    dest: "/etc/syslog-ng/conf.d/proxy.conf"
   tags: configure
   notify: restart syslog-ng
