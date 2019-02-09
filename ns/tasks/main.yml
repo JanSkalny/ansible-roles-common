@@ -1,5 +1,5 @@
 - name: install ns packages
-  apt: 
+  package: 
     name: 
     - bind9
     - bind9utils
