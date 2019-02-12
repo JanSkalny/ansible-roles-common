@@ -8,8 +8,3 @@
      name: "php{{item}}-fpm"
      state: restarted
    with_items: "{{php_versions}}"
-
- - name: restart mysql
-   service:
-     name: mysql
-     state: restarted

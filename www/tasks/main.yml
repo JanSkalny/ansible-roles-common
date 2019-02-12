@@ -8,5 +8,3 @@
 # install and secure apache
 - include_tasks: apache2.yml
 
-# install and configure mysql
-- include_tasks: mysql.yml
