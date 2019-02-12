@@ -1,32 +1,20 @@
-
-- name: install dependencies
+- name: install zabbix-agent and dependencies
   package:
-    name: "{{ item }}"
+    name: 
+    - python-mysqldb
+    - logtail
+    - sudo
+    - jq
+    - zabbix-agent
+    - zabbix-sender
     state: present
-  with_items:
-  - python-mysqldb
-  - logtail
-  - sudo
-  - jq
+  notify: restart zabbix-agent
 
 - name: make sure zabbix_agentd.d directory is present
   file:
     path: "/etc/zabbix/zabbix_agentd.d/"
     state: directory
     mode: 0755
-
-- name: zabbix apt source
-  import_tasks: ubuntu.yml
-  when: ansible_distribution == 'Ubuntu'
-
-- name: install zabbix packages
-  package:
-    name: "{{ item }}"
-    state: present
-  with_items:
-  - zabbix-agent
-  - zabbix-sender
-  notify: restart zabbix-agent
 
 - name: configure zabbix-agent
   template:

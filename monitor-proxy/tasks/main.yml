@@ -1,35 +1,11 @@
-- name: install dependencies
-  apt:
-    name: python-mysqldb
+- name: install zabbix-proxy and dependecies
+  package:
+    name:
+    - python-mysqldb
+    - zabbix-proxy-mysql
     state: present
 
-- name: check if zabbix-release is available
-  command: dpkg-query -W zabbix-release
-  register: res
-  ignore_errors: True
-
-- name: download zabbix release package
-  get_url:
-    url: "http://repo.zabbix.com/zabbix/3.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.4-1+{{ ansible_distribution_release }}_all.deb"
-    dest: "/tmp/zabbix-release.deb"
-  when: res is failed
-
-- name: install zabbix-release.deb
-  apt:
-    deb: "/tmp/zabbix-release.deb"
-  when: res is failed
-
-- name: apt-get update
-  apt:
-    update_cache: yes
-  when: res is failed
-
-- name: install zabbix proxy
-  apt:
-    name: zabbix-proxy-mysql
-    state: present
-
-- name: create zabbix proxy database
+- name: create zabbix database
   mysql_db:
     name: "{{ monitor_proxy_db_name }}"
     encoding: utf8
@@ -37,14 +13,14 @@
     state: present
   register: monitor_proxy_db_present
 
-- name: create zabbix proxy user
+- name: create zabbix user
   mysql_user:
     name: "{{ monitor_proxy_db_user }}"
     password: "{{ monitor_proxy_db_password }}"
     priv: "{{ monitor_proxy_db_name }}.*:ALL"
     state: present
 
-- name: import zabbix proxy database
+- name: import zabbix database
   mysql_db:
     name: "{{ monitor_proxy_db_name }}"
     state: import
@@ -53,54 +29,49 @@
 
 - name: create zabbix server CA file
   copy:
-    content: "{{ zabbix_server_ca_value }}"
-    dest: "{{ zabbix_server_ca_file }}"
+    content: "{{ monitor_server_ca_value }}"
+    dest: "/etc/zabbix/ca.crt"
     owner: root
     group: root
     mode: u=rw,g=r,o=r
-  when: proxy_tls_mode == "cert"
-  notify:
-    - restart zabbix proxy
+  when: monitor_proxy_tls_mode == "cert"
+  notify: restart zabbix-proxy
 
 - name: create zabbix proxy cert file
   copy:
-    content: "{{ proxy_tls_cert_value }}"
-    dest: "{{ proxy_tls_cert_file }}"
+    content: "{{ monitor_proxy_tls_cert_value }}"
+    dest: "/etc/zabbix/zabbix_proxy.crt"
     owner: root
     group: root
     mode: u=rw,g=r,o=r
-  when: proxy_tls_mode == "cert"
-  notify:
-    - restart zabbix proxy
+  when: monitor_proxy_tls_mode == "cert"
+  notify: restart zabbix-proxy
 
 - name: create zabbix proxy key file
   copy:
-    content: "{{ proxy_tls_key_value }}"
-    dest: "{{ proxy_tls_key_file }}"
+    content: "{{ monitor_proxy_tls_key_value }}"
+    dest: "/etc/zabbix/zabbix_proxy.key"
     owner: zabbix
     group: zabbix
     mode: u=rw,g=r,o=
-  when: proxy_tls_mode == "cert"
-  notify:
-    - restart zabbix proxy
+  when: monitor_proxy_tls_mode == "cert"
+  notify: restart zabbix-proxy
 
 - name: create proxy PSK file
   copy:
-    content: "{{ proxy_psk }}"
-    dest: "{{ proxy_psk_file }}"
+    content: "{{ monitor_proxy_psk }}"
+    dest: "/etc/zabbix/zabbix_proxy.psk"
     owner: zabbix
     group: zabbix
     mode: u=rw,g=r,o=
-  when: proxy_tls_mode == "psk"
-  notify:
-    - restart zabbix proxy
+  when: monitor_proxy_tls_mode == "psk"
+  notify: restart zabbix-proxy
 
 - name: configure zabbix-proxy
   template:
     src: zabbix_proxy.conf 
     dest: /etc/zabbix/zabbix_proxy.conf
-  notify:
-    - restart zabbix proxy
+  notify: restart zabbix-proxy
 
 - name: enable and start zabbix proxy service
   systemd:

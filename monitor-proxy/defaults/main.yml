@@ -1,36 +1,25 @@
 monitor_proxy_db_name: zabbix_proxy
 monitor_proxy_db_user: zabbix_proxy
-# monitor_proxy_db_password: password                    # CHANGE this in host variables
-active_proxy: true                                       # Zabbix proxy mode. Active (if true) or Passive modes are available
-zabbix_server: 127.0.0.1
-zabbix_server_port: 10051
-proxy_hostname: Zabbix proxy
-proxy_trapper_port: 10051
-proxy_log_file: /var/log/zabbix/zabbix_proxy.log
-proxy_log_file_size: 0                                   # 0 means no log rotation
-proxy_pid_file: /var/run/zabbix/zabbix_proxy.pid
-proxy_socket_dir: /var/run/zabbix
-proxy_trapper_file: /var/log/snmptrap/snmptrap.log
-proxy_timeout: 4
-proxy_external_scripts: /usr/lib/zabbix/externalscripts
-fping_location: /usr/bin/fping
-fping6_location: /usr/bin/fping6
-proxy_slow_query: 3000
+# monitor_proxy_db_password: password                     # CHANGE this in host variables
 
-proxy_tls_mode: unencrypted                              # Accepts 'unencrypted', 'psk' or 'cert'
+monitor_proxy_active: true                                # Zabbix proxy mode. Active (if true) or Passive modes are available
+
+#monitor_server_addr: x.x.x.x
+monitor_server_port: 10051
+
+monitor_proxy_hostname: "{{ inventory_hostname }}"
+
+monitor_proxy_tls_mode: unencrypted                       # Accepts 'unencrypted', 'psk' or 'cert'
+
 #### Fill these in host/group vars when 'cert' proxy_tls_mode is selected
-#zabbix_server_ca_file:                                  # Path to servers CA cert
-#zabbix_server_ca_value:                                 # PEM encoded CA cert content
-#zabbix_server_cert_issuer:                              # Allowed servers certificate issuer
-#zabbix_server_cert_subject:                             # Allowed servers certificate subject
-#proxy_tls_cert_file:                                    # Path to proxy certificate
-#proxy_tls_cert_value:                                   # PEM encoded certificate content
-#proxy_tls_key_file:                                     # Path to proxy key file
-#proxy_tls_key_value:                                    # PEM encoded proxy key content
+#monitor_server_ca_value:                                 # PEM encoded CA cert content
+#monitor_server_cert_issuer:                              # Allowed servers certificate issuer
+#monitor_server_cert_subject:                             # Allowed servers certificate subject
+#monitor_proxy_tls_cert_value:                            # PEM encoded certificate content
+#monitor_proxy_tls_key_value:                             # PEM encoded proxy key content
 ####
 
 #### Fill these in host/group vars when 'psk' proxy_tls_mode is selected
-#proxy_psk_identity:                                     # UNIQUE identity of proxy. Transmitted over network unencrypted!
-#proxy_psk_file:                                         # Path to file with secret PSK
-#proxy_psk:                                              # Content of secret PSK
+#monitor_proxy_psk_identity:                              # UNIQUE identity of proxy. Transmitted over network unencrypted!
+#monitor_proxy_psk:                                       # Content of secret PSK
 ####

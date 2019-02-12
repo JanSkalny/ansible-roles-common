@@ -18,4 +18,3 @@
   apt:
     update_cache: yes
   when: res is failed
-

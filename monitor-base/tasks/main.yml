@@ -1,0 +1,4 @@
+- name: zabbix apt source
+  import_tasks: ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'
+
