@@ -1,0 +1,62 @@
+- name: install elasticsearch
+  package:
+    name: elasticsearch
+    state: present
+  tags: install
+
+- name: configure elastic
+  template:
+    src: "{{ item }}"
+    dest: "/etc/elasticsearch/{{ item }}"
+  with_items:
+  - elasticsearch.yml
+  - jvm.options
+  notify: restart elasticsearch
+  tags: configure
+
+- name: remove limitations on memory
+  template:
+    src: "limits.conf"
+    dest: "/etc/security/limits.d/elasticsearch.conf"
+  notify: restart elasticsearch
+  tags: configure
+
+- name: load limits on session login
+  lineinfile:
+    path: "/etc/pam.d/common-session"
+    line: "session required pam_limits.so"
+  notify: restart elasticsearch
+  tags: configure
+
+- name: create data storage
+  file:
+    path: "{{ elastic.data_path }}"
+    owner: elasticsearch
+    state: directory
+  notify: restart elasticsearch
+  tags: configure
+
+- name: prepare systemd override directory
+  file:
+    path: "/etc/systemd/system/elasticsearch.service.d"
+    state: directory
+  tags: configure
+
+- name: configure memlock
+  copy:
+    src: "override.conf"
+    dest: "/etc/systemd/system/elasticsearch.service.d/override.conf"
+  notify:
+  - reload systemctl
+  - restart elasticsearch
+  tags: configure
+
+#- name: change mem limits MAX_LOCKED_MEMORY=unlimited and LimitMEMLOCK=infinity
+
+- name: enable services
+  service:
+    name: elasticsearch
+    enabled: yes
+    state: started
+  tags: configure, install
+

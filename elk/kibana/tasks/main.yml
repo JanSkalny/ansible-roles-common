@@ -1,9 +1,3 @@
-- name: install dependencies
-  package: 
-    name: apt-transport-https
-    state: present
-  tags: install
-
 - name: install kibana
   package:
     name: kibana
@@ -16,4 +10,11 @@
     dest: "/etc/kibana/kibana.yml"
   notify: restart kibana
   tags: configure
+
+- name: enable services
+  service:
+    name: kibana
+    enabled: yes
+    state: started
+  tags: configure, install
 

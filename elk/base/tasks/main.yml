@@ -1,18 +1,21 @@
-- name: establish https transport for apt
+- name: install dependencies
   package:
-    name: apt-transport-https
+    name:
+    - apt-transport-https
+    - openjdk-8-jre-headless
     state: present
   tags: install
 
 - name: establish elasticsearch repo key
-  apt_key: 
+  apt_key:
     url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+    id: D27D666CD88E42B4
     state: present
   tags: install
 
 - name: establish elasticsearch repo
   copy:
-    src: elastic-repo.list 
+    src: elastic-repo.list
     dest: /etc/apt/sources.list.d/elastic-6.x.list
     mode: preserve
   register: apt_update

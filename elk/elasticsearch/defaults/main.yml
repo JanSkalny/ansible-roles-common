@@ -1,0 +1,20 @@
+elastic:
+  bind: "127.0.0.1"
+  port: "9200"
+
+  #XXX: cluster_name: "default"
+  node_name: "{{ inventory_hostname }}"
+
+  node_master: true
+  node_data: true
+  node_ingest: true
+  node_remote_cluster: false
+
+  minimum_master_nodes: 1
+  hosts:
+  - "127.0.0.1"
+
+  heap_space: "1g"
+
+  log_path: "/var/log/elasticsearch"
+  data_path: "/var/lib/elasticsearch"

@@ -1,0 +1,23 @@
+cluster:
+  name: "{{ elastic.cluster_name }}"
+  remote.connect: {{ elastic.node_remote_cluster }}
+
+node:
+  name: "{{ elastic.node_name }}"
+  master: {{ elastic.node_master }}
+  data: {{ elastic.node_data }}
+  ingest: {{ elastic.node_ingest }}
+
+discovery.zen:
+  ping.unicast.hosts: {{ elastic.hosts | to_json }}
+  minimum_master_nodes: {{ elastic.minimum_master_nodes }}
+
+path:
+  logs: "{{ elastic.log_path }}"
+  data: "{{ elastic.data_path }}"
+
+bootstrap.memory_lock: true
+
+network.host: "{{ elastic.bind }}"
+http.port: "{{ elastic.port }}"
+

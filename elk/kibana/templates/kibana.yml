@@ -1,4 +1,4 @@
-server.host: "{{ kibana.host }}"
+server.host: "{{ kibana.bind }}"
 server.port: "{{ kibana.port }}"
 
 # Enables you to specify a path to mount Kibana at if you are running behind a proxy. This only affects
@@ -6,7 +6,7 @@ server.port: "{{ kibana.port }}"
 # to Kibana. This setting cannot end in a slash.
 #server.basePath: ""
 #server.name: "your-hostname"
-elasticsearch.url: "http://{{ elastic.host }}:{{ elastic.port }}"
+elasticsearch.url: "{{ kibana.elasticsearch_url }}"
 #elasticsearch.username: "user"
 #elasticsearch.password: "pass"
 #server.ssl.enabled: false
@@ -19,4 +19,3 @@ elasticsearch.url: "http://{{ elastic.host }}:{{ elastic.port }}"
 #logging.silent: false
 #logging.quiet: false
 #logging.verbose: false
-
