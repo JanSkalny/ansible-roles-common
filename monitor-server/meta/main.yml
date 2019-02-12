@@ -1,3 +1,0 @@
-dependencies:
- - role: monitor-base
- - role: www
