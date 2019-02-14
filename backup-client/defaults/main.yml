@@ -3,3 +3,4 @@ backup_host: "{{ inventory_hostname }}"
 backup_group: "netvor"
 backup_dir: "netvor-dir"
 backup_sql_user: "backup"
+backup_sql_dump_dir: /var/backups/mysql/
