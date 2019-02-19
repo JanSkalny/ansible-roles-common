@@ -2,6 +2,7 @@
   package:
     name:
     - python-mysqldb
+    - python3-mysqldb
     - zabbix-proxy-mysql
     state: present
 
