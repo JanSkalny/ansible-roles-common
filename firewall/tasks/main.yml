@@ -1,3 +1,8 @@
+- name: make sure we have iptables
+  package:
+    name: iptables
+    state: present
+
 - name: install fw.sh
   copy: 
     src: "{{root_dir}}/files/firewall/{{ inventory_hostname }}"
