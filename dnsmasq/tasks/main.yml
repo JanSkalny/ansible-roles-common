@@ -1,0 +1,19 @@
+ - name: install dnsmasq
+   package:
+       name: dnsmasq
+       state: present
+   tags: install
+
+ - name: configure dnsmasq
+   template:
+       src: dnsmasq.conf
+       dest: /etc/dnsmasq.d/server.conf
+   tags: configure
+   notify: restart dnsmasq
+
+ - name: enable dnsmasq service
+   service:
+       name: dnsmasq
+       enabled: yes
+       state: started
+   tags: configure
