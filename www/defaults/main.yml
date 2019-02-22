@@ -3,12 +3,12 @@ php_versions:
 default_php_version: 7.2
 
 # PHP configuration variables (php.ini)
-php_post_max_size: "32M"
-php_upload_max_filesize: "10M"
+php_post_max_size: "64M"
+php_upload_max_filesize: "50M"
 php_display_errors: "Off"
 php_file_uploads: "On"
-php_max_input_time: 60
-php_max_execution_time: 180
+php_max_input_time: 300
+php_max_execution_time: 300
 php_memory_limit: "512M" 
 # or -1 for unlimited
 php_disable_functions: "pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,"
