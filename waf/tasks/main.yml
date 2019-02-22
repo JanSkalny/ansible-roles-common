@@ -9,6 +9,8 @@
   - varnish 
   - pkgconf
   when: ansible_os_family == 'Debian'
+  tags: 
+  - install
 
 - name: centos / redhat enterprise
   import_tasks: centos.yml
@@ -25,24 +27,35 @@
   - haproxy
   - python-docutils
   - git
+  tags: 
+  - install
 
 - name: create varnish dir
   file:
     path: "/opt/varnish"
     state: directory
+  tags: 
+  - install
 
-- name: checkout varnish
+- name: checkout vsf
   git:
     repo: "https://github.com/comotion/VSF.git"
     force: yes
-    update: no
+    update: yes
+    version: "master"
     dest: "/opt/varnish"
   register: git_clone_vsf
+  tags:
+  - install
+  - update
 
 - name: build varnish
   make:
     chdir: "/opt/varnish"
   when: git_clone_vsf.changed
+  tags:
+  - install
+  - update
 
 - name: install varnish
   make:
@@ -50,17 +63,9 @@
     target: "install"
   when: git_clone_vsf.changed
   notify: restart varnish
-
-- name: generate letsencrypt certificates for each https enabled domain
-  include_role:
-    name: letsencrypt-want 
-  vars:
-    domain: "{{ item }}"
-    aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
-  with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
-  tags: 
-  - configure
-  - letsencrypt-want
+  tags:
+  - install
+  - update
 
 - name: configure varnish
   template:
@@ -105,6 +110,17 @@
   service:
     name: "varnishlog"
     enabled: yes
+
+- name: generate letsencrypt certificates for each https enabled domain
+  include_role:
+    name: common/letsencrypt-want 
+  vars:
+    domain: "{{ item }}"
+    aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
+  with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
+  tags: 
+  - configure
+  - letsencrypt-want
 
 - name: configure haproxy
   template:
