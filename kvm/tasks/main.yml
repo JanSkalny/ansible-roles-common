@@ -8,6 +8,8 @@
   - unar
   - bridge-utils
   - vlan
+  - irqbalance
+  - kpartx
 
 - name: configure qemu-kvm
   template:
