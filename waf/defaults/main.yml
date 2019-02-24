@@ -1,2 +1,6 @@
 waf_directors: []
 waf_letsencrypt: true
+
+waf_vsf_rules:
+  - dos.vcl
+  - rce-remote-exec.vcl

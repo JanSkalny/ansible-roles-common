@@ -7,14 +7,23 @@
    copy:
      src: "{{ ca_dir }}/ca/certs/chained-ca.sha256.4096.crt"
      dest: "{{ dest_dir }}/{{ ca_name }}"
+   when: ca_name is defined and ca_name != ""
 
  - name: deploy server cert
    copy:
      src: "{{ ca_dir }}/servers/certs/{{ hostname }}.sha256.4096.crt"
      dest: "{{ dest_dir }}/{{ crt_name }}"
+   when: crt_name is defined and crt_name != ""
 
  - name: deploy server key
    copy:
      src: "{{ ca_dir }}/servers/keys/{{ hostname }}.sha256.4096.key"
      dest: "{{ dest_dir }}/{{ key_name }}"
+   when: key_name is defined and key_name != ""
+
+ - name: deploy server pem
+   copy:
+     src: "{{ ca_dir }}/servers/pem/{{ hostname }}.pem"
+     dest: "{{ dest_dir }}/{{ pem_name }}"
+   when: pem_name is defined and pem_name != ""
 
