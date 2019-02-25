@@ -6,6 +6,11 @@
     line: "@/etc/bacula/hosts/{{backup_client}}.conf"
   notify: restart bacula-dir
 
+- name: create host config directory
+  file:
+    path: /etc/bacula/hosts/
+    state: directory
+
 - name: generate host configuration
   template:
     src: host.conf
