@@ -1,0 +1,8 @@
+- name: restart bacula services
+  service:
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+    - bacula-sd
+    - bacula-fd
+    - bacula-director

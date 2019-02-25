@@ -9,3 +9,46 @@
   - bacula-sd-mysql
   - bacula-fd
   - bacula-client
+
+- name: setup mysql user
+  mysql_user:
+    name: bacula
+    password: "{{ bacula_db_passwd }}"
+  notify: restart bacula services
+
+- name: copy bacula director settings
+  template:
+    src: bacula-dir.conf
+    dest: /etc/bacula/bacula-dir.conf
+    owner: bacula
+    group: bacula
+    mode: u=rw,g=r,o=
+  notify: restart bacula services
+
+- name: copy bacula storage daemon settings
+  template:
+    src: bacula-sd.conf
+    dest: /etc/bacula/bacula-sd.conf
+    owner: bacula
+    group: bacula
+    mode: u=rw,g=r,o=
+  notify: restart bacula services
+
+- name: copy bacula file daemon settings
+  template:
+    src: bacula-fd.conf
+    dest: /etc/bacula/bacula-fd.conf
+    owner: bacula
+    group: bacula
+    mode: u=rw,g=r,o=
+  notify: restart bacula services
+
+- name: copy bacula console settings
+  template:
+    src: bconsole.conf
+    dest: /etc/bacula/bconsole.conf
+    owner: bacula
+    group: bacula
+    mode: u=rw,g=r,o=
+  notify: restart bacula services
+
