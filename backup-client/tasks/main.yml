@@ -33,6 +33,15 @@
     mode: 0750
   when: backup_sql_password is defined
 
+- name: create gitlab backup script
+  template:
+    src: "make_gitlab_backup.sh"
+    dest: "/etc/bacula/scripts/make_gitlab_backup.sh"
+    owner: "root"
+    group: "root"
+    mode: 0750
+  when: backup_gitlab_dir is defined
+
 - name: create mysql backup password
   mysql_user:
     name: "{{ backup_sql_user }}"
