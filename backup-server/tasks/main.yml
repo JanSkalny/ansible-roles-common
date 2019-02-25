@@ -1,4 +1,3 @@
-
 - name: install bacula and dependencies
   package: 
     name: "{{ item }}" 
@@ -51,4 +50,22 @@
     group: bacula
     mode: u=rw,g=r,o=
   notify: restart bacula services
+
+- name: create ssl directory
+  file:
+    path: /etc/bacula/ssl
+    state: directory
+
+- name: setup ssl certs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/bacula/ssl
+    owner: bacula
+    group: bacula
+    mode: u=rw,g=rw,o=
+  notify: restart bacula services
+  with_items:
+    - "{{ root_dir }}/files/backup/{{ backup_group }}/{{ inventory_hostname }}.pem"
+    - "{{ root_dir }}/files/backup/{{ backup_group }}/{{ inventory_hostname }}.crt"
+    - "{{ root_dir }}/files/backup/{{ backup_group }}/ca.crt"
 
