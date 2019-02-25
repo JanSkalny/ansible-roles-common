@@ -1,0 +1,4 @@
+qperf_version: "0.4.11"
+qperf_checksum: "sha256:b0ef2ffe050607566d06102b4ef6268aad08fdc52898620d429096e7b0767e75"
+qperf_archive: "v{{ qperf_version }}.tar.gz"
+qperf_dir: "qperf-{{ qperf_version }}" 

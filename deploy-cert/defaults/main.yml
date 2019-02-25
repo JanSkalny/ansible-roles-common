@@ -1,0 +1,5 @@
+ca_dir: "{{ root_dir }}/storage/ansible-simple-pki/{{ default_ca_host }}"
+ca_name: "ca.crt"
+crt_name: "server.crt"
+key_name: "server.key"
+hostname: "{{ inventory_hostname }}" 

@@ -1,0 +1,22 @@
+dnsmasq_domain: "{{ net_domain }}"
+dnsmasq_ifaces: []
+
+
+#dnsmasq_ifaces: 
+# - iface: lan0
+#   dhcp:
+#     start: 192.168.1.100
+#     end: 192.168.1.199
+#     gw: 192.168.1.1
+#
+# - iface: dmz0
+#   comment: "dns only interface"
+#
+# - iface: guest0
+#   dhcp: 
+#     start: 10.0.0.10
+#     end: 10.0.0.254
+#     gw: 10.0.0.1
+#     lease_time: 1h
+#     dns: 8.8.8.8
+#

@@ -1,42 +1,40 @@
 - name: install usefull tools
-  apt: 
-    name: "{{item}}" 
+  package: 
+    name:
+    - vim
+    - tcpdump
+    - rsync
+    - screen
+    - bc
+    - debian-keyring
+    - ubuntu-keyring
+    - tcptraceroute
+    - nmap
+    - patch
+    - iptraf
+    - curl
+    - wget
+    - cron
+    - make
+    - mtr-tiny
+    - iotop
+    - sysstat
+    - whois
+    - lynis
+    - links
+    - jq
+    - vlan
+    - dnsutils
+    #- netsniff-ng
+    #- python-pip
+    #- python3-pip
     state: present
-  with_items:
-  - vim-tiny
-  - tcpdump
-  - rsync
-  - screen
-  - bc
-  - debian-keyring
-  - ubuntu-keyring
-  - tcptraceroute
-  - nmap
-  - patch
-  - iptraf
-  - curl
-  - wget
-  - cron
-  - make
-  - mtr-tiny
-  - iotop
-  - sysstat
-  - whois
-  - lynis
-  - links
-  - jq
-  - vlan
-  - dnsutils
-  #- netsniff-ng
-  #- python-pip
-  #- python3-pip
   tags: install
 
 - name: install usefull tools (non-bionic)
-  apt: 
-    name: "{{item}}" 
+  package: 
+    name:
+    - openssl-blacklist
     state: present
-  with_items:
-  - openssl-blacklist
   when: ansible_distribution_version < '18.04'
   tags: install

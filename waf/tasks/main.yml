@@ -1,14 +1,14 @@
 
 - name: install packages (debian)
-  apt: 
-    name: "{{ item }}"
+  package: 
+    name: 
+    - libvarnishapi-dev 
+    - build-essential
+    - varnish 
+    - pkgconf
     state: present
-  with_items:
-  - libvarnishapi-dev 
-  - build-essential
-  - varnish 
-  - pkgconf
   when: ansible_os_family == 'Debian'
+  tags: install
 
 - name: centos / redhat enterprise
   import_tasks: centos.yml
@@ -16,33 +16,41 @@
  
 - name: install packages (common)
   package: 
-    name: "{{ item }}"
+    name: 
+    - supervisor
+    - autoconf 
+    - libtool
+    - haproxy
+    - python-docutils
+    - git
     state: present
-  with_items:
-  - supervisor
-  - autoconf 
-  - libtool
-  - haproxy
-  - python-docutils
-  - git
+  tags: install
 
 - name: create varnish dir
   file:
     path: "/opt/varnish"
     state: directory
+  tags: install
 
-- name: checkout varnish
+- name: checkout vsf
   git:
     repo: "https://github.com/comotion/VSF.git"
     force: yes
-    update: no
+    update: yes
+    version: "master"
     dest: "/opt/varnish"
   register: git_clone_vsf
+  tags:
+  - install
+  - update
 
 - name: build varnish
   make:
     chdir: "/opt/varnish"
   when: git_clone_vsf.changed
+  tags:
+  - install
+  - update
 
 - name: install varnish
   make:
@@ -50,17 +58,24 @@
     target: "install"
   when: git_clone_vsf.changed
   notify: restart varnish
+  tags:
+  - install
+  - update
 
-- name: generate letsencrypt certificates for each https enabled domain
-  include_role:
-    name: letsencrypt-want 
-  vars:
-    domain: "{{ item }}"
-    aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
-  with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
-  tags: 
-  - configure
-  - letsencrypt-want
+- name: prepare systemd override directory
+  file:
+    path: "/etc/systemd/system/varnish.service.d"
+    state: directory
+  tags: configure
+
+- name: configure varnish systemd override
+  copy:
+    src: "varnish-override.conf"
+    dest: "/etc/systemd/system/varnish.service.d/override.conf"
+  notify: 
+  - reload systemctl
+  - restart varnish
+  tags: configure
 
 - name: configure varnish
   template:
@@ -72,26 +87,26 @@
   - letsencrypt.vcl
   tags: configure
   
-- name: list all local varnish rules
-  connection: local
-  become: no
-  changed_when: false 
-  check_mode: no
-  command: "ls \"{{ role_path }}/files/rules/\""
-  register: varnish_rules
-  tags: configure
+#- name: list all local varnish rules
+#  connection: local
+#  become: no
+#  changed_when: false 
+#  check_mode: no
+#  command: "ls \"{{ role_path }}/files/rules/\""
+#  register: varnish_rules
+#  tags: configure
 
 - name: copy varnish rules
   copy:
     src: "rules/{{ item }}"
     dest: "/etc/varnish/security/rules/{{ item }}"
-  with_items: "{{ varnish_rules.stdout_lines }}"
+  with_items: "{{ waf_vsf_rules }}"
   notify: restart varnish
   tags: configure
 
 - name: configure vsf
   vars:
-    waf_include_rules: "{{ varnish_rules.stdout_lines }}"
+    waf_include_rules: "{{ waf_vsf_rules }}"
   template:
     src: "{{ item }}"
     dest: "/etc/varnish/security/{{ item }}"
@@ -105,6 +120,18 @@
   service:
     name: "varnishlog"
     enabled: yes
+
+- name: generate letsencrypt certificates for each https enabled domain
+  include_role:
+    name: common/letsencrypt-want 
+  vars:
+    domain: "{{ item }}"
+    aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
+  with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
+  when: waf_letsencrypt
+  tags: 
+  - configure
+  - letsencrypt-want
 
 - name: configure haproxy
   template:

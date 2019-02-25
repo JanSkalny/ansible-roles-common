@@ -26,6 +26,11 @@ backend {{backend.name}} {
 }
 {% endfor %}
 
+## haproxy to ssl backends
+backend tls {
+  .host = "127.0.0.1";
+  .port = "10444";
+}
 
 sub vcl_init {
 ## directors
@@ -53,7 +58,7 @@ sub vcl_recv {
 
   # normalize request domain (or not :D)
   ###set req.http.Host = regsub(req.http.Host, "^www\.", "");
-  set req.http.Host = regsub(req.http.Host, ":80$", "");
+  set req.http.Host = regsub(req.http.Host, ":[0-9]*$", "");
 
   # SSL vs non-SSL connection
   if (client.ip == "127.0.0.1" || client.ip == "::1") {
@@ -61,22 +66,34 @@ sub vcl_recv {
     set req.http.X-Forwarded-For = regsub(req.http.X-Forwarded-For, "^([^,]+),?.*$", "\1");
   } else {
     # use clients IP address
-	unset req.http.X-Forwarded-For;
+    unset req.http.X-Forwarded-For;
     set req.http.X-Forwarded-For = regsub(client.ip, "^([^,]+),?.*$", "\1");
-    # allow redirection to HTTPS
     set req.http.X-Redir-Url = "https://" + req.http.host + req.url;
   }
 
 {% for domain in waf_domains %}
+{% with %}
+{% set backend = ( waf_backends | selectattr("name", "match", domain.backend) | first ) %}
+  # domain={{ domain }}
+  # backend={{ backend }}
   if (req.http.host ~ "^(www.)?{{ domain.domain }}$") {
 {% if 'https' in domain and domain.https %}
+    {% if 'https_redirect' not in backend or backend.https_redirect %}
     if (req.http.X-Redir-Url) {
       return(synth(750, "Redirect to HTTPS"));
     }
-{% endif %}
+    {% endif %}
+    {% if 'https' not in backend or backend.https %} 
+    set req.backend_hint = tls;
+    {% else %}
     set req.backend_hint = {{ domain.backend }};
+    {% endif %}
+{% else %}
+    set req.backend_hint = {{ domain.backend }};
+{% endif %}
     return(pass);
   }
+{% endwith %}
 {% endfor %}
 
   return (synth(404, "Unknown host"));

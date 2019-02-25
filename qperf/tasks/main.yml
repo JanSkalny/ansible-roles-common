@@ -1,0 +1,40 @@
+# apt-get install make gcc libc-dev automake
+# cd /opt/
+# wget https://github.com/linux-rdma/qperf/archive/v0.4.11.tar.gz
+# tar xvf v0.4.11.tar.gz
+# cd qperf-0.4.11/
+# ./autogen.sh
+# ./configure
+# make
+# 
+
+- name: install qperf build dependencies
+  package:
+    name: 
+    - make 
+    - gcc 
+    - libc-dev 
+    - automake
+
+- name: download qperf source
+  get_url:
+    url: "https://github.com/linux-rdma/qperf/archive/{{ qperf_archive }}"
+    dest: "/tmp/{{ qperf_archive }}"
+    checksum: "{{ qperf_checksum }}"
+
+- name: unpack source
+  unarchive:
+    src: "/tmp/{{ qperf_archive }}"
+    dest: "/opt/"
+    remote_src: yes
+
+- name: autogen and configure
+  shell: "./autogen.sh && ./configure"
+  args:
+    chdir: "/opt/{{ qperf_dir }}/"
+
+- name: make install
+  make: 
+    chdir: "/opt/{{ qperf_dir }}/"
+    target: install
+
