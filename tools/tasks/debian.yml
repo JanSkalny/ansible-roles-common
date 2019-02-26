@@ -24,6 +24,7 @@
     - links
     - jq
     - vlan
+    - conntrack
     - dnsutils
     #- netsniff-ng
     #- python-pip
