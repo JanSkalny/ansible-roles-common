@@ -3,7 +3,7 @@
 # Simple mysql bacula pre-backup script
 # Last edit: 2016-10-26
 
-DIR={{ backup_sql_dump_dir }}
+DIR={{ backup_sql_dump_dir }}/mysql
 MYSQLARGS="-u {{ backup_sql_user }} -p{{ backup_sql_password }}"
 
 mkdir -p $DIR
