@@ -1,4 +1,4 @@
-- name: install bacula and dependencies
+- name: install bacula and dependencies (pre-bionic)
   package: 
     name: "{{ item }}" 
     state: present
@@ -8,6 +8,20 @@
   - bacula-sd-mysql
   - bacula-fd
   - bacula-client
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release != 'bionic'
+
+- name: install bacula and dependencies (bionic)
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - mysql-server
+  - bacula-director-mysql
+  - bacula-server
+  - bacula-sd
+  - bacula-fd
+  - bacula-client
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'bionic'
 
 - name: setup mysql user
   mysql_user:
