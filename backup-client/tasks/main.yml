@@ -1,4 +1,3 @@
-
 - name: install bacula-fd
   package: 
     name: bacula-fd 
@@ -51,4 +50,13 @@
     login_user: "{{ mysql_user }}"
     login_password: "{{ mysql_password }}"
   when: backup_sql_password is defined
+
+- name: create elasticsearch backup script
+  template:
+    src: "make_elastic_backup.sh"
+    dest: "/etc/bacula/scripts/make_elastic_backup.sh"
+    owner: "root"
+    group: "root"
+    mode: 0750
+  when: backup_elastic_repository is defined
 
