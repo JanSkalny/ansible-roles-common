@@ -7,7 +7,7 @@
     - jq
     - zabbix-agent
     - zabbix-sender
-    state: present
+    state: latest
   notify: restart zabbix-agent
 
 - name: make sure zabbix_agentd.d directory is present
