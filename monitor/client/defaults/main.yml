@@ -4,3 +4,37 @@ monitor_sql_user: "zabbix"
 monitor_varnish: false
 ntp_servers: 
  - "pool.ntp.org"
+
+monitor_user_parameters:
+ - bind.conf
+ - mdraid.conf
+ - apache.conf
+ - mysql.conf
+ - postfix.conf
+ - kvm.conf
+ - apcupsd.conf
+ - smartctl.conf
+ - bacula.conf
+ - hplog.conf
+ - hpacucli.conf
+ - ssacli.conf
+ - openvpn.conf
+ - vfs.conf
+ - sockstat.conf
+ - varnish.conf
+ - ntp.conf
+
+monitor_scripts:
+ - zabbix_mdraid.sh
+ - zabbix_bind_stats.py
+ - zabbix_check_apache
+ - zabbix_kvm.py
+ - zabbix_postfix.sh
+ - zabbix_smartctl.sh
+ - zabbix_hplog.sh
+ - zabbix_hpacucli.sh
+ - zabbix_ssacli.sh
+ - zabbix_openvpn.sh
+ - zabbix_bacula_discovery.sh
+ - zabbix_bacula_check_job.sh
+ - zabbix_varnish_cache.py

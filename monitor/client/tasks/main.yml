@@ -32,40 +32,13 @@
   notify: restart zabbix-agent
 
 - name: custom user parameters
-  copy:
-    src: "conf/{{ item }}"
-    dest: "/etc/zabbix/zabbix_agentd.d/{{ item }}"
-    owner: "root"
-    group: "zabbix"
-    mode: 0640
-  with_items:
-  - bind.conf
-  - mdraid.conf
-  - apache.conf
-  - mysql.conf
-  - postfix.conf
-  - kvm.conf
-  - apcupsd.conf
-  - smartctl.conf
-  - bacula.conf
-  - hplog.conf
-  - hpacucli.conf
-  - ssacli.conf
-  - openvpn.conf
-  - vfs.conf
-  - sockstat.conf
-  - varnish.conf
-  notify: restart zabbix-agent
-
-- name: custom user parameters (from templates)
   template:
     src: "{{ item }}"
     dest: "/etc/zabbix/zabbix_agentd.d/{{ item }}"
     owner: "root"
     group: "zabbix"
     mode: 0640
-  with_items:
-  - "ntp.conf"
+  with_items: "{{ monitor_user_parameters }}"
   notify: restart zabbix-agent
 
 - name: monitoring scripts
@@ -74,20 +47,7 @@
     dest: "/usr/local/bin/{{ item }}"
     owner: "root"
     mode: 0755
-  with_items:
-  - zabbix_mdraid.sh
-  - zabbix_bind_stats.py
-  - zabbix_check_apache
-  - zabbix_kvm.py
-  - zabbix_postfix.sh
-  - zabbix_smartctl.sh
-  - zabbix_hplog.sh
-  - zabbix_hpacucli.sh
-  - zabbix_ssacli.sh
-  - zabbix_openvpn.sh
-  - zabbix_bacula_discovery.sh
-  - zabbix_bacula_check_job.sh
-  - zabbix_varnish_cache.py
+  with_items: "{{ monitor_scripts }}"
   notify: restart zabbix-agent
 
 - name: make sure zabbix home directory is present
