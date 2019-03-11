@@ -38,3 +38,10 @@ iface {{ item.iface }} inet manual
 	up route add -net {{ route.net }} gw {{ route.via }} dev {{ item.iface }}
 {% endfor %}
 {% endif %}
+{% if 'up' in item %}
+	up {{ item.up }}
+{% endif %}
+{% if 'down' in item %}
+	down {{ item.down }}
+{% endif %}
+
