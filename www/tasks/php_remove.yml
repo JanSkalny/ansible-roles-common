@@ -1,0 +1,7 @@
+
+- name: remove any obsolete packages
+  apt: 
+    name: "php{{ php_version }}*"
+    state: absent
+    purge: yes
+

@@ -1,6 +1,12 @@
 php_versions:
-  - 7.2
-default_php_version: 7.2
+ - 7.3
+default_php_version: 7.3
+
+php_remove_versions:
+ - 5.6
+ - 7.0
+ - 7.1
+ - 7.2
 
 # PHP configuration variables (php.ini)
 php_post_max_size: "64M"

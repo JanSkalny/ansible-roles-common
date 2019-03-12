@@ -5,6 +5,13 @@
     loop_var: php_version
   with_items: "{{ php_versions }}"
 
+# remove old php version
+- include_tasks: php_remove.yml 
+  loop_control:
+    loop_var: php_version
+  with_items: "{{ php_remove_versions }}"
+
+
 # install and secure apache
 - include_tasks: apache2.yml
 

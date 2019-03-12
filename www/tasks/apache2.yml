@@ -72,6 +72,7 @@
   - php7.0
   - php7.1
   - php7.2
+  - php7.3
   - autoindex
   notify: restart apache2
 
