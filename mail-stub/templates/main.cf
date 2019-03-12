@@ -11,34 +11,22 @@ readme_directory = no
 {% if mail_enable_tls %}
 smtp_use_tls = yes
 smtp_tls_note_starttls_offer = yes
-smtp_tls_cert_file=/etc/letsencrypt/live/{{ mail_domain }}/fullchain.pem
-smtp_tls_key_file=/etc/letsencrypt/live/{{ mail_domain }}/privkey.pem
+smtp_tls_cert_file={{ mail_tls_cert_file }}
+smtp_tls_key_file={{ mail_tls_key_file }}
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 smtp_tls_mandatory_protocols = !SSLv2,!SSLv3
 
 smtpd_use_tls = yes
 smtpd_tls_received_header = yes
 smtpd_tls_auth_only = yes
-smtpd_tls_cert_file=/etc/letsencrypt/live/{{ mail_domain }}/fullchain.pem
-smtpd_tls_key_file=/etc/letsencrypt/live/{{ mail_domain }}/privkey.pem
+smtpd_tls_cert_file={{ mail_tls_cert_file }}
+smtpd_tls_key_file={{ mail_tls_key_file }}
 smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
 smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3
 
 {% else %}
 smtp_use_tls = no
-#smtp_tls_note_starttls_offer = yes
-#smtp_tls_cert_file=/etc/letsencrypt/live/{{ mail_domain }}/fullchain.pem
-#smtp_tls_key_file=/etc/letsencrypt/live/{{ mail_domain }}/privkey.pem
-#smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
-#smtp_tls_mandatory_protocols = !SSLv2,!SSLv3
-
 smtpd_use_tls = no
-#smtpd_tls_received_header = yes
-#smtpd_tls_auth_only = yes
-#smtpd_tls_cert_file=/etc/letsencrypt/live/{{ mail_domain }}/fullchain.pem
-#smtpd_tls_key_file=/etc/letsencrypt/live/{{ mail_domain }}/privkey.pem
-#smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
-#smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3
 {% endif %}
 
 # SASL
@@ -58,7 +46,7 @@ myhostname = mail.{{ mail_domain }}
 myorigin = /etc/mailname
 mydestination = mail.{{ mail_domain }}, localhost.{{ mail_domain }}, localhost
 relayhost = 
-mynetworks = mail.netvor.sk 92.240.244.109 relay1.netvor.sk 194.160.5.137 relay2.netvor.sk 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128 {{ mail_mynetworks }}
 
 message_size_limit = 104857600
 mailbox_size_limit = 0
@@ -84,8 +72,12 @@ smtpd_recipient_restrictions =
   permit_mynetworks,
   reject_unauth_destination,
   reject_unauth_pipelining,
+  #reject_invalid_hostname,
+  #reject_non_fqdn_recipient,
+  #reject_non_fqdn_hostname,
+  #reject_non_fqdn_sender,
   check_recipient_access mysql:/etc/postfix/mysql/recipient.cf,
-  reject
+  {{ "reject" if mail_only_from_mynetworks else "permit" }}
 smtpd_sender_restrictions =
   check_sender_access mysql:/etc/postfix/mysql/sender.cf
 smtpd_client_restrictions =

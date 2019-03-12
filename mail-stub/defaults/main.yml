@@ -7,3 +7,8 @@ mail_db_name: "postfix"
 # If you choose to enable tls, this role expects you to have letssencrypt
 # certificates available at /etc/letsencrypt/live/{{ mail_domain }}/
 mail_enable_tls: yes
+mail_tls_cert_file: "/etc/letsencrypt/live/{{ mail_domain }}/fullchain.pem"
+mail_tls_key_file: "/etc/letsencrypt/live/{{ mail_domain }}/privkey.pem"
+
+mail_mynetworks: ""
+mail_only_from_mynetworks: true
