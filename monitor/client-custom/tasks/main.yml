@@ -1,0 +1,20 @@
+ - name: prepare directories
+   file:
+     path: "{{ zabbix_agent_conf_d }}"
+     state: directory
+
+ - name: deploy configuration file
+   template:
+     src: "zabbix_agent.conf"
+     dest: "{{ zabbix_agent_conf }}"
+   notify:
+   - restart zabbix-agent-custom
+
+ - name: deploy service 
+   template:
+     src: "zabbix-agent.service"
+     dest: "/etc/systemd/system/{{ zabbix_agent_service }}"
+   notify:
+   - reload systemd
+   - restart zabbix-agent-custom"
+

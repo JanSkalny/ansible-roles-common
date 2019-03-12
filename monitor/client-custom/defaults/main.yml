@@ -1,0 +1,5 @@
+zabbix_agent_conf: "/etc/zabbix/zabbix_agentd_{{ zabbix_agent_env }}.conf"
+zabbix_agent_conf_d: "/etc/zabbix/zabbix_agentd_{{ zabbix_agent_env }}.d"
+zabbix_agent_pid: "/var/run/zabbix/zabbix_agentd_{{ zabbix_agent_env }}.pid"
+zabbix_agent_log: "/var/log/zabbix/zabbix_agentd_{{ zabbix_agent_env }}.log"
+zabbix_agent_service: "zabbix-agent-{{ zabbix_agent_env }}.service"

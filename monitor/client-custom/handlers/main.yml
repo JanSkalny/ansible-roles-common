@@ -1,0 +1,10 @@
+ - name: restart zabbix-agent-custom
+   service:
+     name: "{{ zabbix_agent_service }}"
+     state: restarted
+     enabled: yes
+
+ - name: reload systemd
+   systemd: 
+     daemon_reload: yes
+
