@@ -1,0 +1,14 @@
+- name: add webupd8team/java ppa
+  apt_repository:
+    repo: ppa:webupd8team/java
+    state: present
+    update_cache: yes
+  tags: install
+
+- name: install oracle-java8-installer
+  apt:
+    name: 
+    - oracle-java8-installer
+    - oracle-java8-set-default
+    state: present
+  tags: install

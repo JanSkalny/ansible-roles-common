@@ -1,0 +1,25 @@
+- name: https transport for apt
+  apt:
+    name: apt-transport-https
+    state: present
+  tags: install
+
+- name: add ubiquiti apt key
+  apt_key:
+    id: "06E85760C0A52C50"
+    url: "https://dl.ui.com/unifi/unifi-repo.gpg"
+    state: present
+  tags: install
+
+- name: add ubiquiti repository
+  apt_repository:
+    repo: "deb http://www.ubnt.com/downloads/unifi/debian stable ubiquiti"
+    filename: "ubiquiti"
+    state: present
+  tags: install
+
+- name: install unifi
+  apt:
+    name: unifi
+    state: present
+  tags: install
