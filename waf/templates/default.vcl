@@ -13,7 +13,7 @@ import directors;
 {% for backend in waf_backends %}
 backend {{backend.name}} {
   .host = "{{backend.host}}";
-  .port = "80";
+  .port = "{{backend.port | default(80)}}";
 {% if 'probe' in backend %}
   .probe = {
     .url = "{{backend.probe.url}}";
