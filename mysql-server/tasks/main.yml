@@ -4,6 +4,8 @@
     name:
       - mysql-server 
       - mysqltuner
+      - python3-mysqldb
+      - python-mysqldb
  
 - name: configure mysqld
   copy:
