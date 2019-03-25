@@ -1,0 +1,20 @@
+- name: check if zabbix-release is available
+  command: dpkg-query -W zabbix-release
+  register: res
+  check_mode: no
+  ignore_errors: True
+
+- name: remove old zabbix-release
+  apt:
+      name: zabbix-release
+      state: absent
+      purge: yes
+  when: res.stdout is search("3\.[024]")
+
+- name: download and install zabbix-release for Ubuntu
+  import_tasks: ubuntu_install.yml
+  when: ansible_distribution == 'Ubuntu' and (res is failed or ( res.stdout is search("3\.[024]") ))
+
+- name: download and install zabbix-release for Debian
+  import_tasks: debian_install.yml
+  when: ansible_distribution == 'Debian' and (res is failed or ( res.stdout is search("3\.[024]") ))

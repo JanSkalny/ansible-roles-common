@@ -1,5 +1,4 @@
-
-- name: download zabbix release packae
+- name: download zabbix release package (Ubuntu)
   get_url:
     url: "https://repo.zabbix.com/zabbix/{{ zabbix_version }}/ubuntu/pool/main/z/zabbix-release/zabbix-release_{{ zabbix_version }}-2+{{ ansible_distribution_release }}_all.deb"
     dest: "/tmp/zabbix-release.deb"
