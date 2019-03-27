@@ -5,19 +5,19 @@
 
  - name: deploy ca chain
    copy:
-     src: "{{ ca_dir }}/ca/certs/chained-ca.sha256.4096.crt"
+     src: "{{ ca_dir }}/ca/certs/chained-ca.{{ cert_type }}.crt"
      dest: "{{ dest_dir }}/{{ ca_name }}"
    when: ca_name is defined and ca_name != ""
 
  - name: deploy server cert
    copy:
-     src: "{{ ca_dir }}/servers/certs/{{ hostname }}.sha256.4096.crt"
+     src: "{{ ca_dir }}/servers/certs/{{ hostname }}.{{ cert_type }}.crt"
      dest: "{{ dest_dir }}/{{ crt_name }}"
    when: crt_name is defined and crt_name != ""
 
  - name: deploy server key
    copy:
-     src: "{{ ca_dir }}/servers/keys/{{ hostname }}.sha256.4096.key"
+     src: "{{ ca_dir }}/servers/keys/{{ hostname }}.{{ cert_type }}.key"
      dest: "{{ dest_dir }}/{{ key_name }}"
    when: key_name is defined and key_name != ""
 
