@@ -4,12 +4,13 @@
     state: present
   tags: install
 
-- name: refresh iscsi targets
-  shell: iscsiadm -m node -R
-  tags: configure
-  #open_iscsi: 
-  #  show_nodes: yes
-  #  discover: yes
+- name: deploy multipath-refresh.sh
+  copy:
+    src: multipath-refresh.sh
+    dest: /usr/local/bin/multipath-refresh.sh
+    mode: 0755 
+    owner: root
+  tags: install
 
 - name: configure multipath.conf
   template:
@@ -18,9 +19,7 @@
   register: multipath_conf
   tags: configure
 
-- name: restart multipath
-  service:
-      name: multipath-tools
-      state: reloaded
+- name: refresh targets
+  shell: /usr/local/bin/multipath-refresh.sh
   when: multipath_conf.changed
   tags: configure
