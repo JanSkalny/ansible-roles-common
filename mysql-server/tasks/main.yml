@@ -1,17 +1,20 @@
 
 - name: install packages
-  apt: 
+  package: 
     name:
       - mysql-server 
       - mysqltuner
       - python3-mysqldb
       - python-mysqldb
+    state: present
+  tags: install
  
 - name: configure mysqld
   copy:
     src: "mysqld.cnf"
     dest: "/etc/mysql/mysql.conf.d/system.cnf"
   notify: restart mysql
+  tags: install
 
 #TODO: fail2ban
 
@@ -20,7 +23,8 @@
     dest: "/etc/security/limits.conf"
     line: "{{ item }}"
   with_items:
-  - "mysql             soft    nofile           32000"
-  - "mysql             hard    nofile           48000"
+    - "mysql             soft    nofile           32000"
+    - "mysql             hard    nofile           48000"
   notify: restart mysql
+  tags: install
 
