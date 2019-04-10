@@ -6,7 +6,7 @@ vpn_server_port: 1194         # default is 1194
 use_tls_key: false            # defines whether tls PSK is used to harden initial communication (openvpn --tls-auth)
 # TODO: Implement creation of tls_key file from variable value
 # tls_key_path:               # needs to be filled on per-group basis if use_tls_key is enabled. Expects path to TLS PSK
-enable_compresion: yes
+enable_compresion: no
 vpn_cipher: AES-256-CBC
 script_security: 2
 

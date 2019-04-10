@@ -5,25 +5,25 @@
 
  - name: deploy ca chain
    copy:
-     src: "{{ ca_dir }}/ca/certs/chained-ca.{{ cert_type }}.crt"
+     src: "{{ ca_dir }}/ca/certs/chained-ca.{{simplepki_message_digest}}.{{ simplepki_key_size }}.crt"
      dest: "{{ dest_dir }}/{{ ca_name }}"
    when: ca_name is defined and ca_name != ""
 
- - name: deploy server cert
+ - name: deploy cert
    copy:
-     src: "{{ ca_dir }}/servers/certs/{{ hostname }}.{{ cert_type }}.crt"
+     src: "{{ ca_dir }}/{{ type }}/certs/{{ hostname }}.{{simplepki_message_digest}}.{{ simplepki_key_size }}.crt"
      dest: "{{ dest_dir }}/{{ crt_name }}"
    when: crt_name is defined and crt_name != ""
 
- - name: deploy server key
+ - name: deploy key
    copy:
-     src: "{{ ca_dir }}/servers/keys/{{ hostname }}.{{ cert_type }}.key"
+     src: "{{ ca_dir }}/{{ type }}/keys/{{ hostname }}.{{simplepki_message_digest}}.{{ simplepki_key_size }}.key"
      dest: "{{ dest_dir }}/{{ key_name }}"
    when: key_name is defined and key_name != ""
 
- - name: deploy server pem
+ - name: deploy pem
    copy:
-     src: "{{ ca_dir }}/servers/pem/{{ hostname }}.pem"
+     src: "{{ ca_dir }}/{{ type }}/pem/{{ hostname }}.pem"
      dest: "{{ dest_dir }}/{{ pem_name }}"
    when: pem_name is defined and pem_name != ""
 

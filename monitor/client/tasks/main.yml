@@ -107,6 +107,12 @@
     owner: "root"
     mode: 0640
 
+- name: enable periodic apt-get update
+  template:
+    src: "10periodic"
+    dest: "/etc/apt/apt.conf.d/10periodic"
+    owner: "root"
+
 - name: install logging dependencies
   package:
     name: logrotate

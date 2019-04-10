@@ -24,6 +24,7 @@ monitor_user_parameters:
  - sockstat.conf
  - varnish.conf
  - ntp.conf
+ - apt.conf
 
 monitor_scripts:
  - zabbix_mdraid.sh
