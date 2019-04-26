@@ -36,6 +36,7 @@
   authorized_key:
     user: "{{ item }}"
     state: present
+    exclusive: yes
     key: "{{ lookup('file', root_dir+'/files/ssh-keys/'+item) }}"
   with_items: "{{ users }}"
 
