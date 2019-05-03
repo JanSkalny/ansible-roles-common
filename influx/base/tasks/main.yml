@@ -1,0 +1,16 @@
+- name: install dependencies
+  package:
+      name:
+      - apt-transport-https
+      state: present
+
+- name: add influxdata key
+  apt_key:
+      url: "https://repos.influxdata.com/influxdb.key"
+      state: present
+
+- name: add influxdata repo
+  apt_repository:
+      repo: "deb https://repos.influxdata.com/debian {{ ansible_distribution_release }} stable"
+      update_cache: yes
+

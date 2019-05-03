@@ -1,0 +1,16 @@
+- name: install influxdb
+  package:
+    name: influxdb
+    state: present
+  tags: install
+  notify:
+  - enable influxdb
+  - restart influxdb
+
+- name: configure influxdb
+  template:
+    src: influxdb.conf
+    dest: /etc/influxdb/influxdb.conf
+  tags: configure
+  notify: restart influxdb
+

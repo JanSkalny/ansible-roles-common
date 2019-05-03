@@ -1,0 +1,9 @@
+- name: restart influxdb
+  service:
+      name: influxdb
+      enabled: yes
+
+- name: enable influxdb
+  service:
+      name: influxdb
+      enabled: yes
