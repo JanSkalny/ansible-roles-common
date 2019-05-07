@@ -1,0 +1,24 @@
+- name: install strongswan
+  package:
+    name: 
+    - strongswan
+    - strongswan-plugin-eap-mschapv2
+  notify: 
+  - enable strongswan
+  - restart strongswan
+
+- name: configure strongswan
+  template:
+    src: ipsec.conf
+    dest: /etc/ipsec.conf
+    owner: root
+    mode: 0644
+  notify: restart strongswan
+
+- name: generate ipsec.secrets
+  template:
+    src: ipsec.secrets
+    dest: /etc/ipsec.secrets
+    owner: root
+    mode: 0600
+  notify: restart strongswan
