@@ -8,9 +8,10 @@ zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_bacula_check_job.sh
 zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_openvpn.sh
 zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_varnish_cache.py
 zabbix ALL=(ALL) NOPASSWD: /usr/sbin/smartctl
-zabbix ALL=(ALL) NOPASSWD: /sbin/hplog
 zabbix ALL=(ALL) NOPASSWD: /usr/sbin/hpacucli
 zabbix ALL=(ALL) NOPASSWD: /usr/sbin/ssacli
+zabbix ALL=(ALL) NOPASSWD: /sbin/hplog
+zabbix ALL=(ALL) NOPASSWD: /sbin/drbdadm
 
 Defaults:zabbix        !requiretty
 

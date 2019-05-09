@@ -25,6 +25,7 @@ monitor_user_parameters:
  - varnish.conf
  - ntp.conf
  - apt.conf
+ - drbd.conf
 
 monitor_scripts:
  - zabbix_mdraid.sh
