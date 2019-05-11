@@ -1,0 +1,15 @@
+- name: prepare directories
+  file:
+    path: "{{item}}"
+    state: directory
+    owner: root
+    group: root
+  with_items:
+  - "/etc/systemd/system/openvpn@.service.d/"
+
+- name: configure systemd override for openvpn
+  copy:
+    src: openvpn_override.conf
+    dest: "/etc/systemd/system/openvpn@.service.d/override.conf"
+  notify:
+  - reload systemctl
