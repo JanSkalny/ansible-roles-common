@@ -1,0 +1,4 @@
+- name: "certbot want {{ domain }}"
+  shell:
+      "certbot -n --standalone --email {{ letsencrypt_admin_email }} --agree-tos --http-01-port 402 -d {{ domain }} {{ aliases | join(' ') }} certonly"
+  tags: configure
