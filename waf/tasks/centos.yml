@@ -1,10 +1,9 @@
 - name: install dependencies
   yum:
-    name: "{{ item }}"
+    name: 
+    - pygpgme 
+    - yum-utils
     state: present
-  with_items:
-  - pygpgme 
-  - yum-utils
 
 - name: install varnish41 yum repo
   copy:
@@ -19,9 +18,8 @@
 
 - name: install packages (redhat)
   yum: 
-    name: "{{ item }}"
+    name: 
+    - pkgconfig 
+    - varnish-libs-devel 
     state: present
-  with_items:
-  - pkgconfig 
-  - varnish-libs-devel 
 

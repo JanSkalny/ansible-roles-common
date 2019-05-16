@@ -1,3 +1,14 @@
+- name: generate letsencrypt certificates for each https enabled domain
+  include_role:
+    name: common/letsencrypt/want 
+  vars:
+    domain: "{{ item }}"
+    aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
+  with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
+  when: waf_letsencrypt
+  tags: 
+  - configure
+  - letsencrypt
 
 - name: install packages (debian)
   package: 
@@ -11,7 +22,7 @@
   tags: install
 
 - name: centos / redhat enterprise
-  import_tasks: centos.yml
+  include_tasks: centos.yml
   when: ansible_os_family == 'RedHat' or ansible_os_family == 'Sangoma'
  
 - name: install packages (common)
@@ -120,18 +131,6 @@
   service:
     name: "varnishlog"
     enabled: yes
-
-- name: generate letsencrypt certificates for each https enabled domain
-  include_role:
-    name: common/letsencrypt-want 
-  vars:
-    domain: "{{ item }}"
-    aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
-  with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
-  when: waf_letsencrypt
-  tags: 
-  - configure
-  - letsencrypt-want
 
 - name: configure haproxy
   template:

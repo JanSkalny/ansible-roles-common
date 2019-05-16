@@ -78,16 +78,18 @@ sub vcl_recv {
   # backend={{ backend }}
   if (req.http.host ~ "^(www.)?{{ domain.domain }}$") {
 {% if 'https' in domain and domain.https %}
-    {% if 'https_redirect' not in backend or backend.https_redirect %}
+{% if 'https_redirect' not in backend or backend.https_redirect %}
     if (req.http.X-Redir-Url) {
       return(synth(750, "Redirect to HTTPS"));
     }
-    {% endif %}
-    {% if 'https' not in backend or backend.https %} 
+{% endif %}
+{% if 'https' not in backend or backend.https %} 
+    # use haproxy/tls to connect to backend
     set req.backend_hint = tls;
-    {% else %}
+{% else %}
+    # go directly to backend
     set req.backend_hint = {{ domain.backend }};
-    {% endif %}
+{% endif %}
 {% else %}
     set req.backend_hint = {{ domain.backend }};
 {% endif %}
