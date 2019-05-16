@@ -1,16 +1,5 @@
-- name: generate letsencrypt certificates for each https enabled domain
-  include_role:
-    name: common/letsencrypt/want 
-  vars:
-    domain: "{{ item }}"
-    aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
-  with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
-  when: waf_letsencrypt
-  tags: 
-  - configure
-  - letsencrypt
 
-- name: install packages (debian)
+- name: install waf dependencies debian
   package: 
     name: 
     - libvarnishapi-dev 
@@ -21,11 +10,11 @@
   when: ansible_os_family == 'Debian'
   tags: install
 
-- name: centos / redhat enterprise
+- name: install waf dependencies rhel
   include_tasks: centos.yml
   when: ansible_os_family == 'RedHat' or ansible_os_family == 'Sangoma'
  
-- name: install packages (common)
+- name: install waf dependencies common
   package: 
     name: 
     - supervisor
@@ -37,11 +26,28 @@
     state: present
   tags: install
 
+- name: create haproxy ssl dir
+  file:
+    path: "/etc/haproxy/ssl"
+    state: directory
+  tags: install
 - name: create varnish dir
   file:
     path: "/opt/varnish"
     state: directory
   tags: install
+
+- name: generate letsencrypt certificates for each https enabled domain
+  include_role:
+    name: common/letsencrypt/want 
+  vars:
+    domain: "{{ item }}"
+    aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
+  with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
+  when: waf_letsencrypt
+  tags: 
+  - configure
+  - letsencrypt
 
 - name: checkout vsf
   git:
