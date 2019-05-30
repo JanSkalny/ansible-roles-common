@@ -1,3 +1,7 @@
+- name: reload systemctl
+  systemd:
+    daemon_reload: yes
+
 - name: restart varnish
   service: 
     name: varnish
@@ -13,6 +17,3 @@
     name: "{{ supervisor_service }}"
     state: restarted
 
-- name: reload systemctl
-  systemd:
-    daemon_reload: yes
