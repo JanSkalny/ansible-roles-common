@@ -37,18 +37,6 @@
     state: directory
   tags: install
 
-- name: generate letsencrypt certificates for each https enabled domain
-  include_role:
-    name: common/letsencrypt/want 
-  vars:
-    domain: "{{ item }}"
-    aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
-  with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
-  when: waf_letsencrypt
-  tags: 
-  - configure
-  - letsencrypt
-
 - name: checkout vsf
   git:
     repo: "https://github.com/comotion/VSF.git"
@@ -137,6 +125,21 @@
   service:
     name: "varnishlog"
     enabled: yes
+
+- name: run all handlers at this point. we will need it for letsencrypt
+  meta: flush_handlers
+
+- name: generate letsencrypt certificates for each https enabled domain
+  include_role:
+    name: common/letsencrypt/want 
+  vars:
+    domain: "{{ item }}"
+    aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
+  with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
+  when: waf_letsencrypt
+  tags: 
+  - configure
+  - letsencrypt
 
 - name: configure haproxy
   template:
