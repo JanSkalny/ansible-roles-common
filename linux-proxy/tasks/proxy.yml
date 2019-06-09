@@ -1,0 +1,57 @@
+- name: do we have apt.conf.d?
+  stat:
+   path: /etc/apt/apt.conf.d
+  register: st
+
+- name: set proxy for apt
+  lineinfile:
+    path: /etc/apt/apt.conf.d/99proxy
+    create: yes
+    state: present
+    line: 'Acquire::http::Proxy "http://{{ proxy_host }}:{{ proxy_port }}";'
+  when: st.stat.exists
+
+- name: do we have wget?
+  stat:
+   path: /etc/wgetrc
+  register: st
+
+- name: set proxy for wget
+  lineinfile:
+   path: /etc/wgetrc
+   create: yes
+   state: present
+   line: '{{ item }}_proxy = http://{{ proxy_host }}:{{ proxy_port }}'
+   insertbefore: '^.?use_proxy'
+  with_items:
+   - http
+   - https
+   - ftp
+  when: st.stat.exists
+
+- name: do we have pip?
+  stat:
+   path: /etc/pip.conf
+  register: st
+
+- name: set proxy for pip
+  ini_file:
+   path: /etc/pip.conf
+   section: global
+   option: proxy
+   value: '{{ proxy_host }}:{{ proxy_port }}'
+   create: yes
+   state: present
+
+- name: set proxy for the shell
+  lineinfile:
+   path: /etc/environment
+   line: '{{ item }}="http://{{ proxy_host }}:{{ proxy_port }}"'
+  with_items:
+   - http_proxy
+   - https_proxy
+   - ftp_proxy
+   - HTTP_PROXY
+   - HTTPS_PROXY
+   - FTP_PROXY
+
