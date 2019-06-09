@@ -167,7 +167,7 @@
 
 - name: deploy varnish log parser
   copy: 
-    src: varnisher.py
+    src: varnisher_speedy.py
     dest: /root/varnisher.py
     owner: root
     mode: 500
