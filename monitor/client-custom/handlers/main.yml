@@ -1,4 +1,4 @@
- - name: restart zabbix-agent-custom
+ - name: restart custom zabbix agent
    service:
      name: "{{ zabbix_agent_service }}"
      state: restarted
