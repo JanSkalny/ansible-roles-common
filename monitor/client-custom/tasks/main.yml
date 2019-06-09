@@ -8,7 +8,7 @@
      src: "zabbix_agent.conf"
      dest: "{{ zabbix_agent_conf }}"
    notify:
-   - restart zabbix-agent-custom
+   - restart custom zabbix agent
 
  - name: deploy service 
    template:
@@ -16,5 +16,5 @@
      dest: "/etc/systemd/system/{{ zabbix_agent_service }}"
    notify:
    - reload systemd
-   - restart zabbix-agent-custom"
+   - restart custom zabbix agent
 
