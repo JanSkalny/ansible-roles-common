@@ -75,4 +75,5 @@
   - php7.3
   - autoindex
   notify: restart apache2
+  ignore_errors: yes
 
