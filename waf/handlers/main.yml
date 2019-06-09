@@ -2,6 +2,9 @@
   systemd:
     daemon_reload: yes
 
+- name: concat ssl
+  shell: /etc/haproxy/concat_ssl.sh
+
 - name: restart varnish
   service: 
     name: varnish
@@ -16,4 +19,3 @@
   service:
     name: "{{ supervisor_service }}"
     state: restarted
-
