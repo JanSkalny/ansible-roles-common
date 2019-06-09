@@ -1,0 +1,21 @@
+ - name: remove composer from packages
+   package:
+       name: composer
+       state: absent
+
+ - name: check if composer is present
+   stat:
+       path: /usr/local/bin/composer
+   check_mode: no
+   register: composer_stat
+
+ - name: download latest composer
+   get_url:
+       url: "https://getcomposer.org/installer"
+       dest: /tmp/composer-setup.php
+       checksum: "{{ composer_checksum }}"
+   when: composer_stat.stat.isreg is not defined
+
+ - name: install composer
+   shell: php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
+   when: composer_stat.stat.isreg is not defined

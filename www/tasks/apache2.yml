@@ -1,3 +1,9 @@
+- name: add ondrej apache2 ppa
+  apt_repository:
+    repo: ppa:ondrej/apache2
+    state: present
+    update_cache: yes
+
 - name: install packages
   apt:
     name:
