@@ -29,11 +29,11 @@
         - "php{{php_version}}-mbstring"
         - "php{{php_version}}-zip"
         - "php{{php_version}}-mysql"
-        - php-mcrypt
         - php-gettext
         - php-imagick 
         - imagemagick 
-        - composer
+#        - php-mcrypt
+#        - composer
   notify: restart php
 
 - name: configure php.ini for CLI and defaul FPM

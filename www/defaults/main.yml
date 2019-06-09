@@ -22,6 +22,8 @@ php_open_basedir: ""
 php_session_save_path: "/var/lib/php/sessions"
 php_allow_url_fopen: "Off"
 
+composer_checksum: "sha384:48e3236262b34d30969dca3c37281b3b4bbe3221bda826ac6a9a62d6444cdb0dcd0615698a5cbe587c3f0fe57a54d8f5"
+
 #XXX: hardened PHP
 #php_open_basedir: "/var/www/XXX/public"
 #php_file_uploads: "On"

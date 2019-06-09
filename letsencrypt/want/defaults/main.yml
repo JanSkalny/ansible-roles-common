@@ -1,1 +1,3 @@
 letsencrypt_admin_email: "admin@netvor.sk"
+letsencrypt_http_port: 402
+aliases: []

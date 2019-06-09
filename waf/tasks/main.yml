@@ -146,7 +146,24 @@
     src: haproxy.cfg
     dest: /etc/haproxy/haproxy.cfg
   tags: configure
-  notify: restart haproxy
+  notify: 
+  - concat ssl
+  - restart haproxy
+
+- name: deploy haproxy letsencrypt hook
+  copy:
+    src: concat_ssl.sh
+    dest: /etc/haproxy/concat_ssl.sh
+    mode: 0755
+  when: waf_letsencrypt
+  notify: concat ssl
+
+- name: install haproxy letsencrypt hook
+  file:
+    src: /etc/haproxy/concat_ssl.sh
+    dest: /etc/letsencrypt/renewal-hooks/post/haproxy
+    state: link
+  when: waf_letsencrypt
 
 - name: deploy varnish log parser
   copy: 
