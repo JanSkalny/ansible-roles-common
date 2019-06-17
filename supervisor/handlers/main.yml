@@ -1,0 +1,5 @@
+- name: enable and restart supervisor
+  service:
+    name: "{{ supervisor_service }}"
+    enabled: yes
+    state: restarted

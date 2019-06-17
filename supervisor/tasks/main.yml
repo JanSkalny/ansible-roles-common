@@ -1,0 +1,12 @@
+- name: set distro-specific variables
+  include_vars: '{{ item }}'
+  with_first_found:
+    - '{{ ansible_os_family }}.yml'
+    - default.yml
+
+- name: install supervisor
+  package: 
+    name: supervisor
+    state: present
+  notify: enable and restart supervisor
+  tags: install

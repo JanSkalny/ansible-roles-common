@@ -1,0 +1,3 @@
+supervisor_conf_d: /etc/supervisord.d/
+supervisor_service: supervisord
+supervisor_conf_suffix: ".ini"
