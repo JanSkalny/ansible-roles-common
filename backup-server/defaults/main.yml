@@ -1,3 +1,5 @@
 backup_director: "backup.netvor.sk"
 bacula_mail_server: localhost
 bacula_mail_recipient: root
+bacula_mail_from: "%r"
+bacula_mail_to: "%r"
