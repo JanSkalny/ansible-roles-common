@@ -2,5 +2,5 @@ monitor_admin_login: "admin"
 monitor_group: "Linux servers"
 monitor_templates: 
   Template OS Linux:
-  Template App SSH Service:
+#  Template App SSH Service:
 
