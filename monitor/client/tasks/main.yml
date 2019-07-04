@@ -20,6 +20,7 @@
   template:
     src: "zabbix_agentd.conf"
     dest: "/etc/zabbix/zabbix_agentd.conf"
+  tags: configure
   notify: restart zabbix-agent
 
 - name: delete default user parameter files
@@ -29,6 +30,7 @@
   with_items:
   - userparameter_mysql.conf
   - zabbix_mdraid.conf
+  tags: configure
   notify: restart zabbix-agent
 
 - name: custom user parameters
@@ -39,6 +41,7 @@
     group: "zabbix"
     mode: 0640
   with_items: "{{ monitor_user_parameters }}"
+  tags: configure
   notify: restart zabbix-agent
 
 - name: monitoring scripts
@@ -48,6 +51,7 @@
     owner: "root"
     mode: 0755
   with_items: "{{ monitor_scripts }}"
+  tags: configure
   notify: restart zabbix-agent
 
 - name: make sure zabbix home directory is present
@@ -66,6 +70,7 @@
     state: present
     login_user: "{{ mysql_user }}"
     login_password: "{{ mysql_password }}"
+  tags: configure
   when: monitor_sql_password is defined
 
 - name: generate .my.cnf for monitoring
@@ -75,6 +80,7 @@
     owner: "zabbix"
     group: "zabbix"
     mode: 0600
+  tags: configure
   when: monitor_sql_password is defined
 
 - name: generate zabbix_agentd.psk
@@ -85,6 +91,7 @@
     group: "zabbix"
     mode: 0600
   when: monitor_psk is defined
+  tags: configure
   notify: restart zabbix-agent
 
 - name: configre cron.d
@@ -92,12 +99,14 @@
     src: "cron"
     dest: "/etc/cron.d/zabbix-agent"
     mode: 0440
+  tags: configure
   notify: restart cron
 
 - name: enable zabbix-agent service
   service:
     name: "zabbix-agent"
     enabled: yes
+  tags: configure
   notify: restart zabbix-agent
 
 - name: allow zabbix user to run specific commands as root
@@ -106,12 +115,14 @@
     dest: "/etc/sudoers.d/zabbix"
     owner: "root"
     mode: 0640
+  tags: configure
 
 - name: enable periodic apt-get update
   template:
     src: "10periodic"
     dest: "/etc/apt/apt.conf.d/10periodic"
     owner: "root"
+  tags: configure
 
 - name: install logging dependencies
   package:
@@ -122,3 +133,4 @@
   copy:
     src: zabbix-agent-logrotate
     dest: /etc/logrotate.d/zabbix-agent
+  tags: configure

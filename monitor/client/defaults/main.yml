@@ -26,6 +26,8 @@ monitor_user_parameters:
  - ntp.conf
  - apt.conf
  - drbd.conf
+ - systemd.conf
+ - multipath.conf
 
 monitor_scripts:
  - zabbix_mdraid.sh
@@ -41,3 +43,4 @@ monitor_scripts:
  - zabbix_bacula_discovery.sh
  - zabbix_bacula_check_job.sh
  - zabbix_varnish_cache.py
+ - zabbix_multipath.sh
