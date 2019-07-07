@@ -1,0 +1,30 @@
+# redirect from 80 to 443 (any name)
+
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+	server_name _;
+	return 302 https://$host$request_uri;
+}
+
+# accept tls, forward downstream
+{% for fwd in site_forwards %}
+
+server {
+	listen 443 default_server;
+	listen [::]:443 default_server;
+
+	server_name {{ fwd.name }};
+
+	ssl on;
+	ssl_certificate {{ fwd.cert }};
+	ssl_certificate_key {{ fwd.key }};
+
+	location / {
+		proxy_pass {{ fwd.backend }};
+		proxy_set_header Host $host;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	}
+}
+{% endfor %}

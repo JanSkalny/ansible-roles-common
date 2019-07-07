@@ -1,0 +1,24 @@
+- name: install nginx
+  package:
+    name: nginx
+    state: present
+  notify: restart nginx
+
+- name: disable default configuration
+  file:
+    name: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: create nginx forwarding rules
+  template:
+    src: site-forwards
+    dest: "/etc/nginx/sites-available/site-forwards"
+  notify: restart nginx
+
+- name: enable nginx forwarding rules
+  file:
+    src: /etc/nginx/sites-available/site-forwards
+    dest: /etc/nginx/sites-enabled/site-forwards
+    state: link
+  notify: restart nginx
+
