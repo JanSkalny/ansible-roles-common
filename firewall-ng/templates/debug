@@ -1,0 +1,8 @@
+#!/bin/sh
+
+exit 1
+
+{% for key,value in firewall.input.items() %}
+{{ key }}
+{{ value }}
+{% endfor %}

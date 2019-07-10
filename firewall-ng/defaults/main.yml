@@ -1,0 +1,42 @@
+firewall_setup: true
+firewall_template: "fw.sh"
+firewall_rule_default: "LOG_DROP"
+
+firewall:
+  interfaces: []
+#  - name: mngPhys
+#    deny:
+#    - 10.191.3.128/26
+#    - 10.191.3.192/26
+#    default: allow
+#  - name: mngHw
+#    allow: 10.191.3.64/26
+#    allow_dhcp: true
+#  - name: iscsi0
+#    allow: 10.191.3.128/26
+#  - name: iscsi1
+#    allow: 10.191.3.192/26
+
+  objects: []
+#  - name: PUB
+#    addr: 10.191.0.0/24
+#  - name: DMZ
+#    addr:
+#    - 10.191.1.0/24
+#    - 10.191.2.0/24
+#  - name: ns.example.com
+#    addr: 10.191.1.34
+
+  input: []
+#  - ssh from lan:
+#      src: LAN
+#      proto:
+#        tcp: 22
+#  - elastic from DMZ segment:
+#      src: DMZ
+#      proto: 
+#        tcp: 9200, 9300
+#      rule: LOG_ACCEPT
+
+  output: []
+  forward: []

@@ -1,0 +1,14 @@
+- include_tasks: linux.yml
+  when: firewall_mode is defined and firewall_mode == 'linux'
+ 
+- include_tasks: windows.yml
+  when: firewall_mode is defined and firewall_mode == 'windows'
+
+- include_tasks: bsd.yml
+  when: firewall_mode is defined and firewall_mode == 'bsd'
+
+- include_tasks: mikrotik.yml
+  when: firewall_mode is defined and firewall_mode == 'mikrotik'
+
+- include_tasks: cisco.yml
+  when: firewall_mode is defined and firewall_mode == 'cisco'

@@ -1,0 +1,6 @@
+- name: cleanup blacklist
+  raw: "/ip firewall address-list remove [ find list=BLACKLIST ]"
+
+- name: block ip address
+  raw: "/ip firewall address-list add address={{item.addr}} list=BLACKLIST"
+  with_items: "{{ (lookup('file', root_dir+'/db/firewall/'+inventory_hostname+'.json') | from_json).blacklist_ips }}"
