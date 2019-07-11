@@ -11,7 +11,7 @@
 {% set xaddr = firewall.objects[name_or_addr].addr %}
 {% do results.append(xaddr.replace(' ','').split(',') if xaddr is string else xaddr) %}
 {% else %}
-{% do results.append([src]) %}
+{% do results.append([name_or_addr]) %}
 {% endif %}
 {% endfor %}
 {% endif %}
