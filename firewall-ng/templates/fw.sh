@@ -53,6 +53,7 @@ echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route
 
 for PROTO in 4 6; do
   IT=$( eval echo \$IT$PROTO )
+  X=$( [ $PROTO -eq 6 ] && echo "6" ) 
 
   # flush tables
   for TABLE in filter nat mangle; do
@@ -71,7 +72,7 @@ for PROTO in 4 6; do
       --log-ip-options --log-tcp-options --log-uid \
       --log-prefix "FW${PROTO}-REJECT " --log-level info
     $IT -A LOG_REJECT -m limit --limit 10/sec --limit-burst 20 -j REJECT \
-      --reject-with icmp-port-unreachable 
+      --reject-with icmp$X-port-unreachable 
     $IT -A LOG_REJECT -j DROP
 
   # custom DROP action with logging
@@ -116,7 +117,7 @@ $IT4 -N CHECK_IF
   $IT4 -A CHECK_IF -i {{ firewall_iface.name }} -s {{ allow_net }} -j RETURN
 {% endfor %}
 {% for deny_net in firewall_iface.deny | default([]) %}
-  $IT4 -A CHECK_IF -i {{ firewall_iface.name }} -s {{ deny_den }} -j LOG_DROP
+  $IT4 -A CHECK_IF -i {{ firewall_iface.name }} -s {{ deny_net }} -j LOG_DROP
 {% endfor %}
 {% if firewall_iface.default | default('deny') == 'allow' %}
   $IT4 -A CHECK_IF -i {{ firewall_iface.name }} -j RETURN
@@ -184,10 +185,10 @@ done
 {% for src_addr in src_addrs -%} 
 {%- for dest_addr in dest_addrs -%} 
 {% for port in tcp_ports | list %}
-$IT4 -A INPUT -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ input_rule.rule | default(firewall_rule_default) }}
+$IT4 -A INPUT -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ input_rule.rule | default('LOG_ACCEPT') }}
 {% endfor %}
 {% for port in udp_ports | list %}
-$IT4 -A INPUT -p udp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ input_rule.rule | default(firewall_rule_default) }}
+$IT4 -A INPUT -p udp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ input_rule.rule | default('LOG_ACCEPT') }}
 {% endfor %}
 {%- endfor -%}
 {%- endfor -%}
@@ -205,6 +206,11 @@ $IT6 -A INPUT -p icmp -j LOG_DROP
 
 # ignore broadcasts
 $IT4 -A INPUT -m addrtype --dst-type BROADCAST -j DROP
+
+# ignore junk from windows servers (samba)
+for PORT in 137 138; do
+  $IT4 -A INPUT -p udp --dport $PORT -j DROP
+done
 
 # default rule is 
 $IT4 -A INPUT -j {{ firewall_rule_default }}
@@ -230,8 +236,12 @@ $IT6 -A OUTPUT -m owner --uid-owner 105 -j ACCEPT
 $IT6 -A OUTPUT -m owner --uid-owner 104 -j ACCEPT
 
 # DNS
-$IT4 -A OUTPUT -p udp --dport 53 -d 10.191.1.34 -j ACCEPT
-$IT6 -A OUTPUT -p udp --dport 53 -d 8.8.8.8 -j ACCEPT
+$IT4 -A OUTPUT -p udp --dport 53 -j ACCEPT
+$IT6 -A OUTPUT -p udp --dport 53 -j ACCEPT
+
+#XXX: remove these two!
+$IT4 -A OUTPUT -j LOG_ACCEPT
+$IT6 -A OUTPUT -j LOG_ACCEPT
 
 # defaults to drop
 $IT4 -A OUTPUT -j {{ firewall_rule_default }}
@@ -243,12 +253,8 @@ $IT6 -A OUTPUT -j {{ firewall_rule_default }}
 $IT4 -A FORWARD -j LOG_DROP
 $IT6 -A FORWARD -j LOG_DROP
 
-#XXX:
-
 ############################################################
 ### NAT ruleset
-
-#XXX:
 
 ############################################################
 ### custom firewall patches

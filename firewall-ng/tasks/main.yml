@@ -1,7 +1,7 @@
 - name: generate fw.sh
   template: 
     src: "{{ firewall_template }}"
-    dest: /tmp/fw.sh
+    dest: /etc/init.d/fw.sh
     owner: root 
     group: root 
     mode: 0750
