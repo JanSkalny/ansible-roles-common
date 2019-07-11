@@ -14,6 +14,7 @@ import directors;
 backend {{backend.name}} {
   .host = "{{backend.host}}";
   .port = "{{backend.port | default(80)}}";
+  .first_byte_timeout = {{ backend.timeout | default(300) }}s;
 {% if 'probe' in backend %}
   .probe = {
     .url = "{{backend.probe.url}}";
