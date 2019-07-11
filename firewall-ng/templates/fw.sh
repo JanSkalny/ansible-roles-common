@@ -7,9 +7,9 @@
 {% if attr in rule %}
 {% set attrs = ( rule[attr].replace(' ','').split(',') if rule[attr] is string else rule[attr] ) %}
 {% for name_or_addr in attrs %}
-{% set addrs = firewall.objects | selectattr("name", "equalto", name_or_addr) | list %}
-{% if addrs | length %}
-{% do results.append(addrs.0.addr.replace(' ','').split(',') if addrs.0.addr is string else addrs.0.addr) %}
+{% if name_or_addr in firewall.objects %}
+{% set xaddr = firewall.objects[name_or_addr].addr %}
+{% do results.append(xaddr.replace(' ','').split(',') if xaddr is string else xaddr) %}
 {% else %}
 {% do results.append([src]) %}
 {% endif %}
@@ -97,9 +97,9 @@ IT=""
 
 $IT4 -N CHECK_IF
   # allow dhcp on specific interfaces
-{% for firewall_iface in firewall.interfaces %}
+{% for firewall_iface_name, firewall_iface in firewall.interfaces.items() %}
 {% if firewall_iface.allow_dhcp | default(false) %}
-  $IT4 -A CHECK_IF -i {{ firewall_iface.name }} -s 0.0.0.0 -j RETURN # DHCP
+  $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s 0.0.0.0 -j RETURN # DHCP
 {% endif %}
 {% endfor %}
 
@@ -112,17 +112,17 @@ $IT4 -N CHECK_IF
   $IT4 -A CHECK_IF -s 224.0.0.0/3 -j DROP         # multicast
 
   # interface specific configuration
-{% for firewall_iface in firewall.interfaces %}
+{% for firewall_iface_name, firewall_iface in firewall.interfaces.items() %}
 {% for allow_net in firewall_iface.allow | default([]) %}
-  $IT4 -A CHECK_IF -i {{ firewall_iface.name }} -s {{ allow_net }} -j RETURN
+  $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s {{ allow_net }} -j RETURN
 {% endfor %}
 {% for deny_net in firewall_iface.deny | default([]) %}
-  $IT4 -A CHECK_IF -i {{ firewall_iface.name }} -s {{ deny_net }} -j LOG_DROP
+  $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP
 {% endfor %}
 {% if firewall_iface.default | default('deny') == 'allow' %}
-  $IT4 -A CHECK_IF -i {{ firewall_iface.name }} -j RETURN
+  $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -j RETURN
 {% else %}
-  $IT4 -A CHECK_IF -i {{ firewall_iface.name }} -j LOG_DROP
+  $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -j LOG_DROP
 {% endif %}
 {% endfor %}
 
