@@ -32,7 +32,7 @@
     dest: "/etc/bind/master/{{ item }}"
     owner: bind 
     group: bind 
-    mode: 0750
+    mode: 0640
   with_items: "{{ ns_master_zones }}"
   notify: restart bind
   tags: configure
