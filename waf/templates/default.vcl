@@ -14,6 +14,7 @@ import directors;
 backend {{backend.name}} {
   .host = "{{backend.host}}";
   .port = "{{backend.port | default(80)}}";
+  .first_byte_timeout = {{ backend.timeout | default(300) }}s;
 {% if 'probe' in backend %}
   .probe = {
     .url = "{{backend.probe.url}}";
@@ -76,7 +77,7 @@ sub vcl_recv {
 {% set backend = ( waf_backends | selectattr("name", "match", domain.backend) | first ) %}
   # domain={{ domain }}
   # backend={{ backend }}
-  if (req.http.host ~ "^(www.)?{{ domain.domain }}$") {
+  if (req.http.host ~ "^({{ ([ domain.domain ] + (domain.aliases | default([]))) | list | join('|') | replace('.','\.') }})$") {
 {% if 'https' in domain and domain.https %}
 {% if 'https_redirect' not in backend or backend.https_redirect %}
     if (req.http.X-Redir-Url) {

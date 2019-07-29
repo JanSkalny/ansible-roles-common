@@ -1,0 +1,20 @@
+- name: generate fw.sh
+  template: 
+    src: "{{ firewall_template }}"
+    dest: /etc/init.d/fw.sh
+    owner: root 
+    group: root 
+    mode: 0750
+  notify: reload firewall
+  when: firewall_template is defined and firewall.interfaces|length
+
+- name: load fw.sh on boot
+  file: 
+    src: /etc/init.d/fw.sh 
+    dest: /etc/rc2.d/S19fw 
+    owner: root
+    group: root
+    state: link
+  when: firewall_template is defined and firewall.interfaces|length
+
+

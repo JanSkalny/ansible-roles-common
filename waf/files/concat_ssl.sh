@@ -23,3 +23,5 @@ done
 
 # reload haproxy, if there was any change
 [[ $MODIFIED -eq 1 ]] && /etc/init.d/haproxy reload
+
+exit 0

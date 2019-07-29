@@ -136,7 +136,7 @@
     domain: "{{ item }}"
     aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
   with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
-  when: waf_letsencrypt
+  when: waf_letsencrypt == true
   tags: 
   - configure
   - letsencrypt
@@ -155,7 +155,7 @@
     src: concat_ssl.sh
     dest: /etc/haproxy/concat_ssl.sh
     mode: 0755
-  when: waf_letsencrypt
+  when: waf_letsencrypt == true
   notify: concat ssl
 
 - name: install haproxy letsencrypt hook
@@ -163,7 +163,7 @@
     src: /etc/haproxy/concat_ssl.sh
     dest: /etc/letsencrypt/renewal-hooks/post/haproxy
     state: link
-  when: waf_letsencrypt
+  when: waf_letsencrypt == true
 
 - name: deploy varnish log parser
   copy: 
