@@ -12,15 +12,15 @@
 
 - name: copy keys and certificates
   copy: 
-    src: "{{root_dir}}/files/backup/{{backup_group}}/{{item.src}}" 
+    src: "{{root_dir}}/storage/backup-pki/{{backup_group}}/{{item.src}}" 
     dest: "/etc/bacula/{{item.dst}}" 
     owner: "root" 
     group: "root" 
     mode: 0750
   with_items:
-  - { src: "{{backup_host}}.crt", dst: "{{backup_host}}.crt" }
-  - { src: "{{backup_host}}.pem", dst: "{{backup_host}}.pem" }
-  - { src: "ca.crt", dst: "ca.crt" }
+  - { src: "{{backup_host}}{{ backup_ssl_cert_file_extension }}", dst: "{{backup_host}}.crt" }
+  - { src: "{{backup_host}}{{ backup_ssl_key_file_extension }}", dst: "{{backup_host}}.pem" }
+  - { src: "chained-ca{{ backup_ssl_cert_file_extension }}", dst: "ca.crt" }
   notify: restart bacula-fd
 
 - name: create mysql backup script

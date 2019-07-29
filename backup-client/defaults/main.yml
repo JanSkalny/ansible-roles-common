@@ -5,3 +5,5 @@ backup_dir: "netvor-dir"
 backup_sql_user: "backup"
 backup_sql_dump_dir: /var/backups/
 backup_pgsql_dump: no
+backup_ssl_cert_file_extension: .sha256.2048.crt
+backup_ssl_key_file_extension: .sha256.2048.key
