@@ -8,5 +8,9 @@
     deb: "/tmp/zabbix-release.deb"
 
 - name: apt-get update
-  apt:
-    update_cache: yes
+  shell: apt-get update
+
+# does not work on bionic
+#- name: apt-get update
+#  apt:
+#    update_cache: yes
