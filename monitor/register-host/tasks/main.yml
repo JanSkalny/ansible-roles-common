@@ -29,3 +29,17 @@
     tls_psk: "{{ monitor_psk }}"
     proxy: "{{ monitor_proxy }}"
     validate_certs: false
+
+- name: Create zabbix macros
+  become: false
+  local_action:
+    module: zabbix_hostmacro
+    server_url: "{{ monitor_url }}"
+    login_user: "{{ monitor_admin_login }}"
+    login_password: "{{ monitor_admin_password }}"
+    host_name: "{{ inventory_hostname }}"
+    macro_name: "{{ item['macro_name'] }}"
+    macro_value: "{{ item['macro_value'] }}"
+    state: present
+    validate_certs: false
+  with_items: "{{ hostvars[inventory_hostname]['monitor_macro'] | default([]) }}"
