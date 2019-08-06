@@ -1,0 +1,54 @@
+{% macro generate_iface_config(iface) %}
+    comment: 'managed by ansible'
+{% if 'address' in item and item.address != 'dhcp' %}
+    addresses: {{ [ item.address ]}}]
+{% elseif 'address' in item and item.address == 'dhcp' %}
+    dhcp4: yes
+{% endif %}
+{% if 'gateway' in item %}
+	gateway: {{ item.gateway }}
+{% endif %}
+{%if 'dns' in item %}
+    nameservers:
+	  addresses: {{ item.dns }}
+{% if 'dns-search' in item %}
+      search: {{ [ item['dns-search'] ] }}
+{% endif %}
+{% endif %}
+{% if 'mtu' in item %}
+	mtu: {{ item.mtu }}
+{% endif %}
+{% if 'routes' in item %}
+    routes:
+{% for route in item.routes %}
+    - to: {{ route.net }}
+      via: {{ route.via }}
+{% endfor %}
+{% endif %}
+{% endmacro %}
+
+network:
+  ethernets:
+{% for item in networking %}
+{% if 'vlan-id' not in item or 'vlan-iface' not in item %}
+{{ generate_iface_config(item) }}
+{% endif %}
+{% endfor %}
+
+vlans:
+{% for item in networking %}
+{% if 'vlan-id' in item and 'vlan-iface' in item %}
+  vlan{{ item.vlan-id }}:
+    link: {{ item.vlan-iface }}
+{{ generate_iface_config(item) }}
+{% endif %}
+{% endfor %}
+
+{% if 'bridge_ports' in item %}
+	bridge_ports {{ item.bridge_ports }}
+	bridge_stp off
+	bridge_fd 0
+	bridge_maxwait 0
+{% endif %}
+
+

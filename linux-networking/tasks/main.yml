@@ -2,32 +2,20 @@
   package:
     name: 
     - bridge-utils
+    - ifupdown
+    - ifenslave
     - vlan
     state: present
   tags: install
- 
-- name: remove resolvconf
+
+- name: remove netplan
   package:
-    name: resolvconf
+    name:
+    - netplan.io
     state: absent
-  register: removed_resolvconf
   tags: install
 
-- name: generate 70-persistent-net.rules
-  template:
-    src: 70-persistent-net.rules
-    dest: /etc/udev/rules.d/70-persistent-net.rules
+- name: ifupdown configuration
+  include_tasks: ifupdown.yml
   tags: configure
 
-- name: generate interfaces.d
-  template:
-    src: interface
-    dest: /etc/network/interfaces.d/{{ item.iface }}
-  with_items: "{{ networking }}"
-  tags: configure
-
-- name: generate resolv.conf
-  template:
-    src: resolv.conf
-    dest: /etc/resolv.conf
-  tags: configure

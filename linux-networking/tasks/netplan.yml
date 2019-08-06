@@ -1,0 +1,6 @@
+- name: generate netplan.yml
+  template:
+    src: netplan.yml
+    dest: /etc/netplan/10-interfaces.yaml
+  tags: configure
+

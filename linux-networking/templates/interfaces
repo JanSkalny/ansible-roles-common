@@ -1,6 +1,17 @@
+# {{ ansible_managed }}
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+{% for iface_name,item in networking.items() %}
+
+# {{ item }}
 {% if 'address' in item and item.address != 'dhcp' %}
-auto {{ item.iface }}
-iface {{ item.iface }} inet static
+auto {{ iface_name }}
+iface {{ iface_name }} inet static
 	address {{ item.address }}
 {% if 'gateway' in item %}
 	gateway {{ item.gateway }}
@@ -13,12 +24,23 @@ iface {{ item.iface }} inet static
 {% endif %}
 {% endif %}
 {% if 'address' in item and item.address == 'dhcp' %}
-auto {{ item.iface }}
-iface {{ item.iface }} inet dhcp
+auto {{ iface_name }}
+iface {{ iface_name }} inet dhcp
 {% endif %}
 {% if 'address' not in item %}
-auto {{ item.iface }}
-iface {{ item.iface }} inet manual
+auto {{ iface_name }}
+iface {{ iface_name }} inet manual
+{% endif %}
+{% if 'bond_master' in item %}
+	bond-master {{ item.bond_master }}
+	bond-primary {{ iface_name }}
+{% endif %}
+{% if 'bond_slaves' in item %}
+	bond-slaves none
+	bond-mode 802.3ad
+	bond-xmit-hash-policy layer2+3
+	bond-miimon 100
+	bond-lacp-rate 1
 {% endif %}
 {% if 'bridge_ports' in item %}
 	bridge_ports {{ item.bridge_ports }}
@@ -35,7 +57,7 @@ iface {{ item.iface }} inet manual
 {% endif %}
 {% if 'routes' in item %}
 {% for route in item.routes %}
-	up route add -net {{ route.net }} gw {{ route.via }} dev {{ item.iface }}
+	up route add -net {{ route.net }} gw {{ route.via }} dev {{ iface_name }}
 {% endfor %}
 {% endif %}
 {% if 'up' in item %}
@@ -45,3 +67,4 @@ iface {{ item.iface }} inet manual
 	down {{ item.down }}
 {% endif %}
 
+{%endfor %}

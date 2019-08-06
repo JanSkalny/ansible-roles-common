@@ -1,0 +1,25 @@
+- name: remove resolvconf
+  package:
+    name: resolvconf
+    state: absent
+  register: removed_resolvconf
+  tags: install
+
+- name: generate resolv.conf
+  template:
+    src: resolv.conf
+    dest: /etc/resolv.conf
+  tags: configure
+
+- name: generate 70-persistent-net.rules
+  template:
+    src: 70-persistent-net.rules
+    dest: /etc/udev/rules.d/70-persistent-net.rules
+  tags: configure
+
+- name: generate interfaces
+  template: 
+    src: interfaces
+    dest: /etc/network/interfaces
+  tags: configure
+
