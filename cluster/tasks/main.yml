@@ -1,12 +1,13 @@
 - name: install cluster sw
   apt: 
-    name: "{{item}}"
-  with_items:
-  - pacemaker 
-  - corosync 
-  - fence-agents
-  - drbd-utils
-  - ocfs2-tools
+    name: 
+    - pacemaker 
+    - corosync 
+    - crmsh
+    - fence-agents
+    - drbd-utils
+    - ocfs2-tools
+  tags: install
 
 - name: prepare directories
   file: 
@@ -16,21 +17,51 @@
     group: root
   with_items:
   - "/etc/systemd/system/pacemaker.service.d/"
-  - "/opt/shared"
 
 - name: configure pacemaker systemd override
   copy:
     src: pacemaker_override.conf
     dest: "/etc/systemd/system/pacemaker.service.d/override.conf"
+  tags: configure
+
+- name: deploy corosync authkey
+  copy:
+    content: "{{ cluster.authkey|b64decode }}" 
+    dest: /etc/corosync/authkey
+    mode: 0400
+    owner: root
+    group: root
+  tags: configure
+
+- name: configure corosync
+  template:
+    src: corosync.conf
+    dest: /etc/corosync/corosync.conf
+  tags: configure
 
 - name: reload systemd configuration
-  raw: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
 
 - name: disable system services
-  raw: systemctl disable libvirt-guests
+  systemd:
+    name: "{{ item }}"
+    enabled: no
+    state: stopped
+  with_items:
+  - drbd
+  - libvirt-guests
 
-- name: disable system services
-  raw: systemctl disable drbd
+- name: restart corosync
+  systemd:
+    name: corosync
+    state: restarted
+
+- name: restart pacemaker
+  systemd:
+    name: pacemaker
+    state: restarted
+
 
 # TODO:
 # configure drbd / ocfs

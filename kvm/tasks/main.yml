@@ -1,15 +1,14 @@
 - name: install virtualization packages 
   apt: 
-    name: "{{item}}"
-  with_items:
-  - libvirt-bin 
-  - kvm
-  - virtinst
-  - unar
-  - bridge-utils
-  - vlan
-  - irqbalance
-  - kpartx
+    name: 
+    - libvirt-bin 
+    - qemu-kvm
+    - virtinst
+    - unar
+    - bridge-utils
+    - vlan
+    - irqbalance
+    - kpartx
 
 - name: configure qemu-kvm
   template:
