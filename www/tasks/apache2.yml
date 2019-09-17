@@ -7,36 +7,29 @@
 - name: install packages
   apt:
     name:
-      - apache2 
-      - apache2-utils 
-      - libapache2-mod-fastcgi 
+      - apache2
+      - apache2-utils
   notify: restart apache2
 
-# ## used in Ubuntu server >= 18.04
-#- name: install fastcgi Apache module
-#  apt:
-#    deb: "http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb"
-#  notify: restart apache2
-
 - name: enable apache2 modules
-  apache2_module: 
+  apache2_module:
     name: "{{ item }}"
     state: present
   with_items:
-  - rewrite 
-  - ssl 
-  - actions 
-  - include 
-  - auth_digest 
-  - actions 
-  - fastcgi 
+  - rewrite
+  - ssl
+  - actions
+  - include
+  - auth_digest
+  - actions
+  - proxy_fcgi
   - alias
-  - vhost_alias  
+  - vhost_alias
   notify: restart apache2
 
-- name: configure apache2 
-  template: 
-    src: "{{ item }}" 
+- name: configure apache2
+  template:
+    src: "{{ item }}"
     dest: "/etc/apache2/conf-available/{{ item }}"
   with_items:
   - php-fpm.conf
@@ -44,15 +37,15 @@
   - ssl.conf
   notify: restart apache2
 
-- name: configure apache default sites 
-  copy: 
-    src: "000-default.conf" 
+- name: configure apache default sites
+  copy:
+    src: "000-default.conf"
     dest: "/etc/apache2/sites-available/000-default.conf"
   notify: restart apache2
 
 - name: delete unused files
-  file: 
-    path: "{{ item }}" 
+  file:
+    path: "{{ item }}"
     state: absent
   with_items:
   - "/var/www/html/index.html"
@@ -69,8 +62,8 @@
   notify: restart apache2
 
 - name: disable mod_php and autoindex
-  apache2_module: 
-    name: "{{ item }}" 
+  apache2_module:
+    name: "{{ item }}"
     force: true
     state: absent
   with_items:
