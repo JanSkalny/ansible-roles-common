@@ -17,13 +17,18 @@
 
 - name: prepare directories
   file:
-      path: "{{ item }}"
+      path: "{{ item.path }}"
       state: directory
-      owner: bind 
+      owner: "{{ item.owner }}"
       group: bind 
-      mode: 0750
+      mode: "{{ item.mode }}"
   with_items:
-  - "/etc/bind/master/"
+  - path: "/etc/bind/master/"
+    owner: bind
+    mode: "0750"
+  - path: "/etc/bind/"
+    owner: root
+    mode: "02775"
   tags: install
 
 - name: generate zone files
