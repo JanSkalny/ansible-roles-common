@@ -26,6 +26,7 @@
     - vlan
     - conntrack
     - dnsutils
+    - net-tools
     #- netsniff-ng
     #- python-pip
     #- python3-pip
