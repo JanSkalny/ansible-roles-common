@@ -1,5 +1,5 @@
 options {
-  directory "/etc/bind";
+  directory "/var/cache/bind";
 
   forwarders {
     {% for upstream in ns_upstream %}

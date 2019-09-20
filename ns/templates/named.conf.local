@@ -3,7 +3,7 @@
 zone "{{ zone }}" {
   zone-statistics no;
   type master;
-  file "master/{{ zone }}";
+  file "/etc/bind/master/{{ zone }}";
 };
 {% endfor %}
 
