@@ -1,6 +1,8 @@
 cluster:
   name: "{{ elastic.cluster_name }}"
+{% if elastic.version >= 6 %}
   remote.connect: {{ elastic.node_remote_cluster }}
+{% endif %}
 
 node:
   name: "{{ elastic.node_name }}"

@@ -2,7 +2,7 @@
   package:
     name:
     - apt-transport-https
-    - openjdk-8-jre-headless
+    - openjdk-11-jre-headless
     state: present
   tags: install
 
@@ -14,10 +14,9 @@
   tags: install
 
 - name: establish elasticsearch repo
-  copy:
-    src: elastic-repo.list
-    dest: /etc/apt/sources.list.d/elastic-6.x.list
-    mode: preserve
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/{{ elastic.version | default(6) }}.x/apt stable main"
+    filename: "/etc/apt/sources.list.d/elastic.list"
   register: apt_update
   tags: install
 
