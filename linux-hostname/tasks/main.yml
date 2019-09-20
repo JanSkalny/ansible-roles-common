@@ -1,0 +1,3 @@
+ - name: set hostname from ansible
+   hostname: 
+     name: "{{ inventory_hostname }}"
