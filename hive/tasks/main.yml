@@ -1,0 +1,24 @@
+- name: install dependencies
+  package:
+    name: apt-transport-https
+    state: present
+  tags: install
+
+- name: add thehive-project key
+  apt_key:
+    url: "https://raw.githubusercontent.com/TheHive-Project/TheHive/master/PGP-PUBLIC-KEY"
+    state: present
+  tags: install
+
+- name: add thehive-project repo
+  apt_repository:
+    repo: "deb https://dl.bintray.com/thehive-project/debian-stable any main"
+    update_cache: yes
+  tags: install
+
+- name: install thehive
+  apt:
+    name: thehive
+    state: present
+  tags: install
+
