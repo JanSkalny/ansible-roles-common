@@ -1,3 +1,12 @@
+---
+
+- name: establish OpenJDK repo
+  when: ansible_distribution_major_version | int < 18
+  apt_repository:
+    repo: "ppa:openjdk-r/ppa"
+    filename: "openjdk"
+  tags: install
+
 - name: install dependencies
   package:
     name:
@@ -16,13 +25,5 @@
 - name: establish elasticsearch repo
   apt_repository:
     repo: "deb https://artifacts.elastic.co/packages/{{ elastic.version | default(6) }}.x/apt stable main"
-    filename: "/etc/apt/sources.list.d/elastic.list"
-  register: apt_update
+    filename: "elastic"
   tags: install
-
-- name: udpate repositories
-  apt:
-    update_cache: yes
-  tags: install
-  when: apt_update.changed
-
