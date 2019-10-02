@@ -9,8 +9,17 @@
     - vlan
     - irqbalance
     - kpartx
+  tags: install
 
 - name: configure qemu-kvm
   template:
     src: qemu-kvm.defaults
     dest: /etc/default/qemu-kvm
+  tags: 
+  - install
+  - configure
+
+- name: get rind of default networking
+  shell:
+    virsh net-destroy default 2>&1 || true
+  tags: install
