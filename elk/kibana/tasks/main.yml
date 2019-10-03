@@ -1,3 +1,5 @@
+---
+
 - name: install kibana
   package:
     name: kibana
@@ -17,4 +19,3 @@
     enabled: yes
     state: started
   tags: configure, install
-

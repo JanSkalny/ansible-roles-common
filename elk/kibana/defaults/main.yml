@@ -1,5 +1,4 @@
 kibana:
-  bind: "0.0.0.0"
-  port: "5601"
-  elasticsearch_url: "http://localhost:9200"
-
+  server:
+    host: "0.0.0.0"
+    port: "5601"
