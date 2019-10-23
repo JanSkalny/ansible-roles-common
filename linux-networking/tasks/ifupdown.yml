@@ -15,11 +15,13 @@
   template:
     src: 70-persistent-net.rules
     dest: /etc/udev/rules.d/70-persistent-net.rules
+  notify: reboot host to apply networking changes
   tags: configure
 
 - name: generate interfaces
   template: 
     src: interfaces
     dest: /etc/network/interfaces
+  notify: reboot host to apply networking changes
   tags: configure
 

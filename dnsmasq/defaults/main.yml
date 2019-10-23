@@ -1,4 +1,4 @@
-dnsmasq_domain: "{{ net_domain }}"
+dnsmasq_domain: "{{ dns.search }}"
 dnsmasq_ifaces: []
 
 

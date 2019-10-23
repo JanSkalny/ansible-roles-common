@@ -1,7 +1,7 @@
+linux_networking_reboot: true
+
 networking: []
 
-net_domain: ""
-net_dns: 
-- "8.8.8.8"
-- "8.8.4.4"
-
+dns:
+  search: ""
+  servers: [ 1.1.1.1 ]

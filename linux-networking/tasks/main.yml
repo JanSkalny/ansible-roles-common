@@ -24,3 +24,5 @@
   include_tasks: ifupdown.yml
   tags: configure
 
+# flush handlers to network changes
+- meta: flush_handlers
