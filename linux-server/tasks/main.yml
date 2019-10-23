@@ -4,7 +4,6 @@
   loop_control:
     loop_var: x_role_name
   with_items:
-  - common/linux-normalize-dist
   - common/linux-hostname
   - common/harden-ssh
   - common/harden-sysctl
