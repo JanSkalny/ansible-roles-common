@@ -1,0 +1,6 @@
+cortex:
+  # secret_key: $( openssl rand -hex 20 )
+  analyzers_dir: "/opt/cortex-analyzers"
+  elasticsearch:
+    uri: "http://127.0.0.1:9200/"
+    index: "cortex"

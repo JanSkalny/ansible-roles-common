@@ -1,0 +1,31 @@
+- name: install dependencies
+  package:
+    name: apt-transport-https
+    state: present
+  tags: install
+
+- name: add docker key
+  apt_key:
+    url: "https://download.docker.com/linux/ubuntu/gpg"
+    state: present
+  tags: install
+
+- name: add docker repo
+  apt_repository:
+    repo: "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    update_cache: yes
+  tags: install
+
+- name: add cortex to docker group
+  user:
+    name: cortex
+    groups: docker
+    append: yes
+  tags: install
+
+- name: install docker-ce
+  apt:
+    name: docker-ce
+    state: present
+  tags: install
+
