@@ -3,7 +3,7 @@ firewall_template: "fw.sh"
 firewall_rule_default: "LOG_DROP"
 
 firewall:
-  interfaces: []
+  interfaces: "{{ networking }}"
 #  - name: mngPhys
 #    deny:
 #    - 10.191.3.128/26

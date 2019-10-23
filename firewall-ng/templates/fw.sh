@@ -44,8 +44,8 @@ modprobe ip_conntrack_ftp
 
 echo 0 > /proc/sys/net/ipv4/ip_forward
 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
-echo 0 > /proc/sys/net/ipv4/conf/all/rp_filter
-echo 0 > /proc/sys/net/ipv4/conf/all/log_martians
+echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
+echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
 echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
 echo 1 > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
 echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects
@@ -119,7 +119,7 @@ $IT4 -N CHECK_IF
 {% for deny_net in firewall_iface.deny | default([]) %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP
 {% endfor %}
-{% if firewall_iface.default | default('deny') == 'allow' %}
+{% if firewall_iface.default | default('allow' if firewall.interfaces|length == 1 else 'deny') == 'allow' %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -j RETURN
 {% else %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -j LOG_DROP
