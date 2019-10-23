@@ -1,3 +1,4 @@
 letsencrypt_admin_email: "admin@netvor.sk"
 letsencrypt_http_port: 402
+domain: "{{ inventory_hostname }}"
 aliases: []
