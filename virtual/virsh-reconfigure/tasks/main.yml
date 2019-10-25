@@ -1,0 +1,15 @@
+- include_role: 
+    name: common/virtual/shutdown
+
+- name: undefine old vm
+  virt:
+    name: "{{ virtual.name }}"
+    command: undefine
+
+- name: define new vm
+  virt:
+    command: define
+    xml: "{{ lookup('template', '../generate-config/templates/virtual.xml') }}"
+
+- include_role: 
+    name: common/virtual/start

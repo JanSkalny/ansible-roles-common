@@ -1,4 +1,0 @@
-- name: generate libvirt configuration 
-  template:
-    src: host.xml
-    dest: "{{ virtual_xml_dir }}/{{ virtual.name }}.xml"

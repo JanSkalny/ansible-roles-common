@@ -12,8 +12,7 @@
     <acpi/>
     <apic/>
   </features>
-  <cpu mode='custom' match='exact' check='partial'>
-    <model fallback='allow'>Skylake-Server-IBRS</model>
+  <cpu mode='host-model'>
   </cpu>
   <clock offset='utc'>
     <timer name='rtc' tickpolicy='catchup'/>
@@ -31,7 +30,7 @@
     <emulator>/usr/bin/kvm-spice</emulator>
     <disk type='block' device='disk'>
       <driver name='qemu' type='raw' cache='none' io='native'/>
-      <source dev='/dev/mapper/{{ virtual.name }}'/>
+      <source dev='{{ virtual.disk_blk }}'/>
       <target dev='vda' bus='virtio'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
     </disk>

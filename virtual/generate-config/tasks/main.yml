@@ -1,0 +1,5 @@
+- name: generate libvirt configuration 
+  template:
+    src: virtual.xml
+    dest: "{{ virtual_dir }}/conf/{{ virtual.name }}.xml"
+  register: virtual_generate_config

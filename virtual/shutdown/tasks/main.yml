@@ -1,0 +1,12 @@
+- name: send shutdown signal to vm
+  virt:
+    name: "{{ virtual.name }}"
+    state: shutdown
+
+- name: wait for vm to shut down
+  virt:
+    command: info
+  register: virtual_install
+  until: virtual_install[virtual.name].state == "shutdown"
+  retries: 120
+  delay: 5
