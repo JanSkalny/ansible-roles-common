@@ -16,13 +16,6 @@
     update_cache: yes
   tags: install
 
-- name: add cortex to docker group
-  user:
-    name: cortex
-    groups: docker
-    append: yes
-  tags: install
-
 - name: install docker-ce
   apt:
     name: docker-ce

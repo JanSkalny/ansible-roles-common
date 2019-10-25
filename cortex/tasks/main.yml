@@ -50,3 +50,10 @@
   tags: configure
   notify: restart cortex
 
+- name: add cortex to docker group
+  user:
+    name: cortex
+    groups: docker
+    append: yes
+  tags: install
+
