@@ -41,10 +41,18 @@
 - name: create data storage
   file:
     path: "{{ elastic.data_path }}"
-    owner: elasticsearch
     state: directory
+    owner: elasticsearch
   notify: restart elasticsearch
   tags: configure
+
+- name: create tmp directory
+  file:
+    path: "/var/lib/elasticsearch/tmp"
+    state: directory
+    owner: elasticsearch
+  notify: restart elasticsearch
+  tags: install
 
 - name: prepare systemd override directory
   file:

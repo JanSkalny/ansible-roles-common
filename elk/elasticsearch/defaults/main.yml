@@ -10,9 +10,11 @@ elastic:
   node_ingest: true
   node_remote_cluster: false
 
-  minimum_master_nodes: 1
   hosts:
   - "127.0.0.1"
+  minimum_master_nodes: 1
+  master_nodes:
+  - "{{ inventory_hostname }}"
 
   heap_space: "1g"
 

@@ -1,0 +1,14 @@
+- name: add linuxuprising/java ppa
+  apt_repository:
+    repo: ppa:linuxuprising/java
+    state: present
+    update_cache: yes
+  tags: install
+
+- name: install oracle java {{ java.version }}
+  apt:
+    name: 
+    - "oracle-java{{ java.version }}-installer-local"
+    - "oracle-java{{ java.version }}-set-default-local"
+    state: present
+  tags: install

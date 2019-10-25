@@ -1,0 +1,5 @@
+- name: install openjdk {{ java.version }}
+  package:
+    name: 
+    - "openjdk-{{ java.version }}-jre-headless"
+  tags: install

@@ -1,17 +1,9 @@
 ---
 
-- name: establish OpenJDK repo
-  when: ansible_distribution_major_version | int < 18
-  apt_repository:
-    repo: "ppa:openjdk-r/ppa"
-    filename: "openjdk"
-  tags: install
-
 - name: install dependencies
   package:
     name:
     - apt-transport-https
-    - openjdk-11-jre-headless
     state: present
   tags: install
 
@@ -26,4 +18,5 @@
   apt_repository:
     repo: "deb https://artifacts.elastic.co/packages/{{ elastic.version | default(6) }}.x/apt stable main"
     filename: "elastic"
+    update_cache: yes
   tags: install

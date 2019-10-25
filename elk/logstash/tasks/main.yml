@@ -1,0 +1,12 @@
+- name: install logstash
+  package:
+    name: logstash
+  tags: install
+
+- name: enable logstash service
+  systemd:
+    name: logstash
+    enabled: yes
+    state: started
+  tags: install
+

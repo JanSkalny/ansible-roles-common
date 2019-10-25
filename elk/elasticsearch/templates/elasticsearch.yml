@@ -3,6 +3,9 @@ cluster:
 {% if elastic.version >= 6 %}
   remote.connect: {{ elastic.node_remote_cluster }}
 {% endif %}
+{% if elastic.version >= 7 %}
+  initial_master_nodes: {{ elastic.master_nodes | to_json }}
+{% endif %}
 
 node:
   name: "{{ elastic.node_name }}"
