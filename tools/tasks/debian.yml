@@ -24,6 +24,7 @@
     - links
     - jq
     - vlan
+    - aptitude
     - conntrack
     - dnsutils
     - net-tools
