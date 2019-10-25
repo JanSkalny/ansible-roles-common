@@ -1,0 +1,12 @@
+hive:
+  #secret_key: "FIXME"
+  elasticsearch:
+    index: "the_hive"
+    uri: "http://127.0.0.1:9200/"
+
+  cortex: 
+    instances: []
+
+  misp:
+    interval: 1h
+    instances: []

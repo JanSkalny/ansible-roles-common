@@ -17,8 +17,17 @@
   tags: install
 
 - name: install thehive
-  apt:
+  package:
     name: thehive
     state: present
   tags: install
+
+- name: configure thehive
+  template:
+    src: application.conf
+    dest: /etc/thehive/application.conf
+    group: thehive
+    mode: 0640
+  notify: restart thehive
+  tags: configure
 
