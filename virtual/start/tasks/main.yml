@@ -7,8 +7,11 @@
 - name: wait for vm to start
   wait_for:
     host: "{{ virtual.name }}"
+    port: 22
+    search_regex: OpenSSH
     connect_timeout: 20
     sleep: 10
     delay: 10
     timeout: 300
+  connection: local
   when: virtual_start is changed
