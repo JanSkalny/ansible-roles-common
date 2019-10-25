@@ -1,0 +1,5 @@
+- name: prepare lv
+  lvol:
+      lv: "{{ virtual.name }}"
+      vg: "{{ virtual_blk_vg }}"
+      size: "{{ virtual.disk }}G"

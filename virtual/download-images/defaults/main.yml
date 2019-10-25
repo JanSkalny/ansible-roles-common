@@ -1,0 +1,7 @@
+virtual_images:
+- name: "ubuntu-18.04.3-server-amd64.iso"  
+  url: "http://cdimage.ubuntu.com/releases/18.04.3/release/ubuntu-18.04.3-server-amd64.iso"
+  sha256: "7d8e0055d663bffa27c1718685085626cb59346e7626ba3d3f476322271f573e"
+- name: "ubuntu-16.04.5-server-amd64.iso"
+  url: "http://old-releases.ubuntu.com/releases/16.04.5/ubuntu-16.04.5-server-amd64.iso"
+  sha256: "c94de1cc2e10160f325eb54638a5b5aa38f181d60ee33dae9578d96d932ee5f8"

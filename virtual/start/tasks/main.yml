@@ -1,0 +1,14 @@
+- name: start vm
+  virt:
+    name: "{{ virtual.name }}"
+    state: running
+  register: virtual_start
+
+- name: wait for vm to start
+  wait_for:
+    host: "{{ virtual.name }}"
+    connect_timeout: 20
+    sleep: 10
+    delay: 10
+    timeout: 300
+  when: virtual_start is changed

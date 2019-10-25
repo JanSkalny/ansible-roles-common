@@ -1,0 +1,11 @@
+- name: prepare images directory
+  file:
+    path: "{{ virtual_dir }}/images/"
+    state: directory
+
+- name: download and verify images
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ virtual_dir }}/images/{{ item.name }}"
+    checksum: "sha256:{{ item.sha256 }}"
+  with_items: "{{ virtual_images }}"

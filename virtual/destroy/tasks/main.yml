@@ -1,0 +1,24 @@
+- name: destroy vm
+  virt:
+    name: "{{ virtual.name }}"
+    state: destroyed
+  ignore_errors: yes
+
+- name: undefine vm
+  virt:
+    name: "{{ virtual.name }}"
+    command: undefine
+  ignore_errors: yes
+
+- name: delete lock file
+  file:
+    path: "{{ virtual_dir }}/preseed/{{ virtual.name }}.lock"
+    state: absent
+
+- name: delete config file
+  file:
+    path: "{{ virtual_dir }}/conf/{{ virtual.name }}.xml"
+    state: absent
+
+#TODO:
+# - over-write block device?

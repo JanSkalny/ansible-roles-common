@@ -1,0 +1,4 @@
+virtual_dir: "/var/lib/virtual"
+
+virtual: 
+  name: "{{ inventory_hostname }}"

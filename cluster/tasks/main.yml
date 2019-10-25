@@ -17,8 +17,6 @@
     group: root
   with_items:
   - "/etc/systemd/system/pacemaker.service.d/"
-  - "{{ cluster_dir }}/conf/"
-  - "{{ cluster_dir }}/preseed/"
 
 - name: configure pacemaker systemd override
   copy:

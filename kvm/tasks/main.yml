@@ -1,8 +1,9 @@
-- name: install virtualization packages 
-  apt: 
-    name: 
-    - libvirt-bin 
+- name: install virtualization packages
+  package:
+    name:
+    - libvirt-bin
     - qemu-kvm
+    - python3-libvirt
     - virtinst
     - unar
     - bridge-utils
@@ -11,15 +12,25 @@
     - kpartx
   tags: install
 
+- name: prepare directories
+  file:
+    path: "{{item}}"
+    state: directory
+    owner: root
+    group: root
+  with_items:
+  - "{{ virtual_dir }}/conf/"
+  - "{{ virtual_dir }}/preseed/"
+
 - name: configure qemu-kvm
   template:
     src: qemu-kvm.defaults
     dest: /etc/default/qemu-kvm
-  tags: 
+  tags:
   - install
   - configure
 
-- name: get rind of default networking
+- name: get rid of default networking
   shell:
     virsh net-destroy default 2>&1 || true
   tags: install
