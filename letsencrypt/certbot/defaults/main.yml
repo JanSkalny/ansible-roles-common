@@ -1,0 +1,4 @@
+letsencrypt_pre_hook: ""
+letsencrypt_post_hook: ""
+letsencrypt_http_port: 80
+letsencrypt_admin_email: "{{ admin_email }}"

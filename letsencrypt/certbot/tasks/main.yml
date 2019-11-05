@@ -3,9 +3,16 @@
     repo: ppa:certbot/certbot
     state: present
     update_cache: yes
+  tags: install
 
 - name: install certbot
   package:
     name: certbot
     state: present
+  tags: install
 
+- name: configure certbot
+  template:
+      src: cli.ini
+      dest: /etc/letsencrypt/cli.ini
+  tags: configure
