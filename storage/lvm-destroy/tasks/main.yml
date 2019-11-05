@@ -1,0 +1,6 @@
+- name: destroy lv
+  lvol:
+      lv: "{{ virtual.name }}"
+      vg: "{{ virtual_blk_vg }}"
+      state: absent
+      force: yes
