@@ -65,7 +65,7 @@ iface {{ iface_name }} inet static
 {% if 'address6' in item and item.address6 != 'auto' %}
 auto {{ iface_name }}
 iface {{ iface_name }} inet6 static
-	address {{ item.address }}
+	address {{ item.address6 }}
 {% if 'gateway6' in item %}
 	gateway {{ item.gateway6 }}
 {% endif %}
