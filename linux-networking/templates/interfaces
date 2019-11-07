@@ -6,6 +6,50 @@ source /etc/network/interfaces.d/*
 auto lo
 iface lo inet loopback
 
+{%- macro configure_interface(iface) -%}
+{% if 'dns' in iface %}
+	dns-nameservers {{ iface.dns }}
+{% endif %}
+{% if 'dns-search' in iface %}
+	dns-search {{ iface['dns-search'] }}
+{% endif %}
+{% if 'bond_master' in iface %}
+	bond-master {{ iface.bond_master }}
+	bond-primary {{ iface_name }}
+{% endif %}
+{% if 'bond_slaves' in iface %}
+	bond-slaves none
+	bond-mode 802.3ad
+	bond-xmit-hash-policy layer2+3
+	bond-miimon 100
+	bond-lacp-rate 1
+{% endif %}
+{% if 'bridge_ports' in iface %}
+	bridge_ports {{ iface.bridge_ports }}
+	bridge_stp off
+	bridge_fd 0
+	bridge_maxwait 0
+{% endif %}
+{% if 'vlan-id' in iface and 'vlan-iface' in iface %}
+	pre-up ip link add link {{ iface['vlan-iface'] }} name $IFACE type vlan id {{ iface['vlan-id'] }}
+	post-down ip link del link dev $IFACE
+{% endif %}
+{% if 'mtu' in iface %}
+	mtu {{ iface.mtu }}
+{% endif %}
+{% if 'routes' in iface %}
+{% for route in iface.routes %}
+	up route add -net {{ route.net }} gw {{ route.via }} dev {{ iface_name }}
+{% endfor %}
+{% endif %}
+{% if 'up' in iface %}
+	up {{ iface.up }}
+{% endif %}
+{% if 'down' in iface %}
+	down {{ iface.down }}
+{% endif %}
+{%- endmacro -%}
+
 {% for iface_name,item in networking.items() %}
 
 # {{ item }}
@@ -16,55 +60,27 @@ iface {{ iface_name }} inet static
 {% if 'gateway' in item %}
 	gateway {{ item.gateway }}
 {% endif %}
-{% if 'dns' in item %}
-	dns-nameservers {{ item.dns }}
+{{ configure_interface(item) }}
 {% endif %}
-{% if 'dns-search' in item %}
-	dns-search {{ item['dns-search'] }}
+{% if 'address6' in item and item.address6 != 'auto' %}
+auto {{ iface_name }}
+iface {{ iface_name }} inet6 static
+	address {{ item.address }}
+{% if 'gateway6' in item %}
+	gateway {{ item.gateway6 }}
 {% endif %}
+	autoconf 0
+	accept_ra 0
+{{ configure_interface(item) }}
 {% endif %}
 {% if 'address' in item and item.address == 'dhcp' %}
 auto {{ iface_name }}
 iface {{ iface_name }} inet dhcp
+{{ configure_interface(item) }}
 {% endif %}
-{% if 'address' not in item %}
+{% if 'address' not in item and 'address6' not in item %}
 auto {{ iface_name }}
 iface {{ iface_name }} inet manual
+{{ configure_interface(item) }}
 {% endif %}
-{% if 'bond_master' in item %}
-	bond-master {{ item.bond_master }}
-	bond-primary {{ iface_name }}
-{% endif %}
-{% if 'bond_slaves' in item %}
-	bond-slaves none
-	bond-mode 802.3ad
-	bond-xmit-hash-policy layer2+3
-	bond-miimon 100
-	bond-lacp-rate 1
-{% endif %}
-{% if 'bridge_ports' in item %}
-	bridge_ports {{ item.bridge_ports }}
-	bridge_stp off
-	bridge_fd 0
-	bridge_maxwait 0
-{% endif %}
-{% if 'vlan-id' in item and 'vlan-iface' in item %}
-	pre-up ip link add link {{ item['vlan-iface'] }} name $IFACE type vlan id {{ item['vlan-id'] }}
-	post-down ip link del link dev $IFACE
-{% endif %}
-{% if 'mtu' in item %}
-	mtu {{ item.mtu }}
-{% endif %}
-{% if 'routes' in item %}
-{% for route in item.routes %}
-	up route add -net {{ route.net }} gw {{ route.via }} dev {{ iface_name }}
-{% endfor %}
-{% endif %}
-{% if 'up' in item %}
-	up {{ item.up }}
-{% endif %}
-{% if 'down' in item %}
-	down {{ item.down }}
-{% endif %}
-
 {%endfor %}
