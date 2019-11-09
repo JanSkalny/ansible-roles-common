@@ -1,0 +1,5 @@
+ - name: deploy journald.conf
+   template:
+     src: journald.conf
+     dest: /etc/systemd
+   notify: restart journald

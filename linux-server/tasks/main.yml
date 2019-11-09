@@ -12,3 +12,4 @@
   - common/ntp
   - common/fail2ban
   - common/linux-compact-memory
+  - common/linux-journal
