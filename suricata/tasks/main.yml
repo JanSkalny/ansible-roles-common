@@ -1,0 +1,66 @@
+- name: install suricata dependencies
+  package: 
+    name:
+    - software-properties-common
+    - apt-transport-https
+    - jq
+  tags: install
+
+- name: add suricata-stable repository
+  apt_repository:
+    repo: ppa:oisf/suricata-stable
+    state: present
+    update_cache: yes
+  tags: install
+
+- name: install suricata 
+  package: 
+    name:
+    - suricata
+  tags: install
+  notify: restart suricata
+
+- name: deploy sensor-nic.sh
+  copy:
+      src: sensor-nic.sh
+      dest: /root/sensor-nic.sh
+      mode: 0755
+  tags: install
+
+- name: update suricata-update soures
+  shell: suricata-update update-sources
+  tags: suricata-update
+
+- name: enable suricata-update sources
+  shell: "suricata-update enable-source {{ item | quote }}"
+  ignore_errors: True
+  tags: suricata-update
+  with_items: "{{ suricata_sources }}"
+
+- name: run suricata-update 
+  shell: suricata-update 
+  tags: suricata-update
+  notify: restart suricata
+
+- name: configure suricata
+  template:
+      src: suricata.yaml
+      dest: /etc/suricata/suricata.yaml
+      mode: 0644
+  tags: configure
+  notify: restart suricata
+
+- name: configure suricata (threshold.config)
+  copy:
+      src: threshold.config
+      dest: /etc/suricata/threshold.config
+      mode: 0644
+  tags: configure
+  notify: restart suricata
+
+- name: configure logrotate
+  copy:
+      src: logrotate.conf
+      dest: /etc/logrotate.d/suricata
+  tags: configure
+  

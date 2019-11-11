@@ -1,0 +1,45 @@
+# default suricata profile 
+suricata: "{{ suricata_small }}"
+
+# enable or disable output formats
+suricata_eve: "yes"
+suricata_syslog: "no"
+suricata_fast: "no"
+
+# monitored interfaces (using AF_PACKETv3)
+suricata_ifaces: 
+- sensor0
+
+# to get a list of suricata sources, run 
+# `suricata-update list-sources`
+suricata_sources:
+- et/open
+
+# suricata profiles, can be selected into suricata: variable
+suricata_big:
+    flow:
+        memcap: 1gb
+        hash_size: 1048576
+        prealloc: 1048576
+    stream:
+        memcap: 2gb
+        checksum_validation: "no"
+        prealloc_sessions: 100000
+        reassembly: 
+            memcap: 4gb
+    af_packet:
+        buffer_size: 262144
+
+suricata_small:
+    flow:
+        memcap: 128mb
+        hash_size: 65536
+        prealloc: 10000
+    stream:
+        memcap: 64mb
+        checksum_validation: "no"
+        prealloc_sessions: 10000
+        reassembly: 
+            memcap: 256mb
+    af_packet:
+        buffer_size: 32768
