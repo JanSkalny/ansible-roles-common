@@ -64,7 +64,7 @@
       <mac address='{{ iface.ether }}'/>
       <source bridge='{{ iface.virtual_host_iface }}'/>
       <model type='virtio'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+	  <address type='pci' domain='0x0000' bus='0x00' slot='{{ '0x%02x' | format(loop.index + 5) }}' function='0x0'/>
     </interface>
 {% endfor %}
     <serial type='pty'>
@@ -88,7 +88,7 @@
       <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>
     </video>
     <memballoon model='virtio'>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
     </memballoon>
   </devices>
 </domain>
