@@ -1,6 +1,18 @@
-- name: add ondrej apache2 ppa
+#- name: add ondrej apache2 ppa
+#  apt_repository:
+#    repo: ppa:ondrej/apache2
+#    state: present
+#    update_cache: yes
+
+#XXX: https://github.com/ansible/ansible/issues/42534
+- name: add repo key
+  apt_key:
+    url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x4F4EA0AAE5267A6C"
+    state: present
+- name: add apache2 repo
   apt_repository:
-    repo: ppa:ondrej/apache2
+    repo: "deb http://ppa.launchpad.net/ondrej/apache2/ubuntu {{ ansible_distribution_release }} main"
+    filename: php
     state: present
     update_cache: yes
 
