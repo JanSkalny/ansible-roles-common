@@ -1,0 +1,12 @@
+- name: install apt-cacher-ng
+  package: 
+    name: apt-cacher-ng
+    state: present
+  tags: install
+  notify: restart apt-cacher-ng
+
+- name: make sure service is enabled
+  service: 
+    name: apt-cacher-ng
+    enabled: yes
+  tags: configure
