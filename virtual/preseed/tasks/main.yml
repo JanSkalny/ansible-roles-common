@@ -1,6 +1,6 @@
 - name: make sure block device exists
   file:
-    path: "{{ virtual.disk_blk }}"
+    path: "{{ virtual.disk_blk | default('/dev/mapper/'+virtual.name) }}"
 
 - name: "lock preseeding mutex for this vm"
   shell: "tempfile -n \"{{ virtual_dir }}/preseed/{{ virtual.name }}.lock\""
@@ -52,7 +52,7 @@
     --hvm \
     --connect=qemu:///system \
     --network=bridge:"{{ networking[virtual.default_interface].virtual_host_iface }}",model=virtio,mac={{ networking[virtual.default_interface].ether }} \
-    --disk path="{{ virtual.disk_blk }}",bus=virtio \
+    --disk path="{{ virtual.disk_blk | default("/dev/mapper/"+virtual.name) }}",bus=virtio \
     --graphics=vnc,port=-1 \
     --video vmvga \
     --noautoconsole \
