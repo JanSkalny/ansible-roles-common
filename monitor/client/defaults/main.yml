@@ -28,6 +28,8 @@ monitor_user_parameters:
  - drbd.conf
  - systemd.conf
  - multipath.conf
+ - misp.conf
+ - supervisor.conf
 
 monitor_scripts:
  - zabbix_mdraid.sh
@@ -44,3 +46,6 @@ monitor_scripts:
  - zabbix_bacula_check_job.sh
  - zabbix_varnish_cache.py
  - zabbix_multipath.sh
+ - zabbix_misp.sh
+ - zabbix_supervisor.sh
+
