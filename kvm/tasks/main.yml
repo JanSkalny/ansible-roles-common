@@ -30,6 +30,13 @@
   - install
   - configure
 
+- name: configure lvm (blacklist)
+  template:
+    src: lvm.conf
+    dest: /etc/lvm/lvm.conf
+  tags:
+  - configure
+
 - name: get rid of default networking
   shell:
     virsh net-destroy default 2>&1 || true
