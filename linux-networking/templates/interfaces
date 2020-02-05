@@ -6,7 +6,7 @@ source /etc/network/interfaces.d/*
 auto lo
 iface lo inet loopback
 
-{%- macro configure_interface(iface) -%}
+{%- macro configure_interface(iface, iface_name) -%}
 {% if 'dns' in iface %}
 	dns-nameservers {{ iface.dns }}
 {% endif %}
@@ -60,7 +60,7 @@ iface {{ iface_name }} inet static
 {% if 'gateway' in item %}
 	gateway {{ item.gateway }}
 {% endif %}
-{{ configure_interface(item) }}
+{{ configure_interface(item, iface_name) }}
 {% endif %}
 {% if 'address6' in item and item.address6 != 'auto' %}
 auto {{ iface_name }}
@@ -71,16 +71,16 @@ iface {{ iface_name }} inet6 static
 {% endif %}
 	autoconf 0
 	accept_ra 0
-{{ configure_interface(item) }}
+{{ configure_interface(item, iface_name) }}
 {% endif %}
 {% if 'address' in item and item.address == 'dhcp' %}
 auto {{ iface_name }}
 iface {{ iface_name }} inet dhcp
-{{ configure_interface(item) }}
+{{ configure_interface(item, iface_name) }}
 {% endif %}
 {% if 'address' not in item and 'address6' not in item %}
 auto {{ iface_name }}
 iface {{ iface_name }} inet manual
-{{ configure_interface(item) }}
+{{ configure_interface(item, iface_name) }}
 {% endif %}
 {%endfor %}
