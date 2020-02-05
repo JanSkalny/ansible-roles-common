@@ -1,0 +1,19 @@
+- name: install dependencies
+  package:
+    name:
+    - software-properties-common
+    - apt-transport-https
+    - git
+  tags: install
+
+- name: add golang repository
+  apt_repository:
+    repo: ppa:gophers/archive
+    state: present
+    update_cache: yes
+  tags: install
+
+- name: install golang
+  package:
+    name: golang-1.11-go
+  tags: install
