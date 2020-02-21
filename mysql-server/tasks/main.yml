@@ -14,7 +14,14 @@
     src: "mysqld.cnf"
     dest: "/etc/mysql/mysql.conf.d/system.cnf"
   notify: restart mysql
-  tags: install
+  tags: configure
+
+- name: add apparmor backups access
+  copy:
+    src: "apparmor.conf"
+    dest: /etc/apparmor.d/local/usr.sbin.mysqld
+  notify: restart mysql
+  tags: configure
 
 #TODO: fail2ban
 
@@ -26,5 +33,5 @@
     - "mysql             soft    nofile           32000"
     - "mysql             hard    nofile           48000"
   notify: restart mysql
-  tags: install
+  tags: configure
 
