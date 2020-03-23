@@ -5,7 +5,7 @@
   <currentMemory unit='MiB'>{{ virtual.ram }}</currentMemory>
   <vcpu placement='static'>{{ virtual.cpus }}</vcpu>
   <os>
-    <type arch='x86_64' machine='pc-i440fx-bionic'>hvm</type>
+    <type arch='x86_64' machine='{{ virtual.machine | default("ubuntu") }}'>hvm</type>
     <boot dev='hd'/>
   </os>
   <features>
