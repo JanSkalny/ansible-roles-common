@@ -40,6 +40,11 @@
     src: preseed.cfg
     dest: "{{ virtual_dir }}/preseed/{{ virtual.name }}/preseed.cfg"
 
+- name: prepare setup.sh
+  template:
+    src: setup.sh
+    dest: "{{ virtual_dir }}/preseed/{{ virtual.name }}/setup.sh"
+
 - name: start virt-install
   shell: virt-install \
     --name="{{ virtual.name }}" \
@@ -58,6 +63,7 @@
     --noautoconsole \
     --location="{{ virtual_image }}" \
     --initrd-inject="{{ virtual_dir }}/preseed/{{ virtual.name }}/preseed.cfg" \
+    --initrd-inject="{{ virtual_dir }}/preseed/{{ virtual.name }}/setup.sh" \
     --extra-args="auto=true file=/preseed.cfg vga=788 DEBCONF_DEBUG=5 debian-installer/language=en debian-installer/country=SK console-setup/ask_detect=false keyboard-configuration/layoutcode=us debian-installer/locale=en_US.UTF-8 localechooser/preferred-locale=en_US.UTF8" \
     --noreboot
 
