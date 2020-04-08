@@ -1,0 +1,18 @@
+openvpn_instance: "server"
+
+openvpn_config:
+  proto: udp
+  dev: tun0
+  port: 1194
+  #ca_crt: "{{ root_dir }}/storage/local-pki{{ inventory_hostname }}/"
+  #server_addr: 10.8.0.1
+  #net_addr: 10.8.0.0
+  
+openvpn_clients: []
+#  - name: foo
+#    addr: 10.8.0.2
+#    push_routes: 
+#    - 10.0.0.0/8
+#    - 1.2.3.0 255.255.255.252
+#  - name: bar
+#    addr: 10.8.0.3

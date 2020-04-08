@@ -1,0 +1,10 @@
+openvpn_instance: "server"
+
+openvpn_config:
+  proto: udp
+  dev: tun0
+  port: 1194
+  #ca_crt: "{{ root_dir }}/storage/local-pki{{ inventory_hostname }}/"
+  #ca_crl: "{{ root_dir }}/storage/local-pki{{ inventory_hostname }}/"
+  #server_crt: "{{ root_dir }}/storage/local-pki{{ inventory_hostname }}/"
+  #server_crl: "{{ root_dir }}/storage/local-pki{{ inventory_hostname }}/"

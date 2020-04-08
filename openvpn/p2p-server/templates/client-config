@@ -1,0 +1,9 @@
+ifconfig-push {{ item.addr }} {{ openvpn_config.server_addr }}
+
+{% for route in item.push_routes | default([]) %}
+push "route {{ route }} {{ openvpn_config.server_addr }} 10"
+{% endfor %}
+
+{% for route in openvpn_config.push_routes | default([]) %}
+push "route {{ route }} {{ openvpn_config.server_addr }} 10"
+{% endfor %}

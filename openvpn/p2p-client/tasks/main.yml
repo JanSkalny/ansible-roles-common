@@ -1,0 +1,22 @@
+- name: deploy x509
+  copy:
+    src: "{{ item.src }}"
+    dest: "/etc/openvpn/{{ openvpn_instance }}/{{ item.name }}"
+    mode: 0600
+  with_items:
+    - name: client.crt
+      src: "{{ openvpn_config.client_crt }}"
+    - name: client.key
+      src: "{{ openvpn_config.client_key }}"
+  tags: 
+  - configure
+  - x509
+  notify: restart openvpn
+
+- name: generate client configuration
+  template:
+    src: client.conf
+    dest: "/etc/openvpn/{{ openvpn_instance }}.conf"
+  tags: configure
+  notify: restart openvpn
+

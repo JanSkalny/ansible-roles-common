@@ -1,0 +1,8 @@
+openvpn_instance: "client"
+
+openvpn_config:
+  dev: tun0
+  remotes:
+  - "x.x.x.x 1194 udp"
+  - "y.y.y.y 1194 udp"
+

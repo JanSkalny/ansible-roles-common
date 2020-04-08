@@ -1,0 +1,33 @@
+
+#XXX: on older debians
+#- openvpn-blacklist
+
+- name: install openvpn and dependencies
+  package: 
+    name:
+    - openvpn
+    - bridge-utils
+    state: present
+
+- name: prepare instance directories
+  file:
+    path: "/etc/openvpn/{{ openvpn_instance }}"
+    state: directory
+
+- name: deploy x509
+  copy:
+    src: "{{ item.src }}"
+    dest: "/etc/openvpn/{{ openvpn_instance }}/{{ item.name }}"
+    mode: 0600
+  with_items:
+    - name: ca.crt
+      src: "{{ openvpn_config.ca_crt }}"
+  tags: configure
+  notify: restart openvpn
+
+- name: enable service
+  service:
+    name: "openvpn@{{ openvpn_instance }}"
+    enabled: yes
+  notify: restart openvpn
+

@@ -1,0 +1,51 @@
+- name: generate diffie-hellman keys
+  openssl_dhparam:
+    path: "/etc/openvpn/{{ openvpn_instance }}/dh.pem"
+    size: 2048
+  notify: restart openvpn
+
+- name: deploy x509
+  copy:
+    src: "{{ item.src }}"
+    dest: "/etc/openvpn/{{ openvpn_instance }}/{{ item.name }}"
+    mode: 0600
+  with_items:
+    - name: ca.crl
+      src: "{{ openvpn_config.ca_crl }}"
+    - name: server.crt
+      src: "{{ openvpn_config.server_crt }}"
+    - name: server.key
+      src: "{{ openvpn_config.server_key }}"
+  tags: 
+  - configure
+  - x509
+  notify: restart openvpn
+
+- name: generate server configuration
+  template:
+    src: server.conf
+    dest: "/etc/openvpn/{{ openvpn_instance }}.conf"
+  tags: configure
+  notify: restart openvpn
+
+- name: prepare instance directories
+  file:
+    path: "/etc/openvpn/{{ openvpn_instance }}/ccd"
+    state: directory
+
+- name: list existing client configurations
+  find:
+    paths: "/etc/openvpn/{{ openvpn_instance }}/ccd"
+  register: openvpn_existing_client_configs
+
+- debug:
+   msg: "{{ openvpn_existing_client_configs }}"
+
+- name: generate client configuration
+  template:
+    src: client-config
+    dest: "/etc/openvpn/{{ openvpn_instance }}/ccd/{{ item.name }}"
+  with_items: "{{ openvpn_clients }}"
+  tags: configure
+  notify: restart openvpn
+
