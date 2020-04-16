@@ -1,0 +1,11 @@
+- name: create ssh user
+  user:
+    name: "{{ reverse_ssh.user }}"
+    comment: "Reverse SSH user"
+
+- name: prepare directories
+  file:
+    path: "/home/{{ reverse_ssh.user }}/.ssh"
+    owner: "{{ reverse_ssh.user }}"
+    mode: 0500
+

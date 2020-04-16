@@ -1,0 +1,3 @@
+{% for client_host in reverse_ssh_clients %}
+command="/bin/cat",permitopen="127.0.0.{{ hostvars[client_host].reverse_ssh.id }}:7" {{ hostvars[client_host].reverse_ssh_client_keys.public_key }} cat@{{ client_host }}
+{% endfor %}

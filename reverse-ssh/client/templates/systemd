@@ -1,0 +1,14 @@
+[Unit]
+Description=Reverse SSH
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+User={{ reverse_ssh.user }}
+Group={{ reverse_ssh.user }}
+ExecStart=/home/{{ reverse_ssh.user }}/cat.sh
+
+[Install]
+WantedBy=multi-user.target
+

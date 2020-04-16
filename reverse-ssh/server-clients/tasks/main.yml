@@ -1,0 +1,16 @@
+- name: generate remote hosts / ssh port mapping file
+  template:
+    src: "list"
+    dest: "/etc/reverse_ssh_list"
+    owner: "{{ reverse_ssh.user }}"
+    mode: 0400
+  notify: killall cat
+
+- name: generate authorized_keys
+  template:
+    src: "authorized_keys"
+    dest: "/home/{{ reverse_ssh.user }}/.ssh/authorized_keys"
+    owner: "{{ reverse_ssh.user }}"
+    mode: 0400
+  notify: killall cat
+

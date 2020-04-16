@@ -1,0 +1,3 @@
+- name: killall cat
+  shell: killall cat
+  ignore_errors: true

@@ -1,0 +1,5 @@
+{% for client_host in reverse_ssh_clients %}
+Host {{ client_host }}
+	Hostname 127.0.0.{{ hostvars[client_host].reverse_ssh.id }} 
+	Port {{ 2000+hostvars[client_host].reverse_ssh.id }}
+{% endfor %}

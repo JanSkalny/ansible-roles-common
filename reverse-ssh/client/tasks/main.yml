@@ -1,0 +1,39 @@
+- name: create reverse ssh user
+  user:
+    name: "{{ reverse_ssh.user }}"
+    comment: "Reverse SSH to {{ reverse_ssh_server.server_addr }}"
+
+- name: deploy script
+  template:
+    src: cat.sh
+    owner: "{{ reverse_ssh.user }}"
+    mode: 0750
+    dest: "/home/{{ reverse_ssh.user }}/cat.sh"
+
+- name: prepare directories
+  file:
+    path: "/home/{{ reverse_ssh.user }}/.ssh"
+    state: directory
+    owner: "{{ reverse_ssh.user }}"
+    mode: 0500
+
+- name: generate known_hosts
+  template:
+    src: known_hosts
+    dest: "/home/{{ reverse_ssh.user }}/.ssh/known_hosts"
+    owner: "{{ reverse_ssh.user }}"
+    mode: 0640
+
+- name: generate private keys
+  openssh_keypair:
+    path: "/home/{{ reverse_ssh.user }}/.ssh/id_ed25519"
+    owner: "{{ reverse_ssh.user }}"
+    type: ed25519
+  register: "reverse_ssh_client_keys"
+
+- name: configure systemd
+  template:
+    src: systemd
+    dest: /etc/systemd/system/reverse-ssh.service
+  notify: reload systemd
+

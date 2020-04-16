@@ -1,0 +1,6 @@
+- name: reload systemd
+  systemd:
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+    name: reverse-ssh
