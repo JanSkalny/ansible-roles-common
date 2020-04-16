@@ -9,6 +9,7 @@ zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_openvpn.sh
 zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_varnish_cache.py
 zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_multipath.sh
 zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_misp.sh
+zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_syslog_ng.sh
 zabbix ALL=(ALL) NOPASSWD: /usr/sbin/smartctl
 zabbix ALL=(ALL) NOPASSWD: /usr/sbin/hpacucli
 zabbix ALL=(ALL) NOPASSWD: /usr/sbin/ssacli

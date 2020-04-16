@@ -30,6 +30,7 @@ monitor_user_parameters:
  - multipath.conf
  - misp.conf
  - supervisor.conf
+ - syslog-ng.conf
 
 monitor_scripts:
  - zabbix_mdraid.sh
@@ -48,4 +49,5 @@ monitor_scripts:
  - zabbix_multipath.sh
  - zabbix_misp.sh
  - zabbix_supervisor.sh
+ - zabbix_syslog_ng.sh
 
