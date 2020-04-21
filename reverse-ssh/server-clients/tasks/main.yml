@@ -7,10 +7,11 @@
   notify: killall cat
 
 - name: generate authorized_keys
-  template:
-    src: "authorized_keys"
-    dest: "/home/{{ reverse_ssh.user }}/.ssh/authorized_keys"
-    owner: "{{ reverse_ssh.user }}"
-    mode: 0400
+  authorized_key:
+    user: "{{ reverse_ssh.user }}"
+    state: present
+    key: "{{ hostvars[item].reverse_ssh_client_keys.public_key }} cat@{{ item }}"
+    key_options: "command=\"/bin/cat\",permitopen=\"127.0.0.{{ hostvars[item].reverse_ssh.id }}:7\""
+  with_items: "{{ reverse_ssh_clients }}"
   notify: killall cat
 
