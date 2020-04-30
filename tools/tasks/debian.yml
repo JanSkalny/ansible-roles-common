@@ -29,6 +29,7 @@
     - dnsutils
     - net-tools
     - unzip
+    - ipmitool
     #- netsniff-ng
     #- python-pip
     #- python3-pip
