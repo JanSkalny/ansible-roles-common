@@ -1,6 +1,6 @@
 # {{ ansible_managed }}
 
-127.0.0.1	localhost
+127.0.0.1	localhost {{ inventory_hostname }}
 
 # TODO: add templating
 
