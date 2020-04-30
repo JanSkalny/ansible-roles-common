@@ -25,6 +25,14 @@
   tags: configure
   notify: restart openvpn
 
+- name: deploy tls-auth key
+  template:
+    src: "ta.key"
+    dest: "/etc/openvpn/{{ openvpn_instance }}/ta.key"
+    mode: 0600
+  tags: configure
+  notify: restart openvpn
+
 - name: enable service
   service:
     name: "openvpn@{{ openvpn_instance }}"

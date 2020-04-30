@@ -21,6 +21,22 @@
   - x509
   notify: restart openvpn
 
+#- name: check for tls-auth key
+#  slurp:
+#    src: "/etc/openvpn/{{ openvpn_instance }}/ta.key"
+#  ignore_errors: yes
+#  register: openvpn_tls_auth_key
+
+#- name: generate ta.key (if not present)
+#  shell: openvpn --genkey --secret "/etc/openvpn/{{ openvpn_instance }}/ta.key"
+#  when: openvpn_tls_auth_key.failed
+
+#- name: check for tls-auth key (again)
+#  slurp:
+#    src: "/etc/openvpn/{{ openvpn_instance }}/ta.key"
+#  when: openvpn_tls_auth_key.failed
+#  register: openvpn_tls_auth_key
+
 - name: generate server configuration
   template:
     src: server.conf
