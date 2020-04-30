@@ -2,3 +2,10 @@
 - include: mdadm.yml
 - include: sensors.yml
 
+- package:
+    name:
+      - hwloc 
+      - linux-tools-common 
+      - linux-tools-generic
+    state: present
+
