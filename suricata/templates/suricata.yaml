@@ -79,6 +79,8 @@ outputs:
       enabled: {{ suricata_eve }}
       filetype: regular #regular|syslog|unix_dgram|unix_stream|redis
       filename: eve.json
+      filename: eve-%Y-%m-%d-%H:%M.json
+      rotate-interval: {{ suricata_eve_rotate_interval }}
       #prefix: "@cee: " # prefix to prepend to each log entry
       # the following are valid when type: syslog above
       #identity: "suricata"
@@ -233,7 +235,7 @@ outputs:
         - ssh
         - stats:
             totals: yes       # stats for all threads merged together
-            threads: no       # per thread stats
+            threads: yes       # per thread stats
             deltas: no        # include delta values
         # bi-directional flows
         - flow
@@ -624,7 +626,7 @@ af-packet:
 {% for n in range(suricata_ifaces|length) %}
   - interface: {{ suricata_ifaces[n] }}
     # Number of receive threads. "auto" uses the number of cores
-    #threads: auto
+    threads: {{ suricata_worker_threads | default("auto") }}
     # Default clusterid. AF_PACKET will load balance packets based on flow.
     cluster-id: {{ 99-n }}
     # Default AF_PACKET cluster type. AF_PACKET can load balance per flow or per hash.
@@ -664,11 +666,11 @@ af-packet:
     # the following value. If you are using flow cluster-type and have really network
     # intensive single-flow you could want to set the ring-size independently of the number
     # of threads:
-    #ring-size: 2048
+    ring-size: {{ suricata.af_packet.ring_size | default(2048) }}
     # Block size is used by tpacket_v3 only. It should set to a value high enough to contain
     # a decent number of packets. Size is in bytes so please consider your MTU. It should be
     # a power of 2 and it must be multiple of page size (usually 4096).
-    #block-size: 32768
+    block-size: {{ suricata.af_packet.block_size | default(32768) }}
     # tpacket_v3 block timeout: an open block is passed to userspace if it is not
     # filled after block-timeout milliseconds.
     #block-timeout: 10
@@ -676,7 +678,9 @@ af-packet:
     # phase. This will result in some packets (at max a ring flush) being non treated.
     #use-emergency-flush: yes
     # recv buffer size, increase value could improve performance
+    {% if "buffer_size" in suricata.af_packet | default(false) %}
     buffer-size: {{ suricata.af_packet.buffer_size }} 
+    {% endif %}
     # Set to yes to disable promiscuous mode
     # disable-promisc: no
     # Choose checksum verification mode for the interface. At the moment
@@ -1090,7 +1094,7 @@ host-mode: sniffer-only
 # Number of packets preallocated per thread. The default is 1024. A higher number 
 # will make sure each CPU will be more easily kept busy, but may negatively 
 # impact caching.
-#max-pending-packets: 1024
+max-pending-packets: {{ suricata.max_pending_packets | default(1024) }}
 
 # Runmode the engine should use. Please check --list-runmodes to get the available
 # runmodes for each packet acquisition method. Defaults to "autofp" (auto flow pinned
@@ -1112,7 +1116,7 @@ host-mode: sniffer-only
 # Preallocated size for packet. Default is 1514 which is the classical
 # size for pcap on ethernet. You should adjust this value to the highest
 # packet size (MTU + hardware header) on your system.
-#default-packet-size: 1514
+default-packet-size: {{ suricata_default_packet_size | default(1514) }}
 
 # Unix command socket can be used to pass commands to Suricata.
 # An external tool can then connect to get information from Suricata
@@ -1191,7 +1195,7 @@ host-os-policy:
 # Defrag settings:
 
 defrag:
-  memcap: 32mb
+  memcap: {{ suricata.defrag.memcap | default("32mb") }}
   hash-size: 65536
   trackers: 65535 # number of defragmented flows to follow
   max-frags: 65535 # number of fragments to keep (higher than trackers)
@@ -1361,7 +1365,8 @@ stream:
   memcap: {{ suricata.stream.memcap }}
   checksum-validation: {{ suricata.stream.checksum_validation }}      # reject wrong csums
   prealloc_sessions: {{ suricata.stream.prealloc_sessions }}
-  inline: auto                  # auto will use inline mode in IPS mode, yes or no set it statically
+  inline: no                  # auto will use inline mode in IPS mode, yes or no set it statically
+  bypass: yes
   reassembly:
     memcap: {{ suricata.stream.reassembly.memcap }}
     depth: 1mb                  # reassemble 1mb into a stream
@@ -1380,7 +1385,7 @@ stream:
 host:
   hash-size: 4096
   prealloc: 1000
-  memcap: 32mb
+  memcap: {{ suricata.host.memcap | default("32mb") }}
 
 # IP Pair table:
 #
@@ -1490,6 +1495,22 @@ mpm-algo: auto
 
 spm-algo: auto
 
+{% if suricata_set_affinity %} 
+threading:
+  set-cpu-affinity: yes
+  cpu-affinity:
+    - management-cpu-set:
+        cpu: [ 0,1,2,3,4,5,6,7 ]  
+        mode: "balanced"
+    - receive-cpu-set:
+        cpu: [ 12,14,16,18,20,22,24,26,28,30 ] 
+    - worker-cpu-set:
+        cpu: [ 12,14,16,18,20,22,24,26,28,30 ]
+        mode: "exclusive"
+        prio:
+          default: "high"
+  detect-thread-ratio: 1.0
+{% else %}
 # Suricata is multi-threaded. Here the threading can be influenced.
 threading:
   set-cpu-affinity: no
@@ -1534,6 +1555,9 @@ threading:
   # thread will always be created.
   #
   detect-thread-ratio: 1.0
+
+
+{% endif %}
 
 # Luajit has a strange memory requirement, it's 'states' need to be in the
 # first 2G of the process' memory.

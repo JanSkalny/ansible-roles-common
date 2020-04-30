@@ -1,0 +1,14 @@
+- name: deploy suricata-set-affinity.sh
+  template:
+    src: set-affinity.sh
+    dest: /usr/local/bin/suricata-set-affinity.sh
+    mode: 0755
+  tags: 
+  - install
+  - configure
+
+- name: deploy suricata cron.d for irqs
+  copy:
+    src: cron-set-affinity
+    dest: /etc/cron.d/suricata-set-affinity
+    mode: 0750

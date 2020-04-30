@@ -6,6 +6,11 @@ suricata_eve: "yes"
 suricata_syslog: "no"
 suricata_fast: "no"
 
+suricata_eve_rotate_interval: "1h"
+suricata_default_packet_size: 1536
+
+suricata_set_affinity: false
+
 # monitored interfaces (using AF_PACKETv3)
 suricata_ifaces: 
 - sensor0
@@ -43,3 +48,25 @@ suricata_small:
             memcap: 256mb
     af_packet:
         buffer_size: 32768
+
+suricata_huge:
+    flow:
+        memcap: 4gb
+        hash_size: 1048576
+        prealloc: 1048576
+    stream:
+        memcap: 8gb
+        checksum_validation: "no"
+        prealloc_sessions: 100000
+        reassembly: 
+            memcap: 16gb
+    af_packet:
+        ring_size: 400000
+        block_size: 393216
+    host:
+        memcap: 128mb
+    defrag: 
+        memcap: 128mb
+    max_pending_packets: 4096
+
+

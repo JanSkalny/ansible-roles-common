@@ -1,0 +1,1 @@
+@reboot root /usr/local/bin/suricata-set-affinity.sh
