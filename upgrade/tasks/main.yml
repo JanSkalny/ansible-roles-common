@@ -1,0 +1,21 @@
+- name: apt-get update
+  apt:
+    update_cache: true
+
+- name: apt-get upgrade
+  apt:
+    upgrade: safe
+
+- name: apt-get dist-upgrade
+  apt:
+    upgrade: dist
+  register: "upgrade_kernel"
+
+- meta: flush_handlers
+
+- name: reboot host into new kernel
+  #reboot:
+  debug: 
+    msg: consider rebooting
+  when: upgrade_kernel.changed
+
