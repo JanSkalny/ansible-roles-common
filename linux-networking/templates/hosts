@@ -1,8 +1,11 @@
 # {{ ansible_managed }}
 
-127.0.0.1	localhost {{ inventory_hostname }}
+127.0.0.1 localhost {{ inventory_hostname }}
 
-# TODO: add templating
+# generated from "hosts" var
+{% for h,ip in hosts.items() %}
+{{ ip }} {{ h }}
+{% endfor %}
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     localhost ip6-localhost ip6-loopback
