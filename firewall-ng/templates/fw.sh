@@ -42,10 +42,10 @@ IT6=/sbin/ip6tables
 modprobe ip_conntrack
 modprobe ip_conntrack_ftp
 
-echo 0 > /proc/sys/net/ipv4/ip_forward
+echo {{ firewall.ip_forward | default(0) }} > /proc/sys/net/ipv4/ip_forward
 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
 echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
-echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
+echo {{ firewall.log_martians | default(1) }} > /proc/sys/net/ipv4/conf/all/log_martians
 echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
 echo 1 > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
 echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects
@@ -172,7 +172,6 @@ done
 ############################################################
 ### INPUT ruleset
 
-
 {% for input_rule_name,input_rule in firewall.input.items() %}
 {% with %}
 	{% set src_addrs = normalize_addrs(input_rule, 'src').split(',') %}
@@ -247,8 +246,32 @@ $IT6 -A OUTPUT -j LOG_ACCEPT
 $IT4 -A OUTPUT -j {{ firewall_rule_default }}
 $IT6 -A OUTPUT -j {{ firewall_rule_default }}
 
+
 ############################################################
 ### FORWARD ruleset
+
+{% for forward_rule_name,forward_rule in firewall.forward.items() %}
+{% with %}
+	{% set src_addrs = normalize_addrs(forward_rule, 'src').split(',') %}
+	{% set dest_addrs = normalize_addrs(forward_rule, 'dest').split(',') %}
+	{% set tcp_ports = normalize_ports(forward_rule, 'tcp').split(',') | difference(['']) %}
+	{% set udp_ports = normalize_ports(forward_rule, 'udp').split(',') | difference(['']) %}
+
+# {{ forward_rule_name }}
+# {{ forward_rule | to_json }}
+{% for src_addr in src_addrs -%} 
+{%- for dest_addr in dest_addrs -%} 
+{% for port in tcp_ports | list %}
+$IT4 -A FORWARD -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
+{% endfor %}
+{% for port in udp_ports | list %}
+$IT4 -A FORWARD -p udp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
+{% endfor %}
+{%- endfor -%}
+{%- endfor -%}
+
+{% endwith %}
+{% endfor %}
 
 $IT4 -A FORWARD -j LOG_DROP
 $IT6 -A FORWARD -j LOG_DROP
