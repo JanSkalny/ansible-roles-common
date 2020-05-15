@@ -678,9 +678,9 @@ af-packet:
     # phase. This will result in some packets (at max a ring flush) being non treated.
     #use-emergency-flush: yes
     # recv buffer size, increase value could improve performance
-    {% if "buffer_size" in suricata.af_packet | default(false) %}
+{% if "buffer_size" in suricata.af_packet | default(false) %}
     buffer-size: {{ suricata.af_packet.buffer_size }} 
-    {% endif %}
+{% endif %}
     # Set to yes to disable promiscuous mode
     # disable-promisc: no
     # Choose checksum verification mode for the interface. At the moment

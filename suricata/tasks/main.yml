@@ -51,7 +51,7 @@
   notify: restart suricata
 
 - name: configure suricata (threshold.config)
-  copy:
+  template:
       src: threshold.config
       dest: /etc/suricata/threshold.config
       mode: 0644
