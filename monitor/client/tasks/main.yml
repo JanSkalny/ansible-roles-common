@@ -29,6 +29,8 @@
     state: absent
   with_items:
   - userparameter_mysql.conf
+  - mysql.conf
+  - vfs.conf
   - zabbix_mdraid.conf
   tags: configure
   notify: restart zabbix-agent

@@ -20,7 +20,6 @@ monitor_user_parameters:
  - hpacucli.conf
  - ssacli.conf
  - openvpn.conf
- - vfs.conf
  - sockstat.conf
  - varnish.conf
  - ntp.conf
