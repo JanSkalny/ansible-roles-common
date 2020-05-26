@@ -1,0 +1,26 @@
+- name: check if zabbix-release is available
+  command: dpkg-query -W zabbix-release
+  register: res
+  check_mode: no
+  ignore_errors: True
+
+- name: check if we need to reinstall zabbix-release
+  set_fact:
+    reinstall_zabbix: "{{ res.stdout | regex_search(':[0-9].[0-9]') != ':'+zabbix_version }}"
+    check_mode: no
+
+- name: remove old zabbix-release 
+  apt:
+      name: zabbix-release
+      state: absent
+      purge: yes
+      autoremove: yes
+  when: reinstall_zabbix
+
+- name: download and install zabbix-release for Ubuntu
+  import_tasks: ubuntu_install.yml
+  when: ansible_distribution == 'Ubuntu' and reinstall_zabbix
+
+- name: download and install zabbix-release for Debian
+  import_tasks: debian_install.yml
+  when: ansible_distribution == 'Debian' and reinstall_zabbix

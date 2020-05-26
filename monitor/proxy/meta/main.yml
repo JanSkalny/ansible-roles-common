@@ -1,3 +1,0 @@
-dependencies:
- - common/mysql-server
- - common/monitor/base

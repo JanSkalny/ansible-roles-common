@@ -1,0 +1,4 @@
+dependencies:
+ - common/mysql-server
+ - common/zabbix/base
+ - common/www

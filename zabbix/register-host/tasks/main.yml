@@ -1,0 +1,51 @@
+- name: enumerate zabbix templates
+  include_vars:
+    name: zabbix_template_definitions
+    file: "../../templates/{{ item }}.yaml"
+  with_items: "{{ zabbix_templates }}"
+  tags: configure
+
+
+- name: add host to zabbix server
+  become: false
+  local_action:
+    module: zabbix_host
+    server_url: "{{ zabbix_url }}"
+    login_user: "{{ zabbix_admin_login }}"
+    login_password: "{{ zabbix_admin_password }}"
+    host_name: "{{ inventory_hostname }}"
+    visible_name: "{{ inventory_hostname }}"
+    host_groups:
+    - "{{ zabbix_group }}"
+    link_templates: "{{ zabbix_template_definitions | json_query('*.template') | unique }}"
+    status: enabled
+    state: present
+    interfaces:
+      - type: 1
+        main: 1
+        useip: 1
+        ip: "{{ ansible_default_ipv4.address }}"
+        dns: ""
+        port: 10050
+    tls_connect: 2 # psk
+    tls_accept: 2  # psk
+    tls_psk_identity: "{{ inventory_hostname }}"
+    tls_psk: "{{ zabbix_agent_psk }}"
+    proxy: "{{ zabbix_proxy }}"
+    validate_certs: false
+  tags: configure
+
+- name: Create zabbix macros
+  become: false
+  local_action:
+    module: zabbix_hostmacro
+    server_url: "{{ zabbix_url }}"
+    login_user: "{{ zabbix_admin_login }}"
+    login_password: "{{ zabbix_admin_password }}"
+    host_name: "{{ inventory_hostname }}"
+    macro_name: "{{ item['macro_name'] }}"
+    macro_value: "{{ item['macro_value'] }}"
+    state: present
+    validate_certs: false
+  with_items: "{{ hostvars[inventory_hostname]['zabbix_macro'] | default([]) }}"
+  tags: configure

@@ -1,0 +1,44 @@
+- name: install zabbix-server and dependecies
+  package:
+    name:
+    - python-mysqldb
+    - python3-mysqldb
+    - php-bcmath
+    - zabbix-server-mysql
+    - zabbix-frontend-php
+    state: present
+
+- name: create zabbix database
+  mysql_db:
+    name: "{{ zabbix_server_db_name }}"
+    encoding: utf8
+    collation: utf8_bin
+    state: present
+  register: zabbix_server_db_present
+
+- name: create zabbix user
+  mysql_user:
+    name: "{{ zabbix_server_db_user }}"
+    password: "{{ zabbix_server_db_password }}"
+    priv: "{{ zabbix_server_db_name }}.*:ALL"
+    state: present
+
+- name: import zabbix database
+  mysql_db:
+    name: "{{ zabbix_server_db_name }}"
+    state: import
+    target: /usr/share/doc/zabbix-server-mysql/create.sql.gz
+  when: zabbix_server_db_present.changed == True
+
+- name: configure zabbix-server
+  template: 
+    src: "zabbix_server.conf" 
+    dest: "/etc/zabbix/zabbix_server.conf"
+
+- name: enable auto-start of zabbix-server
+  raw: systemctl enable zabbix-server
+
+- name: restart zabbix-server
+  service: name=zabbix-server state=restarted
+
+

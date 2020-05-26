@@ -1,0 +1,3 @@
+[submodule "zabbix/templates/zabbix-misp"]
+	path = zabbix/templates/zabbix-misp
+	url = https://github.com/JanSkalny/zabbix-misp.git

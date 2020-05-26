@@ -1,4 +1,0 @@
-- name: zabbix apt source for .deb based systems
-  import_tasks: deb_systems.yml
-  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
-

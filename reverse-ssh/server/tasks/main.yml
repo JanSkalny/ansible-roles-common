@@ -8,5 +8,5 @@
     path: "/home/{{ reverse_ssh.user }}/.ssh"
     owner: "{{ reverse_ssh.user }}"
     state: directory
-    mode: 0500
+    mode: 0700
 

@@ -1,0 +1,111 @@
+#TODO: check for presence of zabbix-agent2 package
+- name: use zabbix-agent on older systems
+  set_fact:
+    zabbix_agent_version: 1
+    zabbix_agent_name: "zabbix_agentd"
+    zabbix_agent_service: "zabbix-agent"
+  tags: configure
+  when: "ansible_distribution_release == 'xenial'"
+
+- name: install zabbix-agent and dependencies
+  package:
+    name: 
+    - logtail
+    - logrotate
+    - sudo
+    - jq
+    - zabbix-sender
+    - "{{ zabbix_agent_service }}"
+    state: latest
+  notify: restart zabbix-agent
+
+- name: enumerate zabbix templates
+  include_vars:
+    name: zabbix_template_definitions
+    file: "../../templates/{{ item }}.yaml"
+  with_items: "{{ zabbix_templates }}"
+
+- name: DBG all template definitions
+  debug:
+    msg: "{{ zabbix_template_definitions }}"
+
+- name: DBG definitions with sudoers
+  debug:
+    msg: "{{ zabbix_template_definitions | json_query(\"* | [?sudoers] .id\") }}"
+
+- name: DBG scripts
+  debug:
+    msg: "{{ zabbix_template_definitions | json_query('* | [?scripts] .scripts') | flatten }}"
+
+- name: deploy zabbix sudoers.d
+  copy:
+    src: "../templates/{{ zabbix_template_definitions[item].sudoers }}"
+    dest: "/etc/sudoers.d/zabbix-{{ item }}"
+    owner: "root"
+    mode: 0640
+  with_items: "{{ zabbix_templates }}"
+  when: zabbix_template_definitions[item].sudoers | default(false)
+
+- name: deploy zabbix user parameters
+  copy:
+    src: "../templates/{{ zabbix_template_definitions[item].params }}"
+    dest: "/etc/zabbix/{{ zabbix_agent_name }}.d/{{ item }}.conf"
+    owner: "root"
+    mode: 0640
+  with_items: "{{ zabbix_templates }}"
+  when: zabbix_template_definitions[item].params | default(false)
+  notify: restart zabbix-agent
+
+- name: deploy zabbix scripts
+  copy:
+    src: "../templates/{{ item }}"
+    dest: "/usr/local/bin/{{ item | basename }}"
+    owner: "root"
+    mode: 0755
+  with_items: "{{ zabbix_template_definitions | json_query('* | [?scripts] .scripts') | flatten }}"
+
+- name: make sure zabbix_agent.d directory is present
+  file:
+    path: "/etc/zabbix/{{ zabbix_agent_name }}.d/"
+    state: directory
+    mode: 0755
+
+- name: configure zabbix-agent
+  template:
+    src: "zabbix_agent.conf"
+    dest: "/etc/zabbix/{{ zabbix_agent_name }}.conf"
+  tags: configure
+  notify: restart zabbix-agent
+
+- name: make sure zabbix home directory is present
+  file:
+    path: "/var/lib/zabbix/"
+    state: directory
+    mode: 0700
+    owner: zabbix
+    group: zabbix
+
+- name: generate zabbix_agentd.psk
+  template:
+    src: "zabbix_agent.psk"
+    dest: "/etc/zabbix/{{ zabbix_agent_name }}.psk"
+    owner: "zabbix"
+    group: "zabbix"
+    mode: 0600
+  when: zabbix_agent_psk is defined
+  tags: configure
+  notify: restart zabbix-agent
+
+- name: rotate zabbix logs
+  copy:
+    src: logrotate
+    dest: /etc/logrotate.d/zabbix-agent
+  tags: configure
+
+- name: enable zabbix-agent service
+  service:
+    name: "{{ zabbix_agent_service }}"
+    enabled: yes
+  tags: configure
+  notify: restart zabbix-agent
+

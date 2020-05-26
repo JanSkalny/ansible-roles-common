@@ -1,3 +1,0 @@
-monitor_server_db_name: "zabbix"
-monitor_server_db_user: "zabbix"
-#monitor_server_db_password: "XXX"

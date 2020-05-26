@@ -1,0 +1,82 @@
+- name: install zabbix-proxy and dependecies
+  package:
+    name:
+    - python-mysqldb
+    - python3-mysqldb
+    - zabbix-proxy-mysql
+    state: present
+
+- name: create zabbix database
+  mysql_db:
+    name: "{{ zabbix_proxy_db_name }}"
+    encoding: utf8
+    collation: utf8_bin
+    state: present
+  register: zabbix_proxy_db_present
+
+- name: create zabbix user
+  mysql_user:
+    name: "{{ zabbix_proxy_db_user }}"
+    password: "{{ zabbix_proxy_db_password }}"
+    priv: "{{ zabbix_proxy_db_name }}.*:ALL"
+    state: present
+
+- name: import zabbix database
+  mysql_db:
+    name: "{{ zabbix_proxy_db_name }}"
+    state: import
+    target: /usr/share/doc/zabbix-proxy-mysql/schema.sql.gz
+  when: zabbix_proxy_db_present.changed == True
+
+- name: create zabbix server CA file
+  copy:
+    content: "{{ zabbix_server_ca_value }}"
+    dest: "/etc/zabbix/ca.crt"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  when: zabbix_proxy_tls_mode == "cert"
+  notify: restart zabbix-proxy
+
+- name: create zabbix proxy cert file
+  copy:
+    content: "{{ zabbix_proxy_tls_cert_value }}"
+    dest: "/etc/zabbix/zabbix_proxy.crt"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  when: zabbix_proxy_tls_mode == "cert"
+  notify: restart zabbix-proxy
+
+- name: create zabbix proxy key file
+  copy:
+    content: "{{ zabbix_proxy_tls_key_value }}"
+    dest: "/etc/zabbix/zabbix_proxy.key"
+    owner: zabbix
+    group: zabbix
+    mode: u=rw,g=r,o=
+  when: zabbix_proxy_tls_mode == "cert"
+  notify: restart zabbix-proxy
+
+- name: create proxy PSK file
+  copy:
+    content: "{{ zabbix_proxy_psk }}"
+    dest: "/etc/zabbix/zabbix_proxy.psk"
+    owner: zabbix
+    group: zabbix
+    mode: u=rw,g=r,o=
+  when: zabbix_proxy_tls_mode == "psk"
+  notify: restart zabbix-proxy
+
+- name: configure zabbix-proxy
+  template:
+    src: zabbix_proxy.conf 
+    dest: /etc/zabbix/zabbix_proxy.conf
+  notify: restart zabbix-proxy
+
+- name: enable and start zabbix proxy service
+  systemd:
+    name: zabbix-proxy
+    enabled: true
+    state: started
+

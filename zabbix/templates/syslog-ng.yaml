@@ -1,0 +1,6 @@
+syslog-ng:
+  template: "Template App syslog-ng by Zabbix agent"
+  sudoers: "zabbix-syslog-ng/sudoers"
+  params: "zabbix-syslog-ng/syslog-ng.conf"
+  scripts: 
+  - "zabbix-syslog-ng/zabbix_syslog_ng.sh"

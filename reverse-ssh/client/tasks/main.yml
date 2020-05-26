@@ -31,6 +31,14 @@
     type: ed25519
   register: "reverse_ssh_client_keys"
 
+- name: generate authorized_keys
+  authorized_key:
+    user: "{{ reverse_ssh_server.server_user }}"
+    state: present
+    key: "{{ reverse_ssh_client_keys.public_key }} cat@{{ inventory_hostname }}"
+    key_options: "command=\"/bin/cat\",permitopen=\"127.0.0.{{ reverse_ssh.id }}:7\""
+  delegate_to: "{{ reverse_ssh.server_host }}"
+
 - name: configure systemd
   template:
     src: systemd

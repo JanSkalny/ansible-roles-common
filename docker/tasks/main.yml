@@ -1,6 +1,8 @@
 - name: install dependencies
   package:
-    name: apt-transport-https
+    name: 
+    - apt-transport-https
+    - python3-docker
     state: present
   tags: install
 

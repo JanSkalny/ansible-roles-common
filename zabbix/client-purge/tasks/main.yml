@@ -1,0 +1,49 @@
+- file: 
+    path: "{{ item }}"
+    state: absent
+  with_items:
+   - /usr/local/bin/zabbix_bacula_check_job.sh
+   - /usr/local/bin/zabbix_bacula_discovery.sh
+   - /usr/local/bin/zabbix_bind_stats.py
+   - /usr/local/bin/zabbix_check_apache
+   - /usr/local/bin/zabbix_hpacucli.sh
+   - /usr/local/bin/zabbix_hplog.sh
+   - /usr/local/bin/zabbix_kvm.py
+   - /usr/local/bin/zabbix_mdraid.sh
+   - /usr/local/bin/zabbix_misp.sh
+   - /usr/local/bin/zabbix_multipath.sh
+   - /usr/local/bin/zabbix_openvpn.sh
+   - /usr/local/bin/zabbix_postfix.sh
+   - /usr/local/bin/zabbix_smartctl.sh
+   - /usr/local/bin/zabbix_smartctl_lld.py
+   - /usr/local/bin/zabbix_smartctl_send.py
+   - /usr/local/bin/zabbix_ssacli.sh
+   - /usr/local/bin/zabbix_supervisor.sh
+   - /usr/local/bin/zabbix_syslog_ng.sh
+   - /usr/local/bin/zabbix_varnish_cache.py
+   - /etc/zabbix/zabbix_agentd.d/apache.conf
+   - /etc/zabbix/zabbix_agentd.d/apcupsd.conf
+   - /etc/zabbix/zabbix_agentd.d/apt.conf
+   - /etc/zabbix/zabbix_agentd.d/bacula.conf
+   - /etc/zabbix/zabbix_agentd.d/bind.conf
+   - /etc/zabbix/zabbix_agentd.d/drbd.conf
+   - /etc/zabbix/zabbix_agentd.d/hpacucli.conf
+   - /etc/zabbix/zabbix_agentd.d/hplog.conf
+   - /etc/zabbix/zabbix_agentd.d/jharm.conf
+   - /etc/zabbix/zabbix_agentd.d/kvm.conf
+   - /etc/zabbix/zabbix_agentd.d/mdraid.conf
+   - /etc/zabbix/zabbix_agentd.d/misp.conf
+   - /etc/zabbix/zabbix_agentd.d/multipath.conf
+   - /etc/zabbix/zabbix_agentd.d/mysql.conf
+   - /etc/zabbix/zabbix_agentd.d/ntp.conf
+   - /etc/zabbix/zabbix_agentd.d/openvpn.conf
+   - /etc/zabbix/zabbix_agentd.d/postfix.conf
+   - /etc/zabbix/zabbix_agentd.d/smartctl.conf
+   - /etc/zabbix/zabbix_agentd.d/sockstat.conf
+   - /etc/zabbix/zabbix_agentd.d/ssacli.conf
+   - /etc/zabbix/zabbix_agentd.d/supervisor.conf
+   - /etc/zabbix/zabbix_agentd.d/syslog-ng.conf
+   - /etc/zabbix/zabbix_agentd.d/systemd.conf
+   - /etc/zabbix/zabbix_agentd.d/userparameter_mysql.conf
+   - /etc/zabbix/zabbix_agentd.d/varnish.conf
+
