@@ -1,0 +1,6 @@
+smartctl:
+  template: "Template App smartmontools by Zabbix agent"
+  sudoers: "zabbix-smartctl/sudoers.d/zabbix"
+  params: "zabbix-smartctl/zabbix_agentd.conf.d/smartctl.conf"
+  scripts:
+    - "zabbix-smartctl/scripts/zabbix_smartctl.sh"

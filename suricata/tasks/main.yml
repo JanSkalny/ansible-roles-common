@@ -58,6 +58,14 @@
   tags: configure
   notify: restart suricata
 
+- name: configure suricata (.config)
+  template:
+      src: classification.config
+      dest: /etc/suricata/classification.config
+      mode: 0644
+  tags: configure
+  notify: restart suricata
+
 - include_tasks:
     file: set_affinity.yml
   when: suricata_set_affinity

@@ -1,3 +1,6 @@
 [submodule "zabbix/templates/zabbix-misp"]
 	path = zabbix/templates/zabbix-misp
 	url = https://github.com/JanSkalny/zabbix-misp.git
+[submodule "zabbix/templates/zabbix-smartctl"]
+	path = zabbix/templates/zabbix-smartctl
+	url = git@github.com:JanSkalny/zabbix-smartctl.git
