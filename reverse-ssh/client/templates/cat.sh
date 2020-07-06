@@ -11,4 +11,4 @@ ssh -tt \
 	-o SetupTimeout=30 \
 	-o ConnectTimeout=30 \
 	-o ConnectionAttempts=1 \
-	-l cat {{ reverse_ssh_server.server_addr }} -R {{ 2000 + reverse_ssh.id }}:127.0.0.{{ reverse_ssh.id }}:22 
+	-l {{ reverse_ssh.user }} {{ reverse_ssh_server.server_addr }} -R 127.0.0.1:{{ 2000 + reverse_ssh.id }}:127.0.0.1:22 
