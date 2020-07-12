@@ -19,8 +19,10 @@
 {%- endmacro -%}
 
 {%- macro normalize_ports(rule, proto) -%}
+{%- if 'proto' in rule -%}
 {%- if proto in rule.proto -%}
 {{ ( rule.proto[proto].replace(' ','').split(',') if rule.proto[proto] is string else ( [rule.proto[proto]] if rule.proto[proto] is number else rule.proto[proto] ) ) | join(",") }}
+{%- endif -%}
 {%- endif -%}
 {%- endmacro -%}
 #
@@ -267,6 +269,9 @@ $IT4 -A FORWARD -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length e
 {% for port in udp_ports | list %}
 $IT4 -A FORWARD -p udp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
 {% endfor %}
+{% if tcp_ports == [] and udp_ports == [] %}
+$IT4 -A FORWARD {{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
+{% endif %}
 {%- endfor -%}
 {%- endfor -%}
 
