@@ -20,7 +20,9 @@
 
 - name: install docker-ce
   apt:
-    name: docker-ce
+    name: 
+    - docker-ce
+    - docker-compose
     state: present
   tags: install
 
