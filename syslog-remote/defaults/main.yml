@@ -1,1 +1,2 @@
 syslog_remote_port: 514
+syslog_rotate_days: 30
