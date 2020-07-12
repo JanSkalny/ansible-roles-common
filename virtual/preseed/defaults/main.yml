@@ -9,6 +9,8 @@ virtual:
 virtual_image: "{{ virtual_dir }}/images/ubuntu-18.04.3-server-amd64.iso"
 virtual_setup_user: "setup"
 virtual_setup_password: "{{ 'changeme' | password_hash('sha512') }}"
+virtual_preseed_country: "SK"
+virtual_preseed_timezone: "Europe/Bratislava"
 
 #virtual_image: "{{ virtual_dir }}/images/ubuntu-16.04.5-server-amd64.iso"
 #FIXME: https://bugs.launchpad.net/ubuntu/+source/glibc/+bug/1816846
