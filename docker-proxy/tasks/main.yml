@@ -1,0 +1,14 @@
+- name: prepare systemd override directory
+  file:
+    path: "/etc/systemd/system/docker.service.d"
+    state: directory
+
+- name: deploy proxy.conf
+  template:
+    src: "proxy.conf"
+    dest: "/etc/systemd/system/docker.service.d/proxy.conf"
+  tags: configure
+  notify:
+    - reload systemd
+    - restart docker
+
