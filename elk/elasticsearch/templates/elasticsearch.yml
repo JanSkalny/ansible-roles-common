@@ -1,6 +1,6 @@
 cluster:
   name: "{{ elastic.cluster_name }}"
-{% if elastic.version >= 6 %}
+{% if elastic.version == 6 %}
   remote.connect: {{ elastic.node_remote_cluster }}
 {% endif %}
 {% if elastic.version >= 7 %}
@@ -13,9 +13,14 @@ node:
   data: {{ elastic.node_data }}
   ingest: {{ elastic.node_ingest }}
 
+{% if elastic.version <= 6 %}
 discovery.zen:
   ping.unicast.hosts: {{ elastic.hosts | to_json }}
   minimum_master_nodes: {{ elastic.minimum_master_nodes }}
+{% endif %}
+{% if elastic.version >= 7 %}
+discovery.seed_hosts: {{ elastic.master_nodes | to_json }}
+{% endif %}
 
 path:
   logs: "{{ elastic.log_path }}"
