@@ -1,11 +1,17 @@
 # {{ ansible_managed }}
 
+{% if linux_networking_hostname_localhost | default(true) %}
 127.0.0.1 localhost {{ inventory_hostname }}
+{% else %}
+127.0.0.1 localhost 
+{{ ansible_default_ipv4.address }} {{ inventory_hostname }}
+{% endif %}
 
 # generated from "hosts" var
 {% for h,ip in hosts.items() %}
 {{ ip }} {{ h }}
 {% endfor %}
+
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     localhost ip6-localhost ip6-loopback

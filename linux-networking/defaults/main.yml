@@ -1,4 +1,5 @@
 linux_networking_reboot: true
+linux_networking_hostname_localhost: true
 
 networking: []
 

@@ -15,7 +15,7 @@ iface lo inet loopback
 {% endif %}
 {% if 'bond_master' in iface %}
 	bond-master {{ iface.bond_master }}
-	bond-primary {{ iface_name }}
+	#bond-primary {{ iface_name }}
 {% endif %}
 {% if 'bond_slaves' in iface %}
 	bond-slaves none
