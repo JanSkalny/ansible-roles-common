@@ -1,0 +1,12 @@
+- name: install squid
+  package:
+    name: squid
+    state: present
+  tags: install
+
+- name: configure squid
+  template:
+    src: squid.conf
+    dest: /etc/squid/squid.conf
+  tags: configure
+  notify: restart squid
