@@ -22,8 +22,18 @@
            restart: unless-stopped
          nginx:
            restart: unless-stopped
+           environment:
+             - VIRTUAL_HOST=ipam.int.sk-cert.sk
+             - VIRTUAL_PORT=8080
+         nginx-proxy:
+           image: jwilder/nginx-proxy
+           restart: unless-stopped
            ports:
-             - 80:8080
+             - "80:80"
+             - "443:443"
+           volumes:
+             - /var/run/docker.sock:/tmp/docker.sock:ro
+             - /opt/nginx-proxy-ssl/:/etc/nginx/certs:ro
          netbox-worker:
            restart: unless-stopped
          netbox:
