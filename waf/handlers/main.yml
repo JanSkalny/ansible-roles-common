@@ -17,5 +17,5 @@
 
 - name: restart supervisor
   service:
-    name: "{{ supervisor_service }}"
+    name: "supervisor"
     state: restarted

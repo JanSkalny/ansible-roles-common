@@ -1,28 +1,39 @@
 
-- name: install waf dependencies debian
+- name: install dependencies
+  package:
+    name:
+    - apt-transport-https
+    - curl 
+    - gnupg 
+    - git
+  tags: install
+
+- name: add varnish apt key
+  apt_key:
+    url: "https://packagecloud.io/varnishcache/varnish60lts/gpgkey"
+    state: present
+  tags: install
+
+- name: add varnish apt repository
+  apt_repository:
+    repo: "deb https://packagecloud.io/varnishcache/varnish60lts/ubuntu/ {{ ansible_distribution_release }} main"
+    filename: "varnishcache_varnish60lts"
+    state: present
+    update_cache: yes
+  tags: install
+
+- name: install waf packages
   package: 
     name: 
-    - libvarnishapi-dev 
+    - varnish-dev 
     - build-essential
     - varnish 
     - pkgconf
-    state: present
-  when: ansible_os_family == 'Debian'
-  tags: install
-
-- name: install waf dependencies rhel
-  include_tasks: centos.yml
-  when: ansible_os_family == 'RedHat' or ansible_os_family == 'Sangoma'
- 
-- name: install waf dependencies common
-  package: 
-    name: 
     - supervisor
     - autoconf 
     - libtool
     - haproxy
-    - python-docutils
-    - git
+    - python3-docutils
     state: present
   tags: install
 
@@ -31,9 +42,9 @@
     path: "/etc/haproxy/ssl"
     state: directory
   tags: install
-- name: create varnish dir
+- name: create vsf dir
   file:
-    path: "/opt/varnish"
+    path: "/opt/vsf"
     state: directory
   tags: install
 
@@ -42,24 +53,24 @@
     repo: "https://github.com/comotion/VSF.git"
     force: yes
     update: yes
-    version: "master"
-    dest: "/opt/varnish"
+    version: "6.0"
+    dest: "/opt/vsf"
   register: git_clone_vsf
   tags:
   - install
   - update
 
-- name: build varnish
+- name: build vsf
   make:
-    chdir: "/opt/varnish"
+    chdir: "/opt/vsf"
   when: git_clone_vsf.changed
   tags:
   - install
   - update
 
-- name: install varnish
+- name: install vsf
   make:
-    chdir: "/opt/varnish"
+    chdir: "/opt/vsf"
     target: "install"
   when: git_clone_vsf.changed
   notify: restart varnish
@@ -121,10 +132,10 @@
   tags: configure
   notify: restart varnish
 
-- name: enable varnishlog service
-  service:
-    name: "varnishlog"
-    enabled: yes
+##- name: enable varnishlog service
+##  service:
+##    name: "varnishlog"
+##    enabled: yes
 
 - name: run all handlers at this point. we will need it for letsencrypt
   meta: flush_handlers
@@ -176,11 +187,11 @@
 - name: supervisor config 
   copy:
     src: supervisor.conf
-    dest: "{{ supervisor_conf_d }}/varnisher{{ supervisor_conf_suffix }}"
+    dest: "/etc/supervisor/conf.d/varnisher.conf"
   notify: restart supervisor
   tags: configure
 
 - name: enable supervisor service
   service:
-    name: "{{ supervisor_service }}"
+    name: "supervisor"
     enabled: yes
