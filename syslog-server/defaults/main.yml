@@ -1,3 +1,4 @@
 syslog_dir: "/data/logs"
 syslog_bind: "0.0.0.0"
 syslog_max_connections: 500
+syslog_rotate_days: 30
