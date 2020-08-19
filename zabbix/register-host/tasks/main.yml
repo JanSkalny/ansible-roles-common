@@ -24,7 +24,7 @@
       - type: 1
         main: 1
         useip: 1
-        ip: "{{ ansible_default_ipv4.address }}"
+        ip: "{{ zabbix_agent_addr | default(ansible_default_ipv4.address) }}"
         dns: ""
         port: 10050
     tls_connect: 2 # psk
