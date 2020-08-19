@@ -30,7 +30,7 @@
     tls_connect: 2 # psk
     tls_accept: 2  # psk
     tls_psk_identity: "{{ inventory_hostname }}"
-    tls_psk: "{{ zabbix_agent_psk }}"
+    tls_psk: "{{ zabbix_agent_psk | default('00000000000000000000000000000000')}}"
     proxy: "{{ zabbix_proxy }}"
     validate_certs: false
   tags: configure
