@@ -1,0 +1,28 @@
+- name: install apache2
+  package:
+    name: apache2
+  tags: install
+
+- name: enable apache2 modules
+  apache2_module:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - ssl 
+  - proxy_http 
+  - headers
+  - authnz_ldap
+  tags: install
+  notify: restart apache2
+
+- name: generate apache proxy conf
+  template:
+    src: proxy.conf
+    dest: /etc/apache2/sites-available/001-proxy.conf
+  tags: configure
+  notify: reload apache2
+
+- name: enable site
+  shell: a2ensite 001-proxy.conf
+  tags: install
+
