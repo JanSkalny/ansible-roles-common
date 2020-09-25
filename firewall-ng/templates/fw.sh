@@ -214,8 +214,8 @@ for PORT in 137 138; do
 done
 
 # default rule is 
-$IT4 -A INPUT -j {{ firewall_rule_default }}
-$IT6 -A INPUT -j {{ firewall_rule_default }}
+$IT4 -A INPUT -j {{ firewall_input_rule_default }}
+$IT6 -A INPUT -j {{ firewall_input_rule_default }}
 
 
 ############################################################
@@ -240,13 +240,13 @@ $IT6 -A OUTPUT -m owner --uid-owner 104 -j ACCEPT
 $IT4 -A OUTPUT -p udp --dport 53 -j ACCEPT
 $IT6 -A OUTPUT -p udp --dport 53 -j ACCEPT
 
-#XXX: remove these two!
-$IT4 -A OUTPUT -j LOG_ACCEPT
-$IT6 -A OUTPUT -j LOG_ACCEPT
+# XXX: debugging purposes only!
+#$IT4 -A OUTPUT -j LOG_ACCEPT
+#$IT6 -A OUTPUT -j LOG_ACCEPT
 
-# defaults to drop
-$IT4 -A OUTPUT -j {{ firewall_rule_default }}
-$IT6 -A OUTPUT -j {{ firewall_rule_default }}
+# XXX: should default to drop 
+$IT4 -A OUTPUT -j {{ firewall_output_rule_default }}
+$IT6 -A OUTPUT -j {{ firewall_output_rule_default }}
 
 
 ############################################################
@@ -278,8 +278,8 @@ $IT4 -A FORWARD {{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_a
 {% endwith %}
 {% endfor %}
 
-$IT4 -A FORWARD -j LOG_DROP
-$IT6 -A FORWARD -j LOG_DROP
+$IT4 -A FORWARD -j {{ firewall_forward_rule_default }}
+$IT6 -A FORWARD -j {{ firewall_forward_rule_default }}
 
 ############################################################
 ### NAT ruleset

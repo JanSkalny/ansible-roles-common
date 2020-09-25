@@ -1,6 +1,8 @@
 firewall_setup: true
 firewall_template: "fw.sh"
-firewall_rule_default: "LOG_DROP"
+firewall_input_rule_default: "LOG_DROP"
+firewall_output_rule_default: "ACCEPT"
+firewall_forward_rule_default: "LOG_DROP"
 
 firewall:
   interfaces: "{{ networking }}"
