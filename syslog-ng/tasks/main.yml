@@ -20,3 +20,9 @@
     dest: "/etc/syslog-ng/conf.d/options.conf"
   tags: configure
   notify: restart syslog-ng
+
+- name: configure logrotate
+  template:
+    src: "logrotate"
+    dest: "/etc/logrotate.d/syslog-ng"
+  tags: configure
