@@ -30,6 +30,7 @@ sysctl_config:
     kernel.yama.ptrace_scope: 1
     kernel.dmesg_restrict: 1
     kernel.sysrq: 0
-    kernel.panic: 30
+    kernel.panic: 10
 
     vm.swappiness: 0
+    vm.panic_on_oom: 1
