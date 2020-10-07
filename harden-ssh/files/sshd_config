@@ -1,3 +1,5 @@
+# IPV4 only
+ListenAddress 0.0.0.0
 
 Port 22
 Protocol 2
@@ -14,7 +16,7 @@ ServerKeyBits 1024
 SyslogFacility AUTH
 LogLevel INFO
 
-LoginGraceTime 120
+LoginGraceTime 60
 StrictModes yes
 
 IgnoreRhosts yes
@@ -39,9 +41,10 @@ PrintLastLog yes
 TCPKeepAlive yes
 UseLogin no
 UseDNS no
+ClientAliveInterval 300
 
 #MaxStartups 10:30:60
-#Banner /etc/issue.net
+Banner /etc/issue.net
 
 # Allow client to pass locale environment variables
 AcceptEnv LANG LC_*
