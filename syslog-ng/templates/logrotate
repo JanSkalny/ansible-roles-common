@@ -15,6 +15,7 @@
 {
 	rotate 14
 	daily
+	dateext
 	missingok
 	notifempty
 	compress
