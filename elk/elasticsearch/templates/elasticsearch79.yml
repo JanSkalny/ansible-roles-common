@@ -1,0 +1,64 @@
+#################################### THIS NODE ####################################
+
+network.host: 
+ - "{{ elastic.bind }}"
+ - _local:ipv4_
+ - _site:ipv4_
+ 
+http.port: "{{ elastic.port }}"
+transport.tcp.port: "{{ elastic.transport_port }}"
+
+node:
+  name: "{{ elastic.node_name }}"
+  master: {{ elastic.node_master }}
+  data: {{ elastic.node_data }}
+  ingest: {{ elastic.node_ingest }}
+
+#################################### CLUSTER ####################################
+
+cluster:
+  name: {{ elastic.cluster_name }}
+{% if elastic.version == 6 %}
+  remote.connect: {{ elastic.node_remote_cluster }}
+{% endif %}
+{% if elastic.version >= 7 %}
+  initial_master_nodes: {{ elastic.master_nodes | to_json }}
+{% endif %}
+
+{% if elastic.version <= 6 %}
+discovery.zen:
+  ping.unicast.hosts: {{ elastic.hosts | to_json }}
+  minimum_master_nodes: {{ elastic.minimum_master_nodes }}
+{% endif %}
+{% if elastic.version >= 7 %}
+discovery.seed_hosts: {{ elastic.master_nodes | to_json }}
+{% endif %}
+
+
+#################################### Paths ####################################
+path:
+  logs: "{{ elastic.log_path }}"
+  data: "{{ elastic.data_path }}"
+
+#################################### HARDENING ####################################
+
+bootstrap.memory_lock: true
+action.destructive_requires_name: true
+action.auto_create_index: true
+
+#################################### SSL ####################################
+xpack.security.enabled: true
+xpack.monitoring.enabled: true
+
+### PEM
+## 9300
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: "certificate"
+xpack.security.transport.ssl.key: "/etc/elasticsearch/certs/{{ elastic.node_name }}.key"
+xpack.security.transport.ssl.certificate: "/etc/elasticsearch/certs/{{ elastic.node_name }}.crt"
+xpack.security.transport.ssl.certificate_authorities: [ "/etc/elasticsearch/certs/ca.crt" ]
+## 9200
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.key: "/etc/elasticsearch/certs/{{ elastic.node_name }}.key"
+xpack.security.http.ssl.certificate: "/etc/elasticsearch/certs/{{ elastic.node_name }}.crt"
+xpack.security.http.ssl.certificate_authorities: [ "/etc/elasticsearch/certs/ca.crt" ]

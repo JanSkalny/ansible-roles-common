@@ -172,7 +172,7 @@
     src: "{{ item }}"
     dest: "/etc/elasticsearch/{{ item }}"
   with_items:
-    - elasticsearch.yml
+    - elasticsearch79.yml
   notify: restart elasticsearch
 
 - name: configure jvm
