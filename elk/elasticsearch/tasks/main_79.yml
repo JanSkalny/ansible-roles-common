@@ -1,0 +1,213 @@
+############################
+# ELASTICSEARCH:
+############################
+# instalation last version of elasticsearch in cluster manner with some hardening
+# based on processes in SK-CERT
+############################
+# PREREQUISITE:
+############################
+# VM with installed OS must exist 
+# with enough DISK (1TB prod, 100GB test) space for elastic data
+# with enough RAM (35GB prod, 8GB test) for java VM 
+############################
+# ROLE:
+############################
+
+---
+
+- name: special sysctl hardening
+  sysctl:
+     name: "{{ item.key }}"
+     value: "{{ item.value }}"
+     sysctl_set: yes
+     reload: yes
+     state: present
+  with_dict:
+    - vm.swappiness: 0
+    - vm.max_map_count: 262144
+    - net.ipv4.tcp_retries2: 5
+  notify: sysctl flush
+  tags: never
+  
+- name: create user and add it to elasticsearch group
+  user:
+    name: "{{ item }}"
+    state: present
+    append: true
+    groups: elasticsearch
+    createhome: yes
+    comment: "SK-CERT administrator"
+  with_items : "{{ users }}"  
+  tags: never
+
+###    CERTIFICATE
+- name: Check if KEY certs exists
+  file:
+    path: "/etc/elasticsearch/certs/{{ elastic.node_name }}.key"
+    state: file
+    owner: root
+    group: elasticsearch
+    mode: 0640
+
+- name: Check if CRT certs exists
+  file:
+    path: "/etc/elasticsearch/certs/{{ elastic.node_name }}.crt"
+    state: file
+    owner: root
+    group: elasticsearch
+    mode: 0640
+
+- name: Check if CA certs exists
+  file:
+    path: "/etc/elasticsearch/certs/ca.crt"
+    state: file
+    owner: root
+    group: elasticsearch
+    mode: 0640
+
+
+###    DISK
+- name: Create parent data directory
+  file:
+    path: "{{ elastic.data_path | dirname}}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+                
+- name: Create data directory
+  file:
+    path: "{{ elastic.data_path }}"
+    state: directory
+    owner: root
+    group: elasticsearch
+    mode: 0775
+  tags: never
+
+# toto uz netreba
+- name: Create tmp directory
+  file:
+    path: "/var/lib/elasticsearch/tmp"
+    state: directory
+    owner: elasticsearch
+  notify: restart elasticsearch
+  tags: never
+
+### LIMITS
+- block:
+    - name: create limits.d directory if it does not exist
+      file:
+        path: '/etc/security/limits.d'
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
+        state: 'directory'
+
+    - name: create additional limits config file
+      pam_limits:
+        dest: '/etc/security/limits.d/elasticsearch.conf'
+        domain: '*'
+        limit_type: hard
+        limit_item: core
+        value: '0'
+        comment: Prevent core dumps for all users. These are usually not needed and may contain sensitive information
+
+    - name: create additional limits config file
+      pam_limits:
+        dest: '/etc/security/limits.d/elasticsearch.conf'
+        domain: '*'
+        limit_type: hard
+        limit_item: nofile
+        value: '65536'
+        comment: Elastic needs more open files.
+
+    - name: create additional limits config file
+      pam_limits:
+        dest: '/etc/security/limits.d/elasticsearch.conf'
+        domain: '*'
+        limit_type: hard
+        limit_item: memlock
+        value: 'unlimited'
+        comment: Elastic needs memory
+
+    - name: set *.conf perms to 0400 and root ownership
+      file:
+        path: /etc/security/limits.d/elasticsearch.conf
+        owner: 'root'
+        group: 'root'
+        mode: '0440'            
+
+- name: load limits on session login
+  lineinfile:
+    path: "/etc/pam.d/common-session"
+    line: "session required pam_limits.so"
+  notify: restart elasticsearch
+  tags: never
+
+# change mem limits MAX_LOCKED_MEMORY=unlimited and LimitMEMLOCK=infinity
+- name: prepare systemd override directory
+  file:
+    path: "/etc/systemd/system/elasticsearch.service.d"
+    state: directory
+  tags: never
+
+- name: configure memlock
+  copy:
+    src: "override.conf"
+    dest: "/etc/systemd/system/elasticsearch.service.d/override.conf"
+  notify:
+    - reload systemctl
+    - restart elasticsearch
+  tags: never
+
+### ELASTIC  
+- name: install elasticsearch
+  package:
+    name: elasticsearch
+    state: present
+  tags: never
+
+- name: configure elastic
+  template:
+    src: "{{ item }}"
+    dest: "/etc/elasticsearch/{{ item }}"
+  with_items:
+    - elasticsearch.yml
+  notify: restart elasticsearch
+
+- name: configure jvm
+  template:
+    src: "{{ item }}"
+    dest: "/etc/elasticsearch/{{ item }}"
+  with_items:
+    - jvm.options
+  notify: restart elasticsearch
+  tags: never
+
+- name: configure logging
+  when: log4j2 is defined
+  template:
+    src: log4j2.properties.j2
+    dest: "/etc/elasticsearch/log4j2.properties"
+  notify: restart elasticsearch
+  tags: never
+
+- name: enable services
+  service:
+    name: elasticsearch
+    enabled: true
+    state: started
+  tags: never
+  
+### STATUS
+- name: "Show status"
+  tags: status or force
+  shell: curl -X GET -q -k -u elastic:{{elastic.password}} 'https://localhost:9200/_cluster/health?pretty'
+      
+- name: "Show password"
+  tags: status or force
+  debug: msg="Password for elastic user is {{elastic.password}} USAGE -u elastic:{{elastic.password}} in /tmp/passwordfile, REMOVE it after use."
+
+- name: "Show password"
+  tags: status or force or install
+  debug: msg="Please reboot the computers {{ node_list }}"

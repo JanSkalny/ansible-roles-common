@@ -1,0 +1,26 @@
+elastic:
+  bind: "0.0.0.0"
+  port: "9200"
+  transport_port: "9300"
+  cluster_name: "skcert-dev"
+  node_name: "{{ inventory_hostname }}"
+  # PREFER: all nodes are master+data+ingest
+  node_master: true
+  node_data: true
+  node_ingest: true
+  node_remote_cluster: false
+  heap_space: "4g"
+  hosts:
+    - "127.0.0.1"
+  master_nodes:
+    - "elastic79-1.{{ansible_domain}}"
+    - "elastic79-2.{{ansible_domain}}"
+    - "elastic79-3.{{ansible_domain}}"
+#  cluster_group: "elasticsearch79"
+#  node_list: "{{groups[elastic.cluster_group]}}"
+#  master_nodes: "{{elastic.node_list}}"
+    
+  log_path: "/var/log/elasticsearch"
+  data_path: "/data/elasticsearch"
+  version: 7
+  password: "{{ lookup('password', '/tmp/passwordfile length=32 chars=ascii_letters,digits,hexdigits') }}"  
