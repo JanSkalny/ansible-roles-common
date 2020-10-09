@@ -1,8 +1,15 @@
 ---
   - name: ANSIBLE FACTS
     debug: 
-        #var: ansible_facts
-        var: hostvars[inventory_hostname]['ansible_run_tags']
+        msg: "{{ ansible_facts }}"
+        verbosity: 1
+    tags: 
+        - always
+        
+  - name: ANSIBLE TAGS
+    debug: 
+       var: hostvars[inventory_hostname]['ansible_run_tags']
+       verbosity: 1
     tags: 
         - always
 
