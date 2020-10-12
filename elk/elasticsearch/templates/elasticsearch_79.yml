@@ -2,8 +2,8 @@
 
 network.host: 
  - "{{ elastic.bind }}"
- - _local:ipv4_
- - _site:ipv4_
+# - _local:ipv4_
+# - _site:ipv4_
  
 http.port: "{{ elastic.port }}"
 transport.tcp.port: "{{ elastic.transport_port }}"
@@ -22,7 +22,7 @@ cluster:
   remote.connect: {{ elastic.node_remote_cluster }}
 {% endif %}
 {% if elastic.version >= 7 %}
-  initial_master_nodes: {{ elastic.master_nodes | to_json }}
+  initial_master_nodes: {{ elastic.node_name | to_json }}
 {% endif %}
 
 {% if elastic.version <= 6 %}
@@ -31,11 +31,11 @@ discovery.zen:
   minimum_master_nodes: {{ elastic.minimum_master_nodes }}
 {% endif %}
 {% if elastic.version >= 7 %}
-discovery.seed_hosts: {{ elastic.master_nodes | to_json }}
+discovery.seed_hosts: {{ groups[elastic.cluster_group] | to_json }}
 {% endif %}
 
 
-#################################### Paths ####################################
+#################################### PATHS ####################################
 path:
   logs: "{{ elastic.log_path }}"
   data: "{{ elastic.data_path }}"
@@ -47,9 +47,6 @@ action.destructive_requires_name: true
 action.auto_create_index: true
 
 #################################### SSL ####################################
-xpack.security.enabled: true
-xpack.monitoring.enabled: true
-
 ### PEM
 ## 9300
 xpack.security.transport.ssl.enabled: true
@@ -62,3 +59,13 @@ xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.key: "/etc/elasticsearch/certs/{{ elastic.node_name }}.key"
 xpack.security.http.ssl.certificate: "/etc/elasticsearch/certs/{{ elastic.node_name }}.crt"
 xpack.security.http.ssl.certificate_authorities: [ "/etc/elasticsearch/certs/ca.crt" ]
+
+xpack.security.ssl.diagnose.trust: true
+xpack.security.http.ssl.client_authentication: none
+
+#################################### SECURITY ####################################
+xpack.security.enabled: true
+xpack.security.audit.enabled: true
+
+xpack.monitoring.enabled: true
+#################################### END ANSIBLE ####################################
