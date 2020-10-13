@@ -22,6 +22,7 @@
 
 - hosts: elasticsearch79
   gather_facts: true
+#  not set proxy because ansible url som working against localhost
   environment: "{{ proxy_env }}"
   tasks:
      - include_role: 

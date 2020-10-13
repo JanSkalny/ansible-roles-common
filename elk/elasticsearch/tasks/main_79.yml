@@ -10,6 +10,24 @@
 # with enough DISK (1TB prod, 100GB test) space for elastic data
 # with enough RAM (35GB prod, 8GB test) for java VM 
 ############################
+# INFO:
+############################
+# cluster join ... aby to fungovalo musi byt obojstranna viditelnost medzi nodami clustra a openssl musi prejst
+# 
+# [CERT] root@elastic79-1:straka # openssl s_client -connect 10.130.196.42:9300 -CAfile /etc/elasticsearch/certs/ca.crt -cert /etc/elasticsearch/certs/elastic79-?.dev.sk-cert.sk.crt -key /etc/elasticsearch/certs/elastic79-?.dev.sk-cert.sk.key
+# [CERT] root@elastic79-1:straka # openssl s_client -connect 10.130.196.43:9300 -CAfile /etc/elasticsearch/certs/ca.crt -cert /etc/elasticsearch/certs/elastic79-?.dev.sk-cert.sk.crt -key /etc/elasticsearch/certs/elastic79-?.dev.sk-cert.sk.key
+
+# [CERT] root@elastic79-2:straka # openssl s_client -connect 10.130.196.41:9300 -CAfile /etc/elasticsearch/certs/ca.crt -cert /etc/elasticsearch/certs/elastic79-?.dev.sk-cert.sk.crt -key /etc/elasticsearch/certs/elastic79-?.dev.sk-cert.sk.key
+# [CERT] root@elastic79-2:straka # openssl s_client -connect 10.130.196.43:9300 -CAfile /etc/elasticsearch/certs/ca.crt -cert /etc/elasticsearch/certs/elastic79-?.dev.sk-cert.sk.crt -key /etc/elasticsearch/certs/elastic79-?.dev.sk-cert.sk.key
+
+# [CERT] root@elastic79-3:straka # openssl s_client -connect 10.130.196.42:9300 -CAfile /etc/elasticsearch/certs/ca.crt -cert /etc/elasticsearch/certs/elastic79-?.dev.sk-cert.sk.crt -key /etc/elasticsearch/certs/elastic79-?.dev.sk-cert.sk.key
+# [CERT] root@elastic79-3:straka # openssl s_client -connect 10.130.196.43:9300 -CAfile /etc/elasticsearch/certs/ca.crt -cert /etc/elasticsearch/certs/elastic79-?.dev.sk-cert.sk.crt -key /etc/elasticsearch/certs/elastic79-?.dev.sk-cert.sk.key
+############################
+# TODO:
+############################
+# distribucia certifikativ bez textu ... vymazat texty pred begin...
+# /etc/default/elasticsearch
+############################
 # ROLE:
 ############################
 
@@ -42,11 +60,12 @@
        sysctl_set: yes
        reload: yes
        state: present
+       ignoreerrors: yes #ignore errors about unknown keys
     with_dict:
       - vm.swappiness: 0
       - vm.max_map_count: 262144
       - net.ipv4.tcp_retries2: 5
-    notify: sysctl flush
+    notify: sysctl flush routes
 
   ## USERS and groups  
   - name: users
@@ -178,10 +197,9 @@
     notify:
       - reload systemctl
       - restart elasticsearch
-
-  tags: never
+  when:
+    elastic.force is defined and elastic.force
   
-
 ### KEYSTORE
 - name: create the elasticsearch keystore
   block:
@@ -198,7 +216,6 @@
       state: absent
     tags: always
     
-    
   - name: create the keystore if it doesn't exist yet
     become: yes
     command: >
@@ -210,9 +227,15 @@
     become: yes
     shell: echo {{ elastic.password | quote }} | {{ elastic.home }}/bin/elasticsearch-keystore add -f -x 'bootstrap.password'
     #no_log: true
-
+  when:
+    elastic.force is defined and elastic.force
 
 ### ELASTIC  
+- name: Stop elasticsearch
+  service:
+    name: elasticsearch
+    state: stopped
+
 - name: Install elasticsearch
   package:
     name: elasticsearch
@@ -273,28 +296,27 @@
 
 - name: Show status
   uri:
-    url: 'https://{{ elastic.node_name }}:{{elastic.port}}/_cluster/health?pretty'
+    url: 'https://{{ elastic.node_name }}:{{ elastic.port }}/_cluster/health?pretty'
     user: elastic
-    password: "{{elastic.password}}"
+    password: "{{ elastic.password }}"
     method: GET
-    force_basic_auth: yes
-    validate_certs: no
-    use_proxy: no
+    force_basic_auth: true
+    validate_certs: false
+    use_proxy: false
 #    status_code: 201
 
 - name: Update API User Password
   uri:
-    url: "https://{{ elastic.node_name }}:{{elastic.port}}/_security/user/{{item}}/_password"
+    url: "https://{{ elastic.node_name }}:{{ elastic.port }}/_security/user/elastic/_password"
     method: POST
     body_format: json
-    body: "{ \"password\":\"{{elastic.password}}\" }"
+    body: "{ \"password\" : \"{{ elastic.password }}\" }"
     status_code: 200
-    user: "{{item}}"
-    password: "{{elastic.password}}"
-    force_basic_auth: yes
-    validate_certs: no
-    use_proxy: no
-  with_items: elastic
+    user: elastic
+    password: "{{ elastic.password }}"
+    force_basic_auth: true
+    validate_certs: false
+    use_proxy: false
   
 - name: "Reboote message"
 #  tags: status or force or install
@@ -302,6 +324,3 @@
 
   
   
-### DOROBIT
-# /etc/default/elasticsearch
-# hesla
