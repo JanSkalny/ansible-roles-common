@@ -19,10 +19,8 @@
 {%- endmacro -%}
 
 {%- macro normalize_ports(rule, proto) -%}
-{%- if 'proto' in rule -%}
 {%- if proto in rule.proto -%}
 {{ ( rule.proto[proto].replace(' ','').split(',') if rule.proto[proto] is string else ( [rule.proto[proto]] if rule.proto[proto] is number else rule.proto[proto] ) ) | join(",") }}
-{%- endif -%}
 {%- endif -%}
 {%- endmacro -%}
 #
@@ -44,10 +42,10 @@ IT6=/sbin/ip6tables
 modprobe ip_conntrack
 modprobe ip_conntrack_ftp
 
-echo {{ firewall.ip_forward | default(0) }} > /proc/sys/net/ipv4/ip_forward
+echo 0 > /proc/sys/net/ipv4/ip_forward
 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
 echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
-echo {{ firewall.log_martians | default(1) }} > /proc/sys/net/ipv4/conf/all/log_martians
+echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
 echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
 echo 1 > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
 echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects
@@ -115,13 +113,10 @@ $IT4 -N CHECK_IF
 
   # interface specific configuration
 {% for firewall_iface_name, firewall_iface in firewall.interfaces.items() %}
-{% with %}
-{% set allow_nets = normalize_addrs(firewall_iface, 'allow').split(',') | difference(['']) %}
-{% set deny_nets = normalize_addrs(firewall_iface, 'deny').split(',') | difference(['']) %}
-{% for allow_net in allow_nets %}
+{% for allow_net in firewall_iface.allow | default([]) %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s {{ allow_net }} -j RETURN
 {% endfor %}
-{% for deny_net in deny_nets %}
+{% for deny_net in firewall_iface.deny | default([]) %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP
 {% endfor %}
 {% if firewall_iface.default | default('allow' if firewall.interfaces|length == 1 else 'deny') == 'allow' %}
@@ -129,7 +124,6 @@ $IT4 -N CHECK_IF
 {% else %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -j LOG_DROP
 {% endif %}
-{% endwith %}
 {% endfor %}
 
   # everything else is dropped!
@@ -178,6 +172,7 @@ done
 ############################################################
 ### INPUT ruleset
 
+
 {% for input_rule_name,input_rule in firewall.input.items() %}
 {% with %}
 	{% set src_addrs = normalize_addrs(input_rule, 'src').split(',') %}
@@ -218,8 +213,8 @@ for PORT in 137 138; do
 done
 
 # default rule is 
-$IT4 -A INPUT -j {{ firewall_input_rule_default }}
-$IT6 -A INPUT -j {{ firewall_input_rule_default }}
+$IT4 -A INPUT -j {{ firewall_rule_default }}
+$IT6 -A INPUT -j {{ firewall_rule_default }}
 
 
 ############################################################
@@ -244,46 +239,19 @@ $IT6 -A OUTPUT -m owner --uid-owner 104 -j ACCEPT
 $IT4 -A OUTPUT -p udp --dport 53 -j ACCEPT
 $IT6 -A OUTPUT -p udp --dport 53 -j ACCEPT
 
-# XXX: debugging purposes only!
-#$IT4 -A OUTPUT -j LOG_ACCEPT
-#$IT6 -A OUTPUT -j LOG_ACCEPT
+#XXX: remove these two!
+$IT4 -A OUTPUT -j LOG_ACCEPT
+$IT6 -A OUTPUT -j LOG_ACCEPT
 
-# XXX: should default to drop 
-$IT4 -A OUTPUT -j {{ firewall_output_rule_default }}
-$IT6 -A OUTPUT -j {{ firewall_output_rule_default }}
-
+# defaults to drop
+$IT4 -A OUTPUT -j {{ firewall_rule_default }}
+$IT6 -A OUTPUT -j {{ firewall_rule_default }}
 
 ############################################################
 ### FORWARD ruleset
 
-{% for forward_rule_name,forward_rule in firewall.forward.items() %}
-{% with %}
-	{% set src_addrs = normalize_addrs(forward_rule, 'src').split(',') %}
-	{% set dest_addrs = normalize_addrs(forward_rule, 'dest').split(',') %}
-	{% set tcp_ports = normalize_ports(forward_rule, 'tcp').split(',') | difference(['']) %}
-	{% set udp_ports = normalize_ports(forward_rule, 'udp').split(',') | difference(['']) %}
-
-# {{ forward_rule_name }}
-# {{ forward_rule | to_json }}
-{% for src_addr in src_addrs -%} 
-{%- for dest_addr in dest_addrs -%} 
-{% for port in tcp_ports | list %}
-$IT4 -A FORWARD -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% for port in udp_ports | list %}
-$IT4 -A FORWARD -p udp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% if tcp_ports == [] and udp_ports == [] %}
-$IT4 -A FORWARD {{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
-{% endif %}
-{%- endfor -%}
-{%- endfor -%}
-
-{% endwith %}
-{% endfor %}
-
-$IT4 -A FORWARD -j {{ firewall_forward_rule_default }}
-$IT6 -A FORWARD -j {{ firewall_forward_rule_default }}
+$IT4 -A FORWARD -j LOG_DROP
+$IT6 -A FORWARD -j LOG_DROP
 
 ############################################################
 ### NAT ruleset
