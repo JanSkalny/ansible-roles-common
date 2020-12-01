@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+
+{% for radius_client in radius_clients %}
+{% if 'groups' in radius_client %}
+# {{ radius_client }}
+{{ radius_client.name }} {
+  if ("%{Client-Shortname}" == '{{ radius_client.name }}') {
+    if ( false ) { }
+{% for radius_group in radius_client.groups %}
+    elsif ( LDAP-Group == 'cn={{ radius_group.name }},ou=groups,{{ ldap_base_dn }}') {
+{% if 'updates' in radius_group %}
+      update reply {
+{{ radius_group.updates }}
+      }
+{% endif %}
+      ok
+    } 
+{% endfor %}
+    else {
+      reject
+    }
+  }
+}
+{% endif %}
+{% endfor %}

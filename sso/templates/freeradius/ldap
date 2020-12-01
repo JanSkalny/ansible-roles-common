@@ -1,0 +1,143 @@
+ldap {
+	server = 'ldap://localhost:389'
+	identity = '{{ ldap_root_dn }}'
+	password = {{ ldap_root_pw }}
+	base_dn = '{{ ldap_base_dn }}'
+
+	sasl {
+#		mech = 'PLAIN'
+#		proxy = 'autz_id'
+#		realm = '{{ ldap_domain }}'
+	}
+
+{% raw %}
+
+#	valuepair_attribute = 'radiusAttribute'
+	update {
+		control:Password-With-Header	+= 'userPassword'
+#		control:NT-Password		:= 'ntPassword'
+#		reply:Reply-Message		:= 'radiusReplyMessage'
+#		reply:Tunnel-Type		:= 'radiusTunnelType'
+#		reply:Tunnel-Medium-Type	:= 'radiusTunnelMediumType'
+#		reply:Tunnel-Private-Group-ID	:= 'radiusTunnelPrivategroupId'
+
+		#  Where only a list is specified as the RADIUS attribute,
+		#  the value of the LDAP attribute is parsed as a valuepair
+		#  in the same format as the 'valuepair_attribute' (above).
+		control:			+= 'radiusControlAttribute'
+		request:			+= 'radiusRequestAttribute'
+		reply:				+= 'radiusReplyAttribute'
+	}
+
+#	edir = no
+#	edir_autz = no
+
+	#  Note: set_auth_type was removed in v3.x.x
+	#  Equivalent functionality can be achieved by adding the following
+	#  stanza to the authorize {} section of your virtual server.
+	#
+	#    ldap
+	#    if ((ok || updated) && User-Password) {
+	#        update {
+	#            control:Auth-Type := ldap
+	#        }
+	#    }
+
+	#
+	#  User object identification.
+	#
+	user {
+		base_dn = "ou=users,${..base_dn}"
+		filter = "(uid=%{%{Stripped-User-Name}:-%{User-Name}})"
+		sasl {
+#			mech = 'PLAIN'
+#			proxy = &User-Name
+#			realm = 'example.org'
+		}
+
+		#  Search scope, may be 'base', 'one', sub' or 'children'
+#		scope = 'sub'
+
+#		sort_by = '-uid'
+#		access_attribute = 'dialupAccess'
+#		access_positive = yes
+	}
+
+	#
+	#  User membership checking.
+	#
+	group {
+		#  Where to start searching in the tree for groups
+		base_dn = "ou=groups,${..base_dn}"
+		filter = '(objectClass=groupOfNames)'
+#		scope = 'sub'
+		name_attribute = cn
+#		membership_filter = "(|(member=%{control:Ldap-UserDn})(memberUid=%{%{Stripped-User-Name}:-%{User-Name}}))"
+		#membership_attribute = 'memberOf'
+        membership_filter = "(|(&(objectClass=GroupOfNames)(member=%{control:Ldap-UserDn}))(&(objectClass=GroupOfUniqueNames)(uniquemember=%{control:Ldap-UserDn})))"
+		membership_attribute = 'radiusGroupName'
+	}
+
+#	accounting {
+#		reference = "%{tolower:type.%{Acct-Status-Type}}"
+#		type {
+#			start {
+#				update {
+#					description := "Online at %S"
+#				}
+#			}
+#			interim-update {
+#				update {
+#					description := "Last seen at %S"
+#				}
+#			}
+#			stop {
+#				update {
+#					description := "Offline at %S"
+#				}
+#			}
+#		}
+#	}
+	post-auth {
+		update {
+			description := "Authenticated at %S"
+		}
+	}
+
+	options {
+#		dereference = 'always'
+		chase_referrals = yes
+		rebind = yes
+		res_timeout = 4
+		srv_timelimit = 3
+		net_timeout = 1
+		idle = 60
+		probes = 3
+		interval = 3
+		#ldap_debug = 0x0028
+		ldap_debug = 0xffff
+	}
+
+	tls {
+#		start_tls = yes
+#		ca_file	= ${certdir}/cacert.pem
+#		ca_path	= ${certdir}
+#		certificate_file = /path/to/radius.crt
+#		private_key_file = /path/to/radius.key
+#		random_file = /dev/urandom
+#		require_cert	= 'demand'
+	}
+
+	pool {
+		start = ${thread[pool].start_servers}
+		min = ${thread[pool].min_spare_servers}
+		max = ${thread[pool].max_servers}
+		spare = ${thread[pool].max_spare_servers}
+		uses = 0
+		retry_delay = 30
+		lifetime = 0
+		idle_timeout = 60
+	}
+{% endraw %}
+
+}

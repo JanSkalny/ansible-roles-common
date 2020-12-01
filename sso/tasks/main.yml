@@ -1,0 +1,207 @@
+- name: prepare debconf
+  debconf:
+    name: slapd
+    question: "{{ item.question }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.vtype | default('string') }}"
+  with_items:
+    - question: "slapd/no_configuration"
+      value: "false"
+      vtype: "boolean"
+    - question: "slapd/move_old_database"
+      value: "true"
+      vtype: "boolean"
+    - question: "slapd/purge_database"
+      value: "true"
+      vtype: "boolean"
+    - question: "slapd/backend"
+      value: "MDB"
+      vtype: "select"
+    - question: "slapd/domain"
+      value: "{{ ldap_domain }}"
+    - question: "shared/organization"
+      value: "{{ ldap_org }}"
+  notify: dpkg reconfigure slapd
+  tags: install
+
+- name: install packages
+  package:
+    name:
+      - slapd
+      - ldap-utils
+      - ldapvi
+      - python3-ldap
+      - freeradius
+      - freeradius-utils
+      - freeradius-ldap
+  tags: install
+
+- name: reconfigure admin pw
+  debconf:
+    name: slapd
+    question: "{{ item.question }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.vtype | default('string') }}"
+  with_items:
+    - question: "slapd/password1"
+      value: "{{ ldap_root_pw }}"
+      vtype: password
+    - question: "slapd/password2"
+      value: "{{ ldap_root_pw }}"
+      vtype: password
+  notify: dpkg reconfigure slapd
+  tags: install
+
+- name: run handlers
+  meta: flush_handlers 
+
+- name: enable memberof module
+  ldap_entry:
+    dn: 'cn=module,cn=config'
+    objectClass: olcModuleList
+    attributes:
+      cn: module
+      olcModuleLoad: memberof.la
+      olcModulePath: /usr/lib/ldap
+  tags: install
+
+- name: create technical and user sub-trees
+  ldap_entry:
+   dn: '{{ item }}'
+   objectClass: organizationalUnit
+   state: present
+   bind_dn: "{{ ldap_root_dn }}"
+   bind_pw: "{{ ldap_root_pw }}"
+  with_items:
+   - "ou=tech,{{ ldap_base_dn }}"
+   - "ou=users,{{ ldap_base_dn }}"
+   - "ou=groups,{{ ldap_base_dn }}"
+  tags: install
+
+- name: add technical users
+  ldap_entry:
+    dn: 'uid={{ item.key }},ou=tech,{{ ldap_base_dn }}'
+    state: present
+    objectClass:
+      - account
+      - simplesecurityobject
+    attributes:
+      description: "{{ item.key }} tech user"
+      userPassword: "{{ item.value|to_ssha }}"
+    bind_dn: "{{ ldap_root_dn }}"
+    bind_pw: "{{ ldap_root_pw }}"
+  with_dict:
+   "{{ ldap_tech_users }}"
+  tags: configure
+
+- name: add ldap users
+  ldap_entry:
+    dn: 'uid={{ item.login }},ou=users,{{ ldap_base_dn }}'
+    state: present
+    objectClass:
+      - account
+      - simplesecurityobject
+    attributes:
+      description: "{{ item.name }}"
+      userPassword: "{{ item.password }}"
+    bind_dn: "{{ ldap_root_dn }}"
+    bind_pw: "{{ ldap_root_pw }}"
+  with_items:
+   "{{ ldap_users }}"
+  tags: configure
+
+- name: remove ldap users
+  ldap_entry:
+    dn: 'uid={{ item }},ou=users,{{ ldap_base_dn }}'
+    state: absent
+    bind_dn: "{{ ldap_root_dn }}"
+    bind_pw: "{{ ldap_root_pw }}"
+  with_items:
+    "{{ ldap_users_remove }}"
+  tags: configure
+
+- name: refresh user names
+  ldap_attr:
+    dn: 'uid={{ item.login }},ou=users,{{ ldap_base_dn }}'
+    name: description
+    values: "{{ item.name }}"
+    state: exact
+    bind_dn: "{{ ldap_root_dn }}"
+    bind_pw: "{{ ldap_root_pw }}"
+  with_items:
+   "{{ ldap_users }}"
+  tags: configure
+
+- name: refresh user passwords
+  ldap_attr:
+    dn: 'uid={{ item.login }},ou=users,{{ ldap_base_dn }}'
+    name: userPassword
+    values: "{{ item.password }}"
+    state: exact
+    bind_dn: "{{ ldap_root_dn }}"
+    bind_pw: "{{ ldap_root_pw }}"
+  with_items:
+   "{{ ldap_users }}"
+  tags: configure
+
+- name: create groups
+  ldap_entry:
+    dn: "cn={{ item.name }},ou=groups,{{ ldap_base_dn }}"
+    objectClass: groupOfNames
+    attributes:
+      cn: "{{ item.name }}"
+      member: "{{ item.members | map('regex_replace', '^(.*)$', 'uid=\\1,ou=users,'+ldap_base_dn) | list }}"
+    bind_dn: "{{ ldap_root_dn }}"
+    bind_pw: "{{ ldap_root_pw }}"
+  with_items: "{{ ldap_groups }}"
+  tags: configure
+
+#XXX: not required?
+#- name: add users to groups
+#  ldap_attr:
+#    dn: "cn={{ item.name }},ou=groups,{{ ldap_base_dn }}"
+#    name: member
+#    values: "{{ item.members | map('regex_replace', '^(.*)$', 'uid=\\1,ou=users,'+ldap_base_dn) | list }}"
+#    bind_dn: "{{ ldap_root_dn }}"
+#    bind_pw: "{{ ldap_root_pw }}"
+#  with_items: "{{ ldap_groups }}"
+
+
+#- name: deploy ldap templates
+#  template:
+#    src: "{{ item }}"
+#    dest: "/etc/ldap/{{ item }}"
+#  with_items:
+#    - ldap.conf
+#    - slapd.conf
+#  tags: configure
+#  notify: restart slapd
+#
+
+
+- name: configure freeradius
+  template:
+    src: "freeradius/{{ item.name }}"
+    dest: "/etc/freeradius/3.0/{{ item.dest | default(item.name)}}"
+  with_items:
+    - name: "clients.conf"
+    - name: "eap"
+      dest: "mods-available/eap"
+    - name: "ldap"
+      dest: "mods-available/ldap"
+    - name: "site-default"
+      dest: "sites-available/default"
+    - name: "site-inner-tunnel"
+      dest: "sites-available/inner-tunnel"
+    - name: "policy"
+      dest: "policy.d/client-group-access"
+  tags: configure
+  notify: restart freeradius
+
+- name: enable ldap module
+  file:
+    src: ../mods-available/ldap
+    dest: /etc/freeradius/3.0/mods-enabled/ldap
+    state: link
+  tags: configure
+  notify: restart freeradius
