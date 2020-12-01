@@ -1,0 +1,2 @@
+jitsi_meet_version: "stable-5142"
+jitsi_meet_domain: "{{ inventory_hostname }}"
