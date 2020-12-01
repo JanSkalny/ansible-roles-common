@@ -35,17 +35,23 @@
     path: "{{ virtual_dir }}/preseed/{{ virtual.name }}/"
     state: directory
 
-- name: prepare preseed.cfg
+- name: prepare config files
   template:
-    src: preseed.cfg
-    dest: "{{ virtual_dir }}/preseed/{{ virtual.name }}/preseed.cfg"
+    src: "{{ item }}"
+    dest: "{{ virtual_dir }}/preseed/{{ virtual.name }}/{{ item }}"
+  with_items:
+    - cloud_init.cfg
+    - network.cfg
 
-- name: prepare setup.sh
-  template:
-    src: setup.sh
-    dest: "{{ virtual_dir }}/preseed/{{ virtual.name }}/setup.sh"
+- name: generate cloud confgiuration 
+  shell: cloud-localds --network-config=network.cfg seed.qcow2 cloud_init.cfg
+  args:
+    chdir: "{{ virtual_dir }}/preseed/{{ virtual.name }}"
 
-- name: start virt-install
+- name: prepare base disk
+  shell: qemu-img dd if={{ virtual_image }} of={{ virtual.disk_blk | default('/dev/mapper/'+virtual.name) }} bs=1M
+
+- name: create vm using virt-install
   shell: virt-install \
     --name="{{ virtual.name }}" \
     --arch=x86_64 \
@@ -57,15 +63,13 @@
     --hvm \
     --connect=qemu:///system \
     --network=bridge:"{{ networking[virtual.default_interface].virtual_host_iface }}",model=virtio,mac={{ networking[virtual.default_interface].ether }} \
-    --disk path="{{ virtual.disk_blk | default("/dev/mapper/"+virtual.name) }}",bus=virtio \
+    --boot hd \
+    --disk path="{{ virtual.disk_blk | default("/dev/mapper/"+virtual.name) }}",device=disk,bus=virtio,cache=none \
+    --disk path="{{ virtual_dir }}/preseed/{{ virtual.name }}/seed.qcow2",device=cdrom \
     --graphics=vnc,port=-1 \
     --video vmvga \
     --noautoconsole \
     --debug \
-    --location="{{ virtual_image }}" \
-    --initrd-inject="{{ virtual_dir }}/preseed/{{ virtual.name }}/preseed.cfg" \
-    --initrd-inject="{{ virtual_dir }}/preseed/{{ virtual.name }}/setup.sh" \
-    --extra-args="auto=true file=/preseed.cfg vga=788 DEBCONF_DEBUG=5 debian-installer/language=en debian-installer/country=SK console-setup/ask_detect=false keyboard-configuration/layoutcode=us debian-installer/locale=en_US.UTF-8 localechooser/preferred-locale=en_US.UTF8" \
     --noreboot
 
 - name: wait for vm to finish preseeding
