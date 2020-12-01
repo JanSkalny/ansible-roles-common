@@ -1,0 +1,56 @@
+server inner-tunnel {
+
+listen {
+       ipaddr = 127.0.0.1
+       port = 18120
+       type = auth
+}
+
+
+authorize {
+	filter_username
+	suffix
+	update control {
+		&Proxy-To-Realm := LOCAL
+	}
+
+	-ldap
+
+	GwInt
+
+	expiration
+	logintime
+
+	pap
+}
+
+
+authenticate {
+	Auth-Type PAP {
+		pap
+	}
+}
+
+session {
+	radutmp
+}
+
+
+post-auth {
+	reply_log
+	Post-Auth-Type REJECT {
+		-sql
+		attr_filter.access_reject
+		update outer.session-state {
+			&Module-Failure-Message := &request:Module-Failure-Message
+		}
+	}
+}
+
+pre-proxy {
+}
+
+post-proxy {
+}
+
+} # inner-tunnel server block

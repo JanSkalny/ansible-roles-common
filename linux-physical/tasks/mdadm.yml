@@ -1,0 +1,9 @@
+# FIX [WARNING]: file is empty and had no tasks to include
+# Please fix this if you need it.
+- name: install mdadm packages
+#  package:
+#    name: mdadm
+#    state: present
+  debug:
+    msg: "mdadm is not used anymore"
+  tags: never

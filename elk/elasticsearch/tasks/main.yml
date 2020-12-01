@@ -1,5 +1,4 @@
 ---
-
 - name: install elasticsearch
   package:
     name: elasticsearch
@@ -46,13 +45,14 @@
   notify: restart elasticsearch
   tags: configure
 
+# toto uz netreba
 - name: create tmp directory
   file:
     path: "/var/lib/elasticsearch/tmp"
     state: directory
     owner: elasticsearch
   notify: restart elasticsearch
-  tags: install
+  tags: never
 
 - name: prepare systemd override directory
   file:

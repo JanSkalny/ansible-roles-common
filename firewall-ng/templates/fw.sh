@@ -115,10 +115,13 @@ $IT4 -N CHECK_IF
 
   # interface specific configuration
 {% for firewall_iface_name, firewall_iface in firewall.interfaces.items() %}
-{% for allow_net in firewall_iface.allow | default([]) %}
+{% with %}
+{% set allow_nets = normalize_addrs(firewall_iface, 'allow').split(',') | difference(['']) %}
+{% set deny_nets = normalize_addrs(firewall_iface, 'deny').split(',') | difference(['']) %}
+{% for allow_net in allow_nets %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s {{ allow_net }} -j RETURN
 {% endfor %}
-{% for deny_net in firewall_iface.deny | default([]) %}
+{% for deny_net in deny_nets %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP
 {% endfor %}
 {% if firewall_iface.default | default('allow' if firewall.interfaces|length == 1 else 'deny') == 'allow' %}
@@ -126,6 +129,7 @@ $IT4 -N CHECK_IF
 {% else %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -j LOG_DROP
 {% endif %}
+{% endwith %}
 {% endfor %}
 
   # everything else is dropped!

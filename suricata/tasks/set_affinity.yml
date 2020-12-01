@@ -1,3 +1,24 @@
+- name: remove irqbalance
+  package:
+    name: irqbalance
+    state: absent
+  tags: install
+
+- name: isolate cpus fom kernel
+  lineinfile:
+    state: present
+    dest: /etc/default/grub
+    backrefs: yes
+    regexp: '^(GRUB_CMDLINE_LINUX=(?!.* isolcpus)[^\"]+)(\".*)'
+    line: '\1 isolcpus={{ suricata_affinity.isolate }} \2'
+  register: suricata_update_grub
+  tags: install
+
+- name: update grub
+  shell: update-grub
+  when: suricata_update_grub.changed
+  tags: install
+
 - name: deploy suricata-set-affinity.sh
   template:
     src: set-affinity.sh

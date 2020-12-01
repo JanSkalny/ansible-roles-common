@@ -1,0 +1,6 @@
+# FIX: [WARNING]: file is empty and had no tasks to include
+# Please fix this if you need it
+- name: centos
+  debug:
+    msg: "centos is not used anymore"
+  tags: never

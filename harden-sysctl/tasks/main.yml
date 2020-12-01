@@ -20,6 +20,7 @@
      sysctl_set: yes
      reload: yes
      state: present
+     ignoreerrors: yes  # ignore errors about unknown keys
   with_dict: "{{ sysctl_config }}"
   notify: sysctl flush routes
 

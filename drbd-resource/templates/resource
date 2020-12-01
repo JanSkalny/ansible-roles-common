@@ -1,0 +1,58 @@
+resource {{drbd_res_name}} {
+  protocol C;
+
+  device minor {{drbd_res_id}};
+  meta-disk internal;
+
+  startup {
+    wfc-timeout 30;
+    outdated-wfc-timeout 20;
+    degr-wfc-timeout 30;
+  }
+
+  net {
+{% if drbd_psk is defined %}
+    cram-hmac-alg sha1;
+    shared-secret "{{ drbd_psk }}";
+{% endif %}
+    max-epoch-size 4K;
+    max-buffers 4K;
+    sndbuf-size 128K;
+    rcvbuf-size 4M;
+    unplug-watermark 16;
+    #no-tcp-cork; ## spomaluje
+  }
+
+  disk {
+    on-io-error detach;
+    fencing resource-only; 
+    no-disk-flushes;
+    no-md-flushes;
+    no-disk-barrier;
+    c-plan-ahead 0;
+    c-fill-target 4M;
+    c-min-rate {{ (drbd_rate / 10) | int}}M;
+    c-max-rate {{ drbd_rate | int }}M;
+    al-extents 3389;
+  }
+
+  handlers {
+    # see: http://www.drbd.org/users-guide-8.4/s-pacemaker-fencing.html
+    fence-peer "/usr/lib/drbd/crm-fence-peer.sh";
+    after-resync-target "/usr/lib/drbd/crm-unfence-peer.sh";
+  }
+
+  syncer {
+    rate {{ drbd_rate | int }}M;
+#    verify-alg sha1;
+  }
+
+  on {{drbd_peers[0].name}} {
+    disk /dev/{{drbd_vg}}/{{drbd_res_name}};
+    address {{drbd_peers[0].address}}:{{drbd_base_port+drbd_res_id|int}};
+  }
+  on {{drbd_peers[1].name}} {
+    disk /dev/{{drbd_vg}}/{{drbd_res_name}};
+    address {{drbd_peers[1].address}}:{{drbd_base_port+drbd_res_id|int}};
+  }
+}

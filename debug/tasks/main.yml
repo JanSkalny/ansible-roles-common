@@ -1,0 +1,83 @@
+---
+  - name: ANSIBLE FACTS
+    debug: 
+        msg: "{{ ansible_facts }}"
+        verbosity: 1
+    tags: 
+        - always
+        
+  - name: ANSIBLE TAGS
+    debug: 
+       var: hostvars[inventory_hostname]['ansible_run_tags']
+       verbosity: 1
+    tags: 
+        - always
+
+  - name: debug (only nothing)
+    debug: 
+        msg: "debug 0 {{ ansible_run_tags }}"
+
+  - name: debug always
+    debug: 
+        msg: "debug 1 {{ ansible_run_tags }}"
+    tags: 
+        - always
+
+  - name: debug some & always == always
+    debug: 
+        msg: "debug 2 {{ ansible_run_tags }}"
+    tags: 
+        - some
+        - always
+
+  - name: debug some (or nothing)
+    debug: 
+        msg: "debug 3 {{ ansible_run_tags }}"
+    tags: 
+        - some
+
+  - name: debug else (or nothing)
+    debug: 
+        msg: "debug 4 {{ ansible_run_tags }}"
+    tags: 
+        - else 
+
+  - name: debug some or else or nothing)
+    debug: 
+        msg: "debug 5 {{ ansible_run_tags }}"
+    tags: else or some
+
+  - name: debug some, else or nothing
+    debug: 
+        msg: "debug 6 {{ ansible_run_tags }}"
+    tags: 
+      - else
+      - some
+
+  - name: debug some or else & nothing
+    debug: 
+        msg: "debug 7 {{ ansible_run_tags }}"
+    tags: 
+        - else or some
+        - never
+
+  - name: debug some & never
+    debug: 
+        msg: "debug 8 {{ ansible_run_tags }}"
+    tags: 
+        - some
+        - never
+
+  - name: debug some, else & never
+    debug: 
+        msg: "debug 9 {{ ansible_run_tags }}"
+    tags: 
+        - else
+        - some
+        - never
+
+  - name: debug never
+    debug: 
+        msg: "debug 10 {{ ansible_run_tags }}"
+    tags: 
+        - never

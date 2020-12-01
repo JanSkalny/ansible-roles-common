@@ -1,0 +1,41 @@
+
+- name: check if lv already exists
+  stat:
+    path: /dev/{{ drbd_vg }}/{{ drbd_res_name }}
+  check_mode: no
+  register: lv_status
+
+- name: prepare lv
+  lvol:
+    lv: "{{ drbd_res_name }}"
+    vg: "{{ drbd_vg }}"
+    size: "{{ drbd_size }}"
+  when: not lv_status.stat.exists
+
+- name: create resource config
+  template:
+    src: "resource"
+    dest: /etc/drbd.d/{{drbd_res_name}}.res
+  tags: configure
+
+- name: write drbd metadata
+  shell:
+    drbdadm create-md {{ drbd_res_name }}
+  when: not lv_status.stat.exists
+
+- name: make resource primary
+  shell:
+    drbdadm up {{ drbd_res_name }}
+  when: not lv_status.stat.exists 
+
+- name: make resource primary
+  shell:
+    drbdadm -- --overwrite-data-of-peer primary {{ drbd_res_name }}
+  when: ( not lv_status.stat.exists ) and drbd_primary_host == inventory_hostname
+
+- name: make resource secondary
+  shell:
+    drbdadm secondary {{ drbd_res_name }}
+  when: ( not lv_status.stat.exists ) and drbd_primary_host != inventory_hostname
+  # -- --discard-my-data connect
+

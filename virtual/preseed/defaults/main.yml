@@ -6,6 +6,7 @@ virtual:
   disk_blk: "/dev/mapper/{{ inventory_hostname }}"
   default_interface: "eth0"
 
+virtual_version: "ubuntu18.04"
 virtual_image: "{{ virtual_dir }}/images/ubuntu-18.04.3-server-amd64.iso"
 virtual_setup_user: "setup"
 virtual_setup_password: "{{ 'changeme' | password_hash('sha512') }}"

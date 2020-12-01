@@ -19,11 +19,9 @@ for D in $( ls /proc/irq ); do
 	fi
 done
 
-# core 8
-set_iface_affinity sensor0 100
-
-# core 9
-#set_iface_affinity sensor1 200
+{% for iface, core in suricata_affinity.interfaces.items() %}
+set_iface_affinity {{ iface }} {{ core }}
+{% endfor %}
 
 # pin rcu processes to 0
 for PID in $( pgrep rcu ); do 

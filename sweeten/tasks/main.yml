@@ -40,3 +40,30 @@
     group: "root"
     mode: 0640
   tags: configure
+
+- name: fancy issue message
+  copy: 
+    src: issue
+    dest: "/etc/issue"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  tags: configure
+
+- name: fancy motd message
+  copy: 
+    src: issue
+    dest: "/etc/motd"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  tags: configure
+
+- name: fancy issue.net message
+  copy: 
+    src: issue
+    dest: "/etc/issue.net"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  tags: configure

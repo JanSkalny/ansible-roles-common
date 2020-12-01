@@ -1,0 +1,12 @@
+- name: restart slapd
+  service:
+    name: slapd
+    state: restarted
+
+- name: dpkg reconfigure slapd
+  shell: dpkg-reconfigure slapd -f noninteractive 
+
+- name: restart freeradius
+  service:
+    name: freeradius
+    state: restarted

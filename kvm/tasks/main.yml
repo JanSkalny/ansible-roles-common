@@ -1,7 +1,6 @@
 - name: install virtualization packages
   package:
     name:
-    - libvirt-bin
     - qemu-kvm
     - python3-libvirt
     - virtinst
@@ -10,6 +9,22 @@
     - vlan
     - irqbalance
     - kpartx
+    - cloud-image-utils
+  tags: install
+
+- name: install virtualization packages
+  package: 
+    name:
+    - libvirt-bin
+  tags: install
+  when: ansible_os_family == "Debian" and ansible_distribution_major_version <= "18"
+
+- name: install virtualization packages
+  package: 
+    name:
+    - libvirt-daemon-system
+    - libvirt-clients
+  when: ansible_os_family == "Debian" and ansible_distribution_major_version > "18"
   tags: install
 
 - name: prepare directories

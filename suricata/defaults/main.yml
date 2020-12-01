@@ -10,6 +10,11 @@ suricata_eve_rotate_interval: "1h"
 suricata_default_packet_size: 1536
 
 suricata_set_affinity: false
+suricata_affinity:
+  isolate: "8-31"
+  interfaces:
+    sensor0: 100    # core 8
+    #sensor1: 200    # core 9
 
 # monitored interfaces (using AF_PACKETv3)
 suricata_ifaces: 
