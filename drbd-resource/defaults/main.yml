@@ -1,0 +1,4 @@
+drbg_vg: "vg0"
+drbd_base_port: 7700
+drbd_rate: 100
+#drbd_psk: "$( openssl rand -hex 16 )"
