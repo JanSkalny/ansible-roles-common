@@ -1,2 +1,2 @@
 www_domain_enable_ssl: false
-www_php_version: 7.3
+www_php_version: 7.4

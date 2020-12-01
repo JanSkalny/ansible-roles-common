@@ -12,8 +12,7 @@
 
 <VirtualHost *:80>
   ServerName {{ www_domain }}
-  ServerAlias *.{{ www_domain }}
-  VirtualDocumentRoot /var/www/{{ www_domain }}/%-3.0+
+  DocumentRoot /var/www/{{ www_domain }}/
 
   ErrorLog /var/log/apache2/{{ www_domain }}_error.log
   CustomLog /var/log/apache2/{{ www_domain }}_access.log combined
@@ -22,8 +21,7 @@
 {% if www_domain_enable_ssl %}
 <VirtualHost *:443>
   ServerName {{ www_domain }}
-  ServerAlias *.{{ www_domain }}
-  VirtualDocumentRoot /var/www/{{ www_domain }}/%-3.0+
+  DocumentRoot /var/www/{{ www_domain }}/
 
   ErrorLog /var/log/apache2/{{ www_domain }}_error.log
   CustomLog /var/log/apache2/{{ www_domain }}_access.log combined

@@ -13,24 +13,13 @@
     groups: "{{ www_user }}"
     append: yes
 
-- name: create domain directories
+- name: create domain directory
   file: 
-    path: "/var/www/{{ www_domain }}/{{ item }}" 
+    path: "/var/www/{{ www_domain }}/"
     state: directory 
     owner: "{{ www_user }}"
     group: "{{ www_user }}"
-  with_items:
-    - "/"
-    - "www/"
-    - "_/"
   
-- name: create redirection via .htaccess
-  template: 
-    src: "htaccess_redirect.j2" 
-    dest: "/var/www/{{ www_domain }}/_/.htaccess"
-    owner: "{{ www_user }}"
-    group: "{{ www_user }}"
-
 - name: create php-fpm pool
   template:
     src: "pool.conf.j2"
@@ -44,12 +33,6 @@
     dest: "/etc/apache2/sites-available/400-{{ www_domain }}.conf"
   notify:
     - restart apache
-
-- name: append extra vhost configuration
-  blockinfile:
-    dest: "/etc/apache2/sites-available/400-{{ www_domain }}.conf"
-    block: "{{ lookup('file', 'files/www-domain-append/{{ www_domain }}') }}"
-  ignore_errors: yes
 
 - name: enable vhost
   raw: a2ensite "400-{{ www_domain }}.conf"
