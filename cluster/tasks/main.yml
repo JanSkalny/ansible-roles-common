@@ -23,6 +23,9 @@
     src: pacemaker_override.conf
     dest: "/etc/systemd/system/pacemaker.service.d/override.conf"
   tags: configure
+  notify:
+    - restart corosync
+    - restart pacemaker
 
 - name: deploy corosync authkey
   copy:
@@ -32,12 +35,18 @@
     owner: root
     group: root
   tags: configure
+  notify:
+    - restart corosync
+    - restart pacemaker
 
 - name: configure corosync
   template:
     src: corosync.conf
     dest: /etc/corosync/corosync.conf
   tags: configure
+  notify:
+    - restart corosync
+    - restart pacemaker
 
 - name: reload systemd configuration
   systemd:
@@ -51,16 +60,6 @@
   with_items:
   - drbd
   - libvirt-guests
-
-- name: restart corosync
-  systemd:
-    name: corosync
-    state: restarted
-
-- name: restart pacemaker
-  systemd:
-    name: pacemaker
-    state: restarted
 
 
 # TODO:
