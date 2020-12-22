@@ -44,10 +44,10 @@ IT6=/sbin/ip6tables
 modprobe ip_conntrack
 modprobe ip_conntrack_ftp
 
-echo {{ firewall.ip_forward | default(0) }} > /proc/sys/net/ipv4/ip_forward
+echo {{ firewall.ip_forward | default(0) | int }} > /proc/sys/net/ipv4/ip_forward
 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
 echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
-echo {{ firewall.log_martians | default(1) }} > /proc/sys/net/ipv4/conf/all/log_martians
+echo {{ firewall.log_martians | default(1) | int }} > /proc/sys/net/ipv4/conf/all/log_martians
 echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
 echo 1 > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
 echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects
@@ -256,6 +256,8 @@ $IT6 -A OUTPUT -j {{ firewall_output_rule_default }}
 ############################################################
 ### FORWARD ruleset
 
+{% if 'forward' in firewall %}
+
 {% for forward_rule_name,forward_rule in firewall.forward.items() %}
 {% with %}
 	{% set src_addrs = normalize_addrs(forward_rule, 'src').split(',') %}
@@ -282,8 +284,11 @@ $IT4 -A FORWARD {{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_a
 {% endwith %}
 {% endfor %}
 
+{% endif %}
+
 $IT4 -A FORWARD -j {{ firewall_forward_rule_default }}
 $IT6 -A FORWARD -j {{ firewall_forward_rule_default }}
+
 
 ############################################################
 ### NAT ruleset
