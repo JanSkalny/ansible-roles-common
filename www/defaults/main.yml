@@ -23,7 +23,7 @@ php_open_basedir: ""
 php_session_save_path: "/var/lib/php/sessions"
 php_allow_url_fopen: "On"
 
-composer_checksum: "sha384:e5325b19b381bfd88ce90a5ddb7823406b2a38cff6bb704b0acc289a09c8128d4a8ce2bbafcd1fcbdc38666422fe2806."
+composer_checksum: "sha384:8a6138e2a05a8c28539c9f0fb361159823655d7ad2deecb371b04a83966c61223adc522b0189079e3e9e277cd72b8897."
 
 #XXX: hardened PHP
 #php_open_basedir: "/var/www/XXX/public"

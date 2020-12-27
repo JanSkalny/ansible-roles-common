@@ -4,6 +4,10 @@
     state: absent
   tags: install
 
+- name: update apt cache
+  apt:
+    update_cache: yes
+
 - name: install syslog-ng
   package: 
     name: 

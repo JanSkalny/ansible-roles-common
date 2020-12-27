@@ -19,6 +19,7 @@
    copy:
      src: "{{ ca_dir }}/{{ type }}/keys/{{ hostname }}.{{simplepki_message_digest}}.{{ simplepki_key_size }}.key"
      dest: "{{ dest_dir }}/{{ key_name }}"
+     mode: 0400
    when: key_name is defined and key_name != ""
 
  - name: deploy pem
@@ -27,3 +28,6 @@
      dest: "{{ dest_dir }}/{{ pem_name }}"
    when: pem_name is defined and pem_name != ""
 
+- name: deploy p12
+  command: "openssl pkcs12 -export -in {{ dest_dir }}/{{ crt_name }} -inkey {{ dest_dir }}/{{ key_name }} -out {{ dest_dir }}/{{ p12_name }} -passout pass:{{ p12_password | default("") }}"
+  when: p12_name is defined and p12_name != ""
