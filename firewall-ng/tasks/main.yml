@@ -6,7 +6,7 @@
     group: root 
     mode: 0750
   notify: reload firewall
-  when: firewall_template is defined and firewall.interfaces|length
+  when: firewall_template is defined and firewall_interfaces|length
 
 - name: load fw.sh on boot
   file: 
@@ -15,6 +15,6 @@
     owner: root
     group: root
     state: link
-  when: firewall_template is defined and firewall.interfaces|length
+  when: firewall_template is defined and firewall_interfaces|length
 
 
