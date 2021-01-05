@@ -16,15 +16,18 @@
 - name: generate netplan.yml
   template:
     src: netplan.yaml
-    dest: /etc/netplan/10-interfaces.yaml
+    dest: /etc/netplan/01-netcfg.yaml
   notify:
   - reboot host to apply networking changes
   - netplan apply
   tags: configure
 
-- name: remove cloud-init.yaml
+- name: remove old config files
   file:
-    path: /etc/netplan/50-cloud-init.yaml
+    path: /etc/netplan/{{ item }}
     state: absent
+  with_items:
+    - 50-cloud-init.yaml
+    - 10-interfaces.yaml
   tags: configure
 
