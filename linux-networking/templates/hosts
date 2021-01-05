@@ -9,9 +9,9 @@
 {% endif %}
 {% endif %}
 
-{% if hosts is defined %}
+{% if etc_hosts is defined %}
 # generated from "hosts" var
-{% for h,ip in hosts.items() %}
+{% for h,ip in etc_hosts.items() %}
 {{ ip }} {{ h }}
 {% endfor %}
 {% endif %}

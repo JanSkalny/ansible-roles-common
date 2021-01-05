@@ -1,15 +1,18 @@
-- name: remove resolvconf
+- name: install basic networking tools
   package:
-    name: resolvconf
-    state: absent
-  register: removed_resolvconf
+    name:
+    - ifupdown
+    - bridge-utils
+    - ifenslave
+    - vlan
+    state: present
   tags: install
 
-- name: generate resolv.conf
-  template:
-    src: resolv.conf
-    dest: /etc/resolv.conf
-  tags: configure
+- name: remove netplan
+  package:
+    name: netplan.io
+    state: absent
+  tags: install
 
 - name: generate 70-persistent-net.rules
   template:

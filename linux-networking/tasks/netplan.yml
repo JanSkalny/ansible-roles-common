@@ -1,6 +1,30 @@
+- name: install basic networking tools
+  package:
+    name:
+    - netplan.io
+    - bridge-utils
+    - vlan
+    state: present
+  tags: install
+
+- name: remove ifupdown
+  package:
+    name: ifupdown
+    state: absent
+  tags: install
+
 - name: generate netplan.yml
   template:
-    src: netplan.yml
+    src: netplan.yaml
     dest: /etc/netplan/10-interfaces.yaml
+  notify:
+  - reboot host to apply networking changes
+  - netplan apply
+  tags: configure
+
+- name: remove cloud-init.yaml
+  file:
+    path: /etc/netplan/50-cloud-init.yaml
+    state: absent
   tags: configure
 
