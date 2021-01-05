@@ -256,7 +256,7 @@ $IT6 -A OUTPUT -j {{ firewall_output_rule_default }}
 ############################################################
 ### FORWARD ruleset
 
-{% if 'forward' in firewall %}
+{% if firewall_forward %}
 
 {% for forward_rule_name,forward_rule in firewall_forward.items() %}
 {% with %}
