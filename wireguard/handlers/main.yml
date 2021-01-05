@@ -1,0 +1,4 @@
+- name: restart {{ wg_name }} service
+  service:
+    name: wg-quick@{{ wg_name }}
+    state: restarted
