@@ -7,8 +7,8 @@
 {% if attr in rule %}
 {% set attrs = ( rule[attr].replace(' ','').split(',') if rule[attr] is string else rule[attr] ) %}
 {% for name_or_addr in attrs %}
-{% if name_or_addr in firewall.objects %}
-{% set xaddr = firewall.objects[name_or_addr].addr %}
+{% if name_or_addr in firewall_objects %}
+{% set xaddr = firewall_objects[name_or_addr].addr %}
 {% do results.append(xaddr.replace(' ','').split(',') if xaddr is string else xaddr) %}
 {% else %}
 {% do results.append([name_or_addr]) %}
@@ -44,10 +44,10 @@ IT6=/sbin/ip6tables
 modprobe ip_conntrack
 modprobe ip_conntrack_ftp
 
-echo {{ firewall.ip_forward | default(0) }} > /proc/sys/net/ipv4/ip_forward
+echo {{ firewall_ip_forward | default(0) | int }} > /proc/sys/net/ipv4/ip_forward
 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
 echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
-echo {{ firewall.log_martians | default(1) }} > /proc/sys/net/ipv4/conf/all/log_martians
+echo {{ firewall_log_martians | default(1) | int }} > /proc/sys/net/ipv4/conf/all/log_martians
 echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
 echo 1 > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
 echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects
@@ -99,7 +99,7 @@ IT=""
 
 $IT4 -N CHECK_IF
   # allow dhcp on specific interfaces
-{% for firewall_iface_name, firewall_iface in firewall.interfaces.items() %}
+{% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
 {% if firewall_iface.allow_dhcp | default(false) %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s 0.0.0.0 -j RETURN # DHCP
 {% endif %}
@@ -114,7 +114,7 @@ $IT4 -N CHECK_IF
   $IT4 -A CHECK_IF -s 224.0.0.0/3 -j DROP         # multicast
 
   # interface specific configuration
-{% for firewall_iface_name, firewall_iface in firewall.interfaces.items() %}
+{% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
 {% with %}
 {% set allow_nets = normalize_addrs(firewall_iface, 'allow').split(',') | difference(['']) %}
 {% set deny_nets = normalize_addrs(firewall_iface, 'deny').split(',') | difference(['']) %}
@@ -124,7 +124,7 @@ $IT4 -N CHECK_IF
 {% for deny_net in deny_nets %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP
 {% endfor %}
-{% if firewall_iface.default | default('allow' if firewall.interfaces|length == 1 else 'deny') == 'allow' %}
+{% if firewall_iface.default | default('allow' if firewall_interfaces|length == 1 else 'deny') == 'allow' %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -j RETURN
 {% else %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -j LOG_DROP
@@ -178,7 +178,7 @@ done
 ############################################################
 ### INPUT ruleset
 
-{% for input_rule_name,input_rule in firewall.input.items() %}
+{% for input_rule_name,input_rule in firewall_input.items() %}
 {% with %}
 	{% set src_addrs = normalize_addrs(input_rule, 'src').split(',') %}
 	{% set dest_addrs = normalize_addrs(input_rule, 'dest').split(',') %}
@@ -256,7 +256,9 @@ $IT6 -A OUTPUT -j {{ firewall_output_rule_default }}
 ############################################################
 ### FORWARD ruleset
 
-{% for forward_rule_name,forward_rule in firewall.forward.items() %}
+{% if 'forward' in firewall %}
+
+{% for forward_rule_name,forward_rule in firewall_forward.items() %}
 {% with %}
 	{% set src_addrs = normalize_addrs(forward_rule, 'src').split(',') %}
 	{% set dest_addrs = normalize_addrs(forward_rule, 'dest').split(',') %}
@@ -282,8 +284,11 @@ $IT4 -A FORWARD {{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_a
 {% endwith %}
 {% endfor %}
 
+{% endif %}
+
 $IT4 -A FORWARD -j {{ firewall_forward_rule_default }}
 $IT6 -A FORWARD -j {{ firewall_forward_rule_default }}
+
 
 ############################################################
 ### NAT ruleset

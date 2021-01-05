@@ -1,28 +1,34 @@
-- name: install basic networking tools
-  package:
-    name: 
-    - bridge-utils
-    - ifupdown
-    - ifenslave
-    - vlan
-    state: present
-  tags: install
-
-- name: remove netplan
-  package:
-    name:
-    - netplan.io
-    state: absent
-  tags: install
-
 - name: generate /etc/hosts
   template:
     src: hosts
     dest: /etc/hosts
+  tags: configure
+
+- name: remove resolvconf
+  package:
+    name: resolvconf
+    state: absent
+  tags: install
+
+- name: generate resolv.conf
+  template:
+    src: resolv.conf
+    dest: /etc/resolv.conf
+  tags: configure
 
 - name: ifupdown configuration
   include_tasks: ifupdown.yml
-  tags: configure
+  when: linux_networking_method == "ifupdown"
+  tags:
+  - configure
+  - install
+
+- name: netplan configuration
+  include_tasks: netplan.yml
+  when: linux_networking_method == "netplan"
+  tags:
+  - configure
+  - install
 
 # flush handlers to network changes
 - meta: flush_handlers

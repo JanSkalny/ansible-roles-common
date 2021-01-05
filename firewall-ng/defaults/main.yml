@@ -4,8 +4,10 @@ firewall_input_rule_default: "LOG_DROP"
 firewall_output_rule_default: "ACCEPT"
 firewall_forward_rule_default: "LOG_DROP"
 
-firewall:
-  interfaces: "{{ networking }}"
+firewall_ip_forward: 0
+firewall_log_martians: 1
+
+firewall_interfaces: "{{ networking }}"
 #   mngPhys:
 #     deny:
 #     - 10.191.3.128/26
@@ -19,7 +21,8 @@ firewall:
 #   iscsi1:
 #     allow: 10.191.3.192/26
 
-  objects: {}
+
+firewall_objects: {}
 #   PUB:
 #     addr: 10.191.0.0/24
 #   DMZ:
@@ -29,7 +32,7 @@ firewall:
 #   ns.example.com:
 #     addr: 10.191.1.34
 
-  input: {}
+firewall_input: {}
 #  - ssh from lan:
 #      src: LAN
 #      proto:
@@ -40,5 +43,5 @@ firewall:
 #        tcp: 9200, 9300
 #      rule: LOG_ACCEPT
 
-  output: {}
-  forward: {}
+firewall_output: {}
+firewall_forward: {}

@@ -13,5 +13,4 @@
     sleep: 10
     delay: 10
     timeout: 300
-  connection: local
   when: virtual_start is changed

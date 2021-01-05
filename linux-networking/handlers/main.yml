@@ -1,3 +1,8 @@
 - name: reboot host to apply networking changes
   reboot:
   when: linux_networking_reboot
+
+- name: netplan apply
+  shell:
+    netplan apply
+  when: linux_networking_netplan_apply

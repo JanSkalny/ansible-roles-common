@@ -62,7 +62,7 @@
     --virt-type kvm \
     --hvm \
     --connect=qemu:///system \
-    --network=bridge:"{{ networking[virtual.default_interface].virtual_host_iface }}",model=virtio,mac={{ networking[virtual.default_interface].ether }} \
+    --network=bridge:"{{ networking[virtual.default_interface | default('eth0')].virtual_host_iface }}",model=virtio,mac={{ networking[virtual.default_interface | default('eth0')].ether }} \
     --boot hd \
     --disk path="{{ virtual.disk_blk | default("/dev/mapper/"+virtual.name) }}",device=disk,bus=virtio,cache=none \
     --disk path="{{ virtual_dir }}/preseed/{{ virtual.name }}/seed.qcow2",device=cdrom \

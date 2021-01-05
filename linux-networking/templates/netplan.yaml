@@ -1,54 +1,99 @@
-{% macro generate_iface_config(iface) %}
-    comment: 'managed by ansible'
-{% if 'address' in item and item.address != 'dhcp' %}
-    addresses: {{ [ item.address ]}}]
-{% elseif 'address' in item and item.address == 'dhcp' %}
-    dhcp4: yes
+# {{ ansible_managed }}
+{% macro generate_iface_config(iface, iface_name) %}
+{% if 'ether' in iface %}
+      match:
+        macaddress: "{{ iface.ether }}"
+      set-name: {{ iface_name }}
 {% endif %}
-{% if 'gateway' in item %}
-	gateway: {{ item.gateway }}
+{% if 'bond_master' in iface %}
+      optional: true
 {% endif %}
-{%if 'dns' in item %}
-    nameservers:
-	  addresses: {{ item.dns }}
-{% if 'dns-search' in item %}
-      search: {{ [ item['dns-search'] ] }}
+{% if 'address' in iface and iface.address != 'dhcp' %}
+      link-local: []
+      addresses: {{ [ iface.address ]}}
+{% elif 'address' in iface and iface.address == 'dhcp' %}
+      link-local: []
+      dhcp4: yes
+{% endif %}
+{% if 'gateway' in iface %}
+      gateway4: {{ iface.gateway }}
+{% endif %}
+{%if 'dns' in iface %}
+      nameservers:
+        addresses: {{ iface.dns }}
+{% if 'dns-search' in iface %}
+        search: {{ [ iface['dns-search'] ] }}
 {% endif %}
 {% endif %}
-{% if 'mtu' in item %}
-	mtu: {{ item.mtu }}
+{% if 'mtu' in iface %}
+      mtu: {{ iface.mtu }}
 {% endif %}
-{% if 'routes' in item %}
-    routes:
-{% for route in item.routes %}
-    - to: {{ route.net }}
-      via: {{ route.via }}
+{% if 'routes' in iface %}
+      routes:
+{% for route in iface.routes %}
+       - to: {{ route.net }}
+         via: {{ route.via }}
 {% endfor %}
 {% endif %}
 {% endmacro %}
 
 network:
+  version: 2
   ethernets:
-{% for item in networking %}
-{% if 'vlan-id' not in item or 'vlan-iface' not in item %}
-{{ generate_iface_config(item) }}
+{% for iface_name,item in networking.items() %}
+{% if ( 'vlan-id' not in item or 'vlan-iface' not in item ) and 'bond_slaves' not in item and 'bridge_ports' not in item%}
+    {{ iface_name }}: 
+{{ generate_iface_config(item, iface_name) }}
 {% endif %}
 {% endfor %}
 
-vlans:
-{% for item in networking %}
+  vlans:
+{% set netplan_has_vlan = [] %}
+{% for iface_name,item in networking.items() %}
 {% if 'vlan-id' in item and 'vlan-iface' in item %}
-  vlan{{ item.vlan-id }}:
-    link: {{ item.vlan-iface }}
-{{ generate_iface_config(item) }}
+{%do netplan_has_vlan.append(True) %}
+    vlan{{ item['vlan-id'] }}:
+      id: {{ item['vlan-id'] }}
+      link: {{ item['vlan-iface'] }}
+{{ generate_iface_config(item, "vlan%d" % item['vlan-id']) }}
 {% endif %}
 {% endfor %}
-
-{% if 'bridge_ports' in item %}
-	bridge_ports {{ item.bridge_ports }}
-	bridge_stp off
-	bridge_fd 0
-	bridge_maxwait 0
+{% if not netplan_has_vlan %}
+    {}
 {% endif %}
 
+  bridges:
+{% set netplan_has_bridge = [] %}
+{% for iface_name,item in networking.items() %}
+{% if 'bridge_ports' in item %}
+{%do netplan_has_bridge.append(True) %}
+    {{ iface_name }}:
+      interfaces: {{ item.bridge_ports }}
+      parameters:
+        stp: false
+        forward-delay: 0
+{{ generate_iface_config(item, iface_name) }}
+{% endif %}
+{% endfor %}
+{% if not netplan_has_bridge %}
+    {}
+{% endif %}
+
+  bonds:
+{% set netplan_has_bond = [] %}
+{% for iface_name,item in networking.items() %}
+{% if 'bond_slaves' in item %}
+{%do netplan_has_bond.append(True) %}
+    {{ iface_name }}:
+      interfaces: {{ item.bond_slaves }}
+      parameters:
+        mode: 802.3ad
+        lacp-rate: fast
+        mii-monitor-interval: 100
+{{ generate_iface_config(item, iface_name) }}
+{% endif %}
+{% endfor %}
+{% if not netplan_has_bond %} 
+    {}
+{% endif %}
 

@@ -1,5 +1,7 @@
 linux_networking_reboot: true
+linux_networking_netplan_apply: false
 linux_networking_hostname_localhost: true
+linux_networking_method: "ifupdown"
 
 networking: []
 
@@ -7,7 +9,7 @@ dns:
   search: ""
   servers: [ 1.1.1.1 ]
 
-hosts: {}
-#   hostname: 1.1.1.1
-#   hostname: 1.1.1.1
+etc_hosts: {}
+#   hostnameA: 1.1.1.1
+#   hostnameB: z.z.z.z
 

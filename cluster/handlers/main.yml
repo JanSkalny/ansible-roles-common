@@ -1,0 +1,13 @@
+- name: reload systemd configuration
+  systemd:
+    daemon_reload: yes
+
+- name: restart corosync
+  systemd:
+    name: corosync
+    state: restarted
+
+- name: restart pacemaker
+  systemd:
+    name: pacemaker
+    state: restarted
