@@ -4,7 +4,6 @@ virtual:
   cpus: 1
   disk: "10G"
   disk_blk: "/dev/mapper/{{ inventory_hostname }}"
-  default_interface: "eth0"
 
 virtual_version: "ubuntu18.04"
 virtual_image: "{{ virtual_dir }}/images/bionic-server-cloudimg-amd64.img"
