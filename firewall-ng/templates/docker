@@ -269,7 +269,8 @@ $IT6 -A OUTPUT -j {{ firewall_default_rule_output }}
 ############################################################
 ### DOCKER_INPUT ruleset
 
-# turn permit only firewall_input rules from physical interfaces
+# make sure DOCKER-USER chain exists and is empty
+$IT4 -N DOCKER-USER 2>/dev/null
 $IT4 -F DOCKER-USER
 
 # connection tracking:
@@ -278,6 +279,7 @@ $IT4 -F DOCKER-USER
 $IT4 -A DOCKER-USER -m state --state ESTABLISHED,RELATED -j RETURN
 $IT4 -A DOCKER-USER -m state --state INVALID -j LOG_DROP
 
+# turn permit only firewall_input rules from physical interfaces
 {% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
 {% for input_rule_name,input_rule in firewall_input.items() %}
 {% with %}
