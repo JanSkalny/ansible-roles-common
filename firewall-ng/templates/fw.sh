@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# {{ ansible_managed }} 
+# {{ ansible_managed }}
 #
 {%- macro normalize_addrs(rule, attr) -%}
 {% set results = [] %}
@@ -55,7 +55,7 @@ echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route
 
 for PROTO in 4 6; do
   IT=$( eval echo \$IT$PROTO )
-  X=$( [ $PROTO -eq 6 ] && echo "6" ) 
+  X=$( [ $PROTO -eq 6 ] && echo "6" )
 
   # flush tables
   for TABLE in filter nat mangle; do
@@ -74,7 +74,7 @@ for PROTO in 4 6; do
       --log-ip-options --log-tcp-options --log-uid \
       --log-prefix "FW${PROTO}-REJECT " --log-level info
     $IT -A LOG_REJECT -m limit --limit 10/sec --limit-burst 20 -j REJECT \
-      --reject-with icmp$X-port-unreachable 
+      --reject-with icmp$X-port-unreachable
     $IT -A LOG_REJECT -j DROP
 
   # custom DROP action with logging
@@ -146,7 +146,7 @@ $IT6 -N CHECK_IF
 
 
 ############################################################
-### allow loopbacks, check origin, and related/established 
+### allow loopbacks, check origin, and related/established
 
 # everything is allowed on loopback
 $IT4 -A INPUT -i lo -j ACCEPT
@@ -187,8 +187,8 @@ done
 
 # {{ input_rule_name }}
 # {{ input_rule | to_json }}
-{% for src_addr in src_addrs -%} 
-{%- for dest_addr in dest_addrs -%} 
+{% for src_addr in src_addrs -%}
+{%- for dest_addr in dest_addrs -%}
 {% for port in tcp_ports | list %}
 $IT4 -A INPUT -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ input_rule.rule | default('LOG_ACCEPT') }}
 {% endfor %}
@@ -203,11 +203,11 @@ $IT4 -A INPUT -p udp --dport {{ port }}{{ " -s "+src_addr if src_addr|length els
 
 # IPv4 ICMP rate limit
 $IT4 -A INPUT -p icmp -m limit --limit 20/second -j ACCEPT
-$IT4 -A INPUT -p icmp -j LOG_DROP 
+$IT4 -A INPUT -p icmp -j LOG_DROP
 
-# IPv6 rate limit 
+# IPv6 rate limit
 $IT6 -A INPUT -p ipv6-icmp --icmpv6-type 128 -m limit --limit 20/s -j ACCEPT
-$IT6 -A INPUT -p icmp -j LOG_DROP 
+$IT6 -A INPUT -p icmp -j LOG_DROP
 
 # ignore broadcasts
 $IT4 -A INPUT -m addrtype --dst-type BROADCAST -j DROP
@@ -217,9 +217,9 @@ for PORT in 137 138; do
   $IT4 -A INPUT -p udp --dport $PORT -j DROP
 done
 
-# default rule is 
-$IT4 -A INPUT -j {{ firewall_input_rule_default }}
-$IT6 -A INPUT -j {{ firewall_input_rule_default }}
+# default rule is
+$IT4 -A INPUT -j {{ firewall_default_rule_input }}
+$IT6 -A INPUT -j {{ firewall_default_rule_input }}
 
 
 ############################################################
@@ -229,7 +229,7 @@ $IT4 -A OUTPUT -o lo -j ACCEPT
 $IT6 -A OUTPUT -o lo -j ACCEPT
 
 {% if firewall_setup %}
-#root can do anything 
+#root can do anything
 $IT4 -A OUTPUT -m owner --uid-owner 0 -j ACCEPT
 $IT6 -A OUTPUT -m owner --uid-owner 0 -j ACCEPT
 {% endif %}
@@ -248,9 +248,9 @@ $IT6 -A OUTPUT -p udp --dport 53 -j ACCEPT
 #$IT4 -A OUTPUT -j LOG_ACCEPT
 #$IT6 -A OUTPUT -j LOG_ACCEPT
 
-# XXX: should default to drop 
-$IT4 -A OUTPUT -j {{ firewall_output_rule_default }}
-$IT6 -A OUTPUT -j {{ firewall_output_rule_default }}
+# XXX: should default to drop
+$IT4 -A OUTPUT -j {{ firewall_default_rule_output }}
+$IT6 -A OUTPUT -j {{ firewall_default_rule_output }}
 
 
 ############################################################
@@ -267,8 +267,8 @@ $IT6 -A OUTPUT -j {{ firewall_output_rule_default }}
 
 # {{ forward_rule_name }}
 # {{ forward_rule | to_json }}
-{% for src_addr in src_addrs -%} 
-{%- for dest_addr in dest_addrs -%} 
+{% for src_addr in src_addrs -%}
+{%- for dest_addr in dest_addrs -%}
 {% for port in tcp_ports | list %}
 $IT4 -A FORWARD -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
 {% endfor %}
@@ -286,8 +286,8 @@ $IT4 -A FORWARD {{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_a
 
 {% endif %}
 
-$IT4 -A FORWARD -j {{ firewall_forward_rule_default }}
-$IT6 -A FORWARD -j {{ firewall_forward_rule_default }}
+$IT4 -A FORWARD -j {{ firewall_default_rule_forward }}
+$IT6 -A FORWARD -j {{ firewall_default_rule_forward }}
 
 
 ############################################################
