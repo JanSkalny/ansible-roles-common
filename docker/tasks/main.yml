@@ -1,6 +1,6 @@
 - name: install dependencies
   package:
-    name: 
+    name:
     - apt-transport-https
     - python3-docker
     state: present
@@ -18,11 +18,24 @@
     update_cache: yes
   tags: install
 
-- name: install docker-ce
+- name: remove docker.io
   apt:
-    name: 
+    name:
+    - docker.io
+    state: absent
+  tags: install
+
+- name: install docker-ce, tools and dependencies
+  apt:
+    name:
     - docker-ce
     - docker-compose
+    - python3-pip
     state: present
+  tags: install
+
+- name: install docker python bindings
+  pip:
+    name: docker
   tags: install
 
