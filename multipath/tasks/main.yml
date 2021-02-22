@@ -1,15 +1,20 @@
 - name: install dependencies
   package:
-    name: multipath-tools
+    name: 
+    - multipath-tools
+    - lsscsi
     state: present
   tags: install
 
-- name: deploy multipath-refresh.sh
+- name: deploy custom scripts
   copy:
-    src: multipath-refresh.sh
-    dest: /usr/local/bin/multipath-refresh.sh
+    src: "{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
     mode: 0755 
     owner: root
+  with_items:
+    - multipath-refresh.sh
+    - multipath-delete.sh
   tags: install
 
 - name: configure multipath.conf
