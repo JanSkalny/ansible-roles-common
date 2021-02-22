@@ -40,6 +40,8 @@
            restart: unless-stopped
            image: netboxcommunity/netbox:${VERSION-latest-ldap}
            environment:
+             REMOTE_AUTH_ENABLED: "true"
+             REMOTE_AUTH_BACKEND: "netbox.authentication.LDAPBackend"
              AUTH_LDAP_SERVER_URI: "{{ netbox_ldap_server_uri }}"
              AUTH_LDAP_BIND_DN: "{{ netbox_ldap_bind_dn }}"
              AUTH_LDAP_BIND_PASSWORD: "{{ netbox_ldap_bind_password }}"
