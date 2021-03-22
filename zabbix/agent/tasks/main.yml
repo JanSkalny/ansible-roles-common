@@ -47,7 +47,7 @@
     dest: "/etc/sudoers.d/zabbix-{{ item }}"
     owner: "root"
     mode: 0640
-  with_items: "{{  }}"
+  with_items: "{{ zabbix_templates }}"
   when: zabbix_template_definitions[item].sudoers | default(false)
 
 - name: deploy zabbix cron.d
