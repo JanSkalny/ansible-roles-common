@@ -3,11 +3,15 @@ linux_networking_netplan_apply: false
 linux_networking_hostname_localhost: true
 linux_networking_method: "ifupdown"
 
+#XXX:
+# test properly, before switching to linux_networking_method: "netplan"
+# https://askubuntu.com/questions/1019146/netplan-does-not-apply-at-startup
+
 networking: []
 
-dns:
-  search: ""
-  servers: [ 1.1.1.1 ]
+dns_search: ""
+dns_servers:
+- 1.1.1.1
 
 etc_hosts: {}
 #   hostnameA: 1.1.1.1

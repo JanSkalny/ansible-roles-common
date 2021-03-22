@@ -1,0 +1,17 @@
+- name: install wireguard
+  package:
+    name: wireguard
+    state: present
+
+- name: configure wireguard
+  template:
+    src: "wg.conf"
+    dest: "/etc/wireguard/{{ wg_name }}.conf"
+  notify: restart {{ wg_name }} service
+  tags: configure
+
+- name: enable {{ wg_name }} service
+  systemd:
+    name: wg-quick@{{ wg_name }}
+    enabled: true
+

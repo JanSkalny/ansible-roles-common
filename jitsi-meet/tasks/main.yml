@@ -1,0 +1,37 @@
+ - name: pull docker-compose 
+   git:
+     repo: https://github.com/jitsi/docker-jitsi-meet.git
+     dest: /opt/docker-jitsi-meet
+     version: "{{ jitsi_meet_version }}"
+
+ - name: create env file
+   template:
+     src: env
+     dest: /opt/docker-jitsi-meet/.env
+
+ - name: set strong passwords
+   shell: ./gen-passwords.sh
+   args:
+     chdir: /opt/docker-jitsi-meet/
+
+ - name: create config directories
+   file:
+     path: "/root/.jitsi-meet-cfg/{{ item }}"
+     state: directory
+   with_items:
+     - web/letsencrypt
+     - transcripts
+     - prosody/config 
+     - prosody/prosody-plugins-custom
+     - jicofo
+     - jvb
+     - jigasi
+     - jibri
+
+# - name: run docker-compose
+#   shell: 
+#     docker-compose up -d && sleep 120
+#   args:
+#     chdir: /opt/docker-jitsi-meet/
+
+
