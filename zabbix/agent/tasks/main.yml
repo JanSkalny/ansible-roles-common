@@ -25,6 +25,10 @@
     file: "../../templates/{{ item }}.yaml"
   with_items: "{{ zabbix_templates }}"
 
+- name: DBG all templates
+  debug:
+    msg: "{{ zabbix_templates }}"
+
 - name: DBG all template definitions
   debug:
     msg: "{{ zabbix_template_definitions }}"
@@ -43,8 +47,17 @@
     dest: "/etc/sudoers.d/zabbix-{{ item }}"
     owner: "root"
     mode: 0640
-  with_items: "{{ zabbix_templates }}"
+  with_items: "{{  }}"
   when: zabbix_template_definitions[item].sudoers | default(false)
+
+- name: deploy zabbix cron.d
+  copy:
+    src: "../templates/{{ zabbix_template_definitions[item].crond }}"
+    dest: "/etc/crond.d/zabbix-{{ item }}"
+    owner: "root"
+    mode: 0640
+  with_items: "{{ zabbix_templates }}"
+  when: zabbix_template_definitions[item].crond | default(false)
 
 - name: deploy zabbix user parameters
   copy:
