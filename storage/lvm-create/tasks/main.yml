@@ -1,5 +1,34 @@
-- name: prepare lv
+# required:
+#   virtual.disk: size of data disk in GB
+#   virtual_blk_vg: volume group for the disk
+
+# optional:
+#   virtual.disk_cache: size of data disk cache in GB (fractions allowed)
+#   virtual_blk_data_pv: comma separated list of PVs where to create the volume
+#   virtual_blk_cache_pv (required for cache)
+
+- name: prepare caching LV
+  lvol:
+    lv: "datacache-{{ virtual.name }}"
+    vg: "{{ virtual_blk_vg }}"
+    pvs: "{{ virtual_blk_cache_pv }}"
+    # size of the cache; allow fractional numbers, round up to mega bytes
+    size: "{{ (virtual.disk_cache * 1000) | round(1, 'ceil') | int | string }}M"
+  when:
+  - virtual_blk_data_pv is defined
+  - virtual_blk_cache_pv is defined
+  - virtual.disk_cache is defined
+
+- name: prepare LV
   lvol:
       lv: "{{ virtual.name }}"
       vg: "{{ virtual_blk_vg }}"
+      pvs: "{{ virtual_blk_data_pv | default(omit) }}"
       size: "{{ virtual.disk }}G"
+
+- name: attach cache to the LV
+  command: "lvconvert -y --type cache --cachevol datacache-{{ virtual.name }} {{ virtual_blk_vg }}/{{ virtual.name }}"
+  when:
+  - virtual_blk_data_pv is defined
+  - virtual_blk_cache_pv is defined
+  - virtual.disk_cache is defined
