@@ -27,7 +27,7 @@
       size: "{{ virtual.disk }}G"
 
 - name: attach cache to the LV
-  command: "lvconvert -y --type cache --cachevol datacache-{{ virtual.name }} {{ virtual_blk_vg }}/{{ virtual.name }}"
+  command: "lvconvert -y --type cache --chunksize {{ virtual.disk_cache_chunk | default(128) | string }} --cachevol datacache-{{ virtual.name }} {{ virtual_blk_vg }}/{{ virtual.name }}"
   when:
   - virtual_blk_data_pv is defined
   - virtual_blk_cache_pv is defined
