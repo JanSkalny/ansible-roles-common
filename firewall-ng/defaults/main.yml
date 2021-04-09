@@ -1,4 +1,3 @@
-firewall_setup: true
 firewall_template: "fw.sh"
 firewall_default_rule_input: "LOG_DROP"
 firewall_default_rule_output: "ACCEPT"
@@ -45,3 +44,9 @@ firewall_input: {}
 
 firewall_output: {}
 firewall_forward: {}
+
+
+firewall6_objects: {}
+firewall6_input: {}
+firewall6_output: {}
+firewall6_forward: {}
