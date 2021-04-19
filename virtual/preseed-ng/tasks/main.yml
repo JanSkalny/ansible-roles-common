@@ -56,7 +56,7 @@
     --name="{{ virtual.name }}" \
     --arch=x86_64 \
     --vcpus="{{ virtual.cpus }}" \
-    --ram="{{ virtual.ram_size }}" \
+    --ram="{{ virtual.ram }}" \
     --os-type=linux \
     --os-variant="{{ virtual_version }}" \
     --machine="{{ virtual.machine | default('ubuntu') }}" \

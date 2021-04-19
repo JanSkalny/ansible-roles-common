@@ -1,9 +1,9 @@
 <domain type='kvm'>
   <name>{{ virtual.name }}</name>
   <uuid>{{ virtual.uuid }}</uuid>
-  <memory unit='MiB'>{{ virtual.ram_size }}</memory>
+  <memory unit='MiB'>{{ virtual.ram }}</memory>
   <currentMemory unit='MiB'>{{ virtual.ram }}</currentMemory>
-  <vcpu placement='static'>{{ virtual.cpus_size }}</vcpu>
+  <vcpu placement='static'>{{ virtual.cpus }}</vcpu>
   <os>
     <type arch='x86_64' machine='{{ virtual.machine | default("ubuntu") }}'>hvm</type>
     <boot dev='hd'/>
