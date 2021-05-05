@@ -5,7 +5,7 @@
 
  - name: deploy ca chain
    copy:
-     src: "{{ ca_dir }}/ca-bundle{{ src_name_suffix }}.crt"
+     src: "{{ ca_dir }}/chained-ca{{ src_name_suffix }}.crt"
      dest: "{{ dest_dir }}/{{ ca_name }}"
    when: ca_name is defined and ca_name != ""
 
