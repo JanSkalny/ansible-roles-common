@@ -7,4 +7,6 @@ zabbix_agent_port: 10050
 zabbix_server_addr: "127.0.0.1"
 zabbix_proxy_addr: "127.0.0.1"
 
+zabbix_templates_dir: "../../templates/"
+
 zabbix_templates: {}

@@ -22,7 +22,7 @@
 - name: enumerate zabbix templates
   include_vars:
     name: zabbix_template_definitions
-    file: "../../templates/{{ item }}.yaml"
+    file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
   with_items: "{{ zabbix_templates }}"
 
 - name: DBG all templates
@@ -43,7 +43,7 @@
 
 - name: deploy zabbix sudoers.d
   copy:
-    src: "../templates/{{ zabbix_template_definitions[item].sudoers }}"
+    src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].sudoers }}"
     dest: "/etc/sudoers.d/zabbix-{{ item }}"
     owner: "root"
     mode: 0640
@@ -52,7 +52,7 @@
 
 - name: deploy zabbix cron.d
   copy:
-    src: "../templates/{{ zabbix_template_definitions[item].crond }}"
+    src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].crond }}"
     dest: "/etc/crond.d/zabbix-{{ item }}"
     owner: "root"
     mode: 0640
@@ -61,7 +61,7 @@
 
 - name: deploy zabbix user parameters
   copy:
-    src: "../templates/{{ zabbix_template_definitions[item].params }}"
+    src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].params }}"
     dest: "/etc/zabbix/{{ zabbix_agent_name }}.d/{{ item }}.conf"
     owner: "root"
     mode: 0640
@@ -71,7 +71,7 @@
 
 - name: deploy zabbix scripts
   copy:
-    src: "../templates/{{ item }}"
+    src: "{{ zabbix_templates_dir }}/{{ item }}"
     dest: "/usr/local/bin/{{ item | basename }}"
     owner: "root"
     mode: 0755
