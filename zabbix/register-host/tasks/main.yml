@@ -1,7 +1,7 @@
 - name: enumerate zabbix templates
   include_vars:
     name: zabbix_template_definitions
-    file: "../../templates/{{ item }}.yaml"
+    file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
   with_items: "{{ zabbix_templates }}"
   tags: configure
 
