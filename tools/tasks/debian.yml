@@ -29,7 +29,6 @@
     - dnsutils
     - net-tools
     - unzip
-    - ipmitool
     - acl
     #- netsniff-ng
     #- python-pip
