@@ -1,33 +1,24 @@
 #! /bin/sh
 #
 # {{ ansible_managed }}
+# Template: fw.sh
 #
-{%- macro normalize_addrs(rule, attr) -%}
-{% set results = [] %}
-{% if attr in rule %}
-{% set attrs = ( rule[attr].replace(' ','').split(',') if rule[attr] is string else rule[attr] ) %}
-{% for name_or_addr in attrs %}
-{% if name_or_addr in firewall_objects %}
-{% set xaddr = firewall_objects[name_or_addr] %}
-{% do results.append(xaddr.replace(' ','').split(',') if xaddr is string else xaddr) %}
-{% else %}
-{% do results.append([name_or_addr]) %}
-{% endif %}
-{% endfor %}
-{% endif %}
-{{ results | flatten | join(",") }}
-{%- endmacro -%}
 
-{%- macro normalize_addrs6(rule, attr) -%}
+{%- macro normalize_addrs(rule, attr, ip_ver=4) -%}
+{% set firewallx_objects = firewall_objects if ip_ver == 4 else firewall6_objects %}
 {% set results = [] %}
 {% if attr in rule %}
 {% set attrs = ( rule[attr].replace(' ','').split(',') if rule[attr] is string else rule[attr] ) %}
 {% for name_or_addr in attrs %}
-{% if name_or_addr in firewall6_objects %}
-{% set xaddr = firewall6_objects[name_or_addr] %}
+{% if name_or_addr in firewallx_objects %}
+{% set xaddr = firewallx_objects[name_or_addr] %}
 {% do results.append(xaddr.replace(' ','').split(',') if xaddr is string else xaddr) %}
 {% else %}
+{% if name_or_addr | ipaddr %}
 {% do results.append([name_or_addr]) %}
+{% else %}
+{{ xxx_invalid|mandatory("Object not found and direct DNS referencing not allowed: "+name_or_addr+" ip_ver="+ip_ver|string+" rule="+(rule|to_json)) }}
+{% endif %}
 {% endif %}
 {% endfor %}
 {% endif %}
@@ -37,10 +28,55 @@
 {%- macro normalize_ports(rule, proto) -%}
 {%- if 'proto' in rule -%}
 {%- if proto in rule.proto -%}
-{{ ( rule.proto[proto].replace(' ','').split(',') if rule.proto[proto] is string else ( [rule.proto[proto]] if rule.proto[proto] is number else rule.proto[proto] ) ) | join(",") }}
+{{ '' if not rule.proto[proto] else ( ( (rule.proto[proto]).replace(' ','').split(',') if rule.proto[proto] is string else ( [rule.proto[proto]] if rule.proto[proto] is number else rule.proto[proto] ) ) | join(",")) }}
 {%- endif -%}
 {%- endif -%}
 {%- endmacro -%}
+
+{%- macro generate_rule(rule, chain, default_action='LOG_ACCEPT', ip_ver=4) -%}
+{% set src_addrs = normalize_addrs(rule, 'src', ip_ver).split(',') %}
+{% set dest_addrs = normalize_addrs(rule, 'dest', ip_ver).split(',') %}
+# {{ rule | to_json }}
+{% for src_addr in src_addrs -%}
+{%- for dest_addr in dest_addrs -%}
+{% if 'proto' in rule %}
+{% for rule_proto, rule_ports in rule.proto.items() %}
+{% set rule_ports_norm = normalize_ports(rule, rule_proto).split(',') | default([]) | difference(['']) %}
+{% set rule_port_ranges = rule_ports_norm | select('match', '^[0-9]*-[0-9]*$') | list %}
+{% set rule_ports = rule_ports_norm | difference(rule_port_ranges) | list %}
+{% for port in rule_ports|default([]) %}
+$IT{{ ip_ver }} -A {{ chain }} -p {{ rule_proto }} --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
+{% endfor %}
+{% for port_range in rule_port_ranges|default([]) %}
+$IT{{ ip_ver }} -A {{ chain }} -p {{ rule_proto }} -m multiport --dports {{ port_range | replace('-',':') }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
+{% endfor %}
+{% if not rule_ports_norm %}
+$IT{{ ip_ver }} -A {{ chain }} -p {{ rule_proto }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
+{% endif %}
+{% endfor %}
+{% else %}
+$IT{{ ip_ver }} -A {{ chain }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
+{% endif %}
+{% endfor %}
+{% endfor %}
+{%- endmacro -%}
+
+{%- macro generate_interface_rules(firewall_iface_name, firewall_iface, ip_ver=4) -%}
+{% set allow_nets = normalize_addrs(firewall_iface, 'allow', ip_ver).split(',') | difference(['']) %}
+{% set deny_nets = normalize_addrs(firewall_iface, 'deny', ip_ver).split(',') | difference(['']) %}
+{% for deny_net in deny_nets %}
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP
+{% endfor %}
+{% for allow_net in allow_nets %}
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ allow_net }} -j RETURN
+{% endfor %}
+{% if firewall_iface.default | default('allow' if firewall_interfaces|length == 1 else 'deny') == 'allow' %}
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -j RETURN
+{% else %}
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -j LOG_DROP
+{% endif %}
+{%- endmacro -%}
+
 #
 # Simple iptables management script (fw.sh)
 
@@ -54,13 +90,16 @@
 # Description:       firewall
 ### END INIT INFO
 
-IT4=/sbin/iptables
-IT6=/sbin/ip6tables
+IT4="{{ firewall_iptables }}"
+IT6="{{ firewall6_iptables }}"
 
-modprobe ip_conntrack
-modprobe ip_conntrack_ftp
+# load additional modules
+for M in ip_conntrack ip_conntrack_ftp; do
+  modprobe ip_conntrack 2>/dev/null
+done
 
 echo {{ firewall_ip_forward | default(0) | int }} > /proc/sys/net/ipv4/ip_forward
+echo {{ firewall_ip6_forward | default(0) | int }} > /proc/sys/net/ipv6/conf/all/forwarding
 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
 echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
 echo {{ firewall_log_martians | default(1) | int }} > /proc/sys/net/ipv4/conf/all/log_martians
@@ -142,21 +181,7 @@ $IT4 -N CHECK_IF
 
   # interface specific configuration
 {% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
-{% with %}
-{% set allow_nets = normalize_addrs(firewall_iface, 'allow').split(',') | difference(['']) %}
-{% set deny_nets = normalize_addrs(firewall_iface, 'deny').split(',') | difference(['']) %}
-{% for allow_net in allow_nets %}
-  $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s {{ allow_net }} -j RETURN
-{% endfor %}
-{% for deny_net in deny_nets %}
-  $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP
-{% endfor %}
-{% if firewall_iface.default | default('allow' if firewall_interfaces|length == 1 else 'deny') == 'allow' %}
-  $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -j RETURN
-{% else %}
-  $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -j LOG_DROP
-{% endif %}
-{% endwith %}
+{{ generate_interface_rules(firewall_iface_name, firewall_iface) }}
 {% endfor %}
 
   # everything else is dropped!
@@ -166,10 +191,15 @@ $IT6 -N CHECK_IF
   # disable IPv6 source routing (and ping-pong)
   $IT6 -A CHECK_IF -m rt --rt-type 0 -j LOG_DROP
 
-  #XXX:
-  # per interface filter
-  $IT6 -A CHECK_IF -j RETURN
+  # ND stuff
+  $IT6 -A CHECK_IF -s fe80::/64 -j RETURN
 
+  # per interface filter
+{% for firewall_iface_name, firewall_iface in firewall6_interfaces.items() | default([]) %}
+{{ generate_interface_rules(firewall_iface_name, firewall_iface, 6) }}
+{% endfor %}
+
+  # everything else is dropped!
   $IT6 -A CHECK_IF -j LOG_DROP
 
 
@@ -179,6 +209,8 @@ $IT6 -N CHECK_IF
 # everything is allowed on loopback
 $IT4 -A INPUT -i lo -j ACCEPT
 $IT6 -A INPUT -i lo -j ACCEPT
+$IT4 -A OUTPUT -o lo -j ACCEPT
+$IT6 -A OUTPUT -o lo -j ACCEPT
 
 # check for spoofed addresses
 for CHAIN in INPUT FORWARD; do
@@ -190,89 +222,26 @@ done
 # - allow all related/established traffic
 # - invalid packets MUST be dropped!
 for CHAIN in INPUT FORWARD OUTPUT; do
-  $IT4 -A $CHAIN -m state --state ESTABLISHED,RELATED -j ACCEPT
-  $IT4 -A $CHAIN -m state --state INVALID -j LOG_DROP
-  $IT6 -A $CHAIN -m state --state ESTABLISHED,RELATED -j ACCEPT
-  $IT6 -A $CHAIN -m state --state INVALID -j LOG_DROP
+  $IT4 -A $CHAIN -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  $IT4 -A $CHAIN -m conntrack --ctstate INVALID -j LOG_DROP
+  $IT6 -A $CHAIN -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  $IT6 -A $CHAIN -m conntrack --ctstate INVALID -j LOG_DROP
 done
 
-# IPv6 service ICMPs (router advertisements, etc)
-for TYPE in 133 134 135 136 137 ; do
-  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type $TYPE -m hl --hl-eq 255 -j ACCEPT
-  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type $TYPE -m hl --hl-eq 255 -j ACCEPT
-done
-
-# multicast ipcmv6 shit...
-$IT6 -A INPUT -p ipv6-icmp --icmpv6-type 130 -d ff02::1 -j DROP
-$IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type 143 -d ff02::16 -j DROP
 
 ############################################################
-### INPUT ruleset
+### INPUT ruleset 
 
-{% for input_rule_name,input_rule in firewall_input.items() %}
-{% with %}
-	{% set src_addrs = normalize_addrs(input_rule, 'src').split(',') %}
-	{% set dest_addrs = normalize_addrs(input_rule, 'dest').split(',') %}
-	{% set tcp_ports = normalize_ports(input_rule, 'tcp').split(',') | difference(['']) %}
-	{% set udp_ports = normalize_ports(input_rule, 'udp').split(',') | difference(['']) %}
-
-# {{ input_rule_name }}
-# {{ input_rule | to_json }}
-{% for src_addr in src_addrs -%}
-{%- for dest_addr in dest_addrs -%}
-{% for port in tcp_ports | list %}
-$IT4 -A INPUT -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ input_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% for port in udp_ports | list %}
-$IT4 -A INPUT -p udp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ input_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% for proto in input_rule.proto.other | default([]) %}
-$IT4 -A INPUT -p {{ proto }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ input_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{%- endfor -%}
-{%- endfor -%}
-
-{% endwith %}
+{% for input_rule in firewall_input %}
+{{ generate_rule(input_rule, 'INPUT') }}
 {% endfor %}
 
-
-{% for input_rule_name,input_rule in firewall6_input.items() %}
-{% with %}
-	{% set src_addrs = normalize_addrs6(input_rule, 'src').split(',') %}
-	{% set dest_addrs = normalize_addrs6(input_rule, 'dest').split(',') %}
-	{% set tcp_ports = normalize_ports(input_rule, 'tcp').split(',') | difference(['']) %}
-	{% set udp_ports = normalize_ports(input_rule, 'udp').split(',') | difference(['']) %}
-
-# {{ input_rule_name }}
-# {{ input_rule | to_json }}
-{% for src_addr in src_addrs -%}
-{%- for dest_addr in dest_addrs -%}
-{% for port in tcp_ports | list %}
-$IT6 -A INPUT -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ input_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% for port in udp_ports | list %}
-$IT6 -A INPUT -p udp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ input_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% for proto in input_rule.proto.other | default([]) %}
-$IT6 -A INPUT -p {{ proto }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ input_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{%- endfor -%}
-{%- endfor -%}
-
-{% endwith %}
-{% endfor %}
-
+# ignore broadcasts
+$IT4 -A INPUT -m addrtype --dst-type BROADCAST -j DROP
 
 # IPv4 ICMP rate limit
 $IT4 -A INPUT -p icmp -m limit --limit 20/second -j ACCEPT
 $IT4 -A INPUT -p icmp -j LOG_DROP
-
-# IPv6 rate limit
-$IT6 -A INPUT -p ipv6-icmp --icmpv6-type 128 -m limit --limit 20/s -j ACCEPT
-$IT6 -A INPUT -p icmp -j LOG_DROP
-
-# ignore broadcasts
-$IT4 -A INPUT -m addrtype --dst-type BROADCAST -j DROP
 
 # ignore junk from windows servers (samba)
 for PORT in 137 138; do
@@ -281,156 +250,81 @@ done
 
 # default rule is
 $IT4 -A INPUT -j {{ firewall_default_rule_input }}
+
+
+############################################################
+### INPUT ruleset (IPv6)
+
+{% for input_rule in firewall6_input %}
+{{ generate_rule(input_rule, 'INPUT', 'LOG_ACCEPT', 6) }}
+{% endfor %}
+
+# IPv6 service ICMPs (router advertisements, etc)
+for TYPE in 133 134 135 136 137 ; do
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type $TYPE -j ACCEPT
+done
+
+# IPv6 ICMP ping
+$IT6 -A INPUT -p ipv6-icmp --icmpv6-type 128 -m limit --limit 20/s -j ACCEPT
+$IT6 -A INPUT -p icmp -j LOG_DROP
+
+# default rule is
 $IT6 -A INPUT -j {{ firewall_default_rule_input }}
 
 
 ############################################################
 ### OUTPUT ruleset
 
-$IT4 -A OUTPUT -o lo -j ACCEPT
-$IT6 -A OUTPUT -o lo -j ACCEPT
-
-# root can do anything
-#$IT4 -A OUTPUT -m owner --uid-owner 0 -j LOG_WILL_DROP
-#$IT6 -A OUTPUT -m owner --uid-owner 0 -j LOG_WILL_DROP
-
-# _apt
-#$IT4 -A OUTPUT -m owner --uid-owner 105 -j ACCEPT
-#$IT4 -A OUTPUT -m owner --uid-owner 104 -j ACCEPT
-#$IT6 -A OUTPUT -m owner --uid-owner 105 -j ACCEPT
-#$IT6 -A OUTPUT -m owner --uid-owner 104 -j ACCEPT
-
-# DNS
-$IT4 -A OUTPUT -p udp --dport 53 -j LOG_ACCEPT
-$IT6 -A OUTPUT -p udp --dport 53 -j LOG_ACCEPT
-
-{% for output_rule_name,output_rule in firewall_output.items() %}
-{% with %}
-	{% set src_addrs = normalize_addrs(output_rule, 'src').split(',') %}
-	{% set dest_addrs = normalize_addrs(output_rule, 'dest').split(',') %}
-	{% set tcp_ports = normalize_ports(output_rule, 'tcp').split(',') | difference(['']) %}
-	{% set udp_ports = normalize_ports(output_rule, 'udp').split(',') | difference(['']) %}
-
-# {{ output_rule_name }}
-# {{ output_rule | to_json }}
-{% for src_addr in src_addrs -%}
-{%- for dest_addr in dest_addrs -%}
-{% for port in tcp_ports | list %}
-$IT4 -A OUTPUT -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ output_rule.rule | default('LOG_ACCEPT') }}
+{% for output_rule in firewall_output %}
+{{ generate_rule(output_rule, 'OUTPUT') }}
 {% endfor %}
-{% for port in udp_ports | list %}
-$IT4 -A OUTPUT -p udp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ output_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% for proto in output_rule.proto.other | default([]) %}
-$IT4 -A OUTPUT -p {{ proto }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ output_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{%- endfor -%}
-{%- endfor -%}
-
-{% endwith %}
-{% endfor %}
-
-{% for output_rule_name,output_rule in firewall6_output.items() %}
-{% with %}
-	{% set src_addrs = normalize_addrs6(output_rule, 'src').split(',') %}
-	{% set dest_addrs = normalize_addrs6(output_rule, 'dest').split(',') %}
-	{% set tcp_ports = normalize_ports(output_rule, 'tcp').split(',') | difference(['']) %}
-	{% set udp_ports = normalize_ports(output_rule, 'udp').split(',') | difference(['']) %}
-
-# {{ output_rule_name }}
-# {{ output_rule | to_json }}
-{% for src_addr in src_addrs -%}
-{%- for dest_addr in dest_addrs -%}
-{% for port in tcp_ports | list %}
-$IT6 -A OUTPUT -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ output_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% for port in udp_ports | list %}
-$IT6 -A OUTPUT -p udp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ output_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% for proto in output_rule.proto.other | default([]) %}
-$IT6 -A OUTPUT -p {{ proto }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ output_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{%- endfor -%}
-{%- endfor -%}
-
-{% endwith %}
-{% endfor %}
-
 
 # default to drop
 $IT4 -A OUTPUT -j {{ firewall_default_rule_output }}
+
+
+############################################################
+### OUTPUT ruleset (IPv6)
+
+{% for output_rule in firewall6_output %}
+{{ generate_rule(output_rule, 'OUTPUT', 'LOG_ACCEPT', 6) }}
+{% endfor %}
+
+# IPv6 ND
+for TYPE in 133 134 135 136 137 ; do
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type $TYPE -j ACCEPT
+done
+
+# default to drop
 $IT6 -A OUTPUT -j {{ firewall_default_rule_output }}
 
 
 ############################################################
 ### FORWARD ruleset
 
-{% for forward_rule_name,forward_rule in firewall_forward.items() %}
-{% with %}
-	{% set src_addrs = normalize_addrs(forward_rule, 'src').split(',') %}
-	{% set dest_addrs = normalize_addrs(forward_rule, 'dest').split(',') %}
-	{% set tcp_ports = normalize_ports(forward_rule, 'tcp').split(',') | difference(['']) %}
-	{% set udp_ports = normalize_ports(forward_rule, 'udp').split(',') | difference(['']) %}
-	{% set sctp_ports = normalize_ports(forward_rule, 'sctp').split(',') | difference(['']) %}
-
-# {{ forward_rule_name }}
-# {{ forward_rule | to_json }}
-{% for src_addr in src_addrs -%}
-{%- for dest_addr in dest_addrs -%}
-{% for port in tcp_ports | list %}
-$IT4 -A FORWARD -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% for port in udp_ports | list %}
-$IT4 -A FORWARD -p udp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% for port in sctp_ports | list %}
-$IT4 -A FORWARD -p sctp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% if tcp_ports == [] and udp_ports == [] and sctp_ports == [] %}
-$IT4 -A FORWARD {{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
-{% endif %}
-{%- endfor -%}
-{%- endfor -%}
-
-{% endwith %}
+{% for forward_rule in firewall_forward %}
+{{ generate_rule(forward_rule, 'FORWARD') }}
 {% endfor %}
 
-{% for forward_rule_name,forward_rule in firewall6_forward.items() %}
-{% with %}
-	{% set src_addrs = normalize_addrs6(forward_rule, 'src').split(',') %}
-	{% set dest_addrs = normalize_addrs6(forward_rule, 'dest').split(',') %}
-	{% set tcp_ports = normalize_ports(forward_rule, 'tcp').split(',') | difference(['']) %}
-	{% set udp_ports = normalize_ports(forward_rule, 'udp').split(',') | difference(['']) %}
-	{% set sctp_ports = normalize_ports(forward_rule, 'sctp').split(',') | difference(['']) %}
-
-# {{ forward_rule_name }}
-# {{ forward_rule | to_json }}
-{% for src_addr in src_addrs -%}
-{%- for dest_addr in dest_addrs -%}
-{% for port in tcp_ports | list %}
-$IT6 -A FORWARD -p tcp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% for port in udp_ports | list %}
-$IT6 -A FORWARD -p udp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% for port in sctp_ports | list %}
-$IT6 -A FORWARD -p sctp --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
-{% endfor %}
-{% if tcp_ports == [] and udp_ports == [] and sctp_ports == [] %}
-$IT6 -A FORWARD {{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ forward_rule.rule | default('LOG_ACCEPT') }}
-{% endif %}
-{%- endfor -%}
-{%- endfor -%}
-
-{% endwith %}
-{% endfor %}
-
+# default rule
 $IT4 -A FORWARD -j {{ firewall_default_rule_forward }}
+
+
+############################################################
+### FORWARD ruleset (IPv6)
+
+{% for forward_rule in firewall6_forward %}
+{{ generate_rule(forward_rule, 'FORWARD', 'LOG_ACCEPT', 6) }}
+{% endfor %}
+
+# default rule
 $IT6 -A FORWARD -j {{ firewall_default_rule_forward }}
 
 
 ############################################################
 ### NAT ruleset
+
+# TBD:
 
 ############################################################
 ### custom firewall patches
@@ -446,5 +340,4 @@ $IT6 -A FORWARD -j {{ firewall_default_rule_forward }}
 
 ### fail2ban integration
 [ -f /etc/init.d/fail2ban ] && /etc/init.d/fail2ban restart
-
 
