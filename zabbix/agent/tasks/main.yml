@@ -5,7 +5,7 @@
     zabbix_agent_name: "zabbix_agentd"
     zabbix_agent_service: "zabbix-agent"
   tags: configure
-  when: "ansible_distribution_release == 'xenial'"
+  when: "ansible_distribution_release == 'xenial' or ansible_distribution_release == 'trusty'"
 
 - name: install zabbix-agent and dependencies
   package:
