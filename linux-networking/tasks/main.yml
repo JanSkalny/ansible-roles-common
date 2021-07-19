@@ -1,3 +1,10 @@
+- name: disable cloud for /etc/hosts
+  copy:
+    src: 99_disable_hosts.cfg
+    dest: /etc/cloud/cloud.cfg.d/
+    owner: root
+  tags: configure
+
 - name: generate /etc/hosts
   template:
     src: hosts

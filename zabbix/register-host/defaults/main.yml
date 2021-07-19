@@ -1,3 +1,5 @@
 zabbix_admin_login: "admin"
 zabbix_group: "Linux servers"
 zabbix_templates: {}
+
+zabbix_templates_dir: "../../templates/"

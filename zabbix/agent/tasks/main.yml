@@ -5,7 +5,7 @@
     zabbix_agent_name: "zabbix_agentd"
     zabbix_agent_service: "zabbix-agent"
   tags: configure
-  when: "ansible_distribution_release == 'xenial'"
+  when: "ansible_distribution_release == 'xenial' or ansible_distribution_release == 'trusty'"
 
 - name: install zabbix-agent and dependencies
   package:
@@ -22,8 +22,12 @@
 - name: enumerate zabbix templates
   include_vars:
     name: zabbix_template_definitions
-    file: "../../templates/{{ item }}.yaml"
+    file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
   with_items: "{{ zabbix_templates }}"
+
+- name: DBG all templates
+  debug:
+    msg: "{{ zabbix_templates }}"
 
 - name: DBG all template definitions
   debug:
@@ -39,16 +43,25 @@
 
 - name: deploy zabbix sudoers.d
   copy:
-    src: "../templates/{{ zabbix_template_definitions[item].sudoers }}"
+    src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].sudoers }}"
     dest: "/etc/sudoers.d/zabbix-{{ item }}"
     owner: "root"
     mode: 0640
   with_items: "{{ zabbix_templates }}"
   when: zabbix_template_definitions[item].sudoers | default(false)
 
+- name: deploy zabbix cron.d
+  copy:
+    src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].crond }}"
+    dest: "/etc/crond.d/zabbix-{{ item }}"
+    owner: "root"
+    mode: 0640
+  with_items: "{{ zabbix_templates }}"
+  when: zabbix_template_definitions[item].crond | default(false)
+
 - name: deploy zabbix user parameters
   copy:
-    src: "../templates/{{ zabbix_template_definitions[item].params }}"
+    src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].params }}"
     dest: "/etc/zabbix/{{ zabbix_agent_name }}.d/{{ item }}.conf"
     owner: "root"
     mode: 0640
@@ -58,7 +71,7 @@
 
 - name: deploy zabbix scripts
   copy:
-    src: "../templates/{{ item }}"
+    src: "{{ zabbix_templates_dir }}/{{ item }}"
     dest: "/usr/local/bin/{{ item | basename }}"
     owner: "root"
     mode: 0755

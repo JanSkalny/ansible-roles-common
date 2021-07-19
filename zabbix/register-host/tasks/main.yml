@@ -1,7 +1,7 @@
 - name: enumerate zabbix templates
   include_vars:
     name: zabbix_template_definitions
-    file: "../../templates/{{ item }}.yaml"
+    file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
   with_items: "{{ zabbix_templates }}"
   tags: configure
 
@@ -31,7 +31,7 @@
     tls_accept: 2  # psk
     tls_psk_identity: "{{ inventory_hostname }}"
     tls_psk: "{{ zabbix_agent_psk | default('00000000000000000000000000000000')}}"
-    proxy: "{{ zabbix_proxy }}"
+    proxy: "{{ zabbix_proxy | default('') }}"
     validate_certs: false
   tags: configure
 

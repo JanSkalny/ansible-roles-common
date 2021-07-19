@@ -6,7 +6,7 @@
 
 - name: wait for vm to start
   wait_for:
-    host: "{{ virtual.name }}"
+    host: "{{ virtual.fqdn | default(virtual.name) }}"
     port: 22
     search_regex: OpenSSH
     connect_timeout: 20

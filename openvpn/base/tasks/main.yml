@@ -8,6 +8,7 @@
     - openvpn
     - bridge-utils
     state: present
+  environment: "{{ proxy_env | default([]) }}"
 
 - name: prepare instance directories
   file:

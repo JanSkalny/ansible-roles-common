@@ -59,6 +59,7 @@
     --ram="{{ virtual.ram }}" \
     --os-type=linux \
     --os-variant="{{ virtual_version }}" \
+    --machine="{{ virtual.machine | default('ubuntu') }}" \
     --virt-type kvm \
     --hvm \
     --connect=qemu:///system \
