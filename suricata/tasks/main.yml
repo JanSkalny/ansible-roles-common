@@ -1,24 +1,25 @@
-- name: install suricata dependencies
+- name: add suricata-stable repository
+  shell:  add-apt-repository ppa:oisf/suricata-stable --update
+
+# This is not working with proxy!
+#- name: add suricata-stable repository
+#  apt_repository:
+#    repo: ppa:oisf/suricata-stable
+#    state: present
+#    update_cache: yes
+#  tags: install
+
+- name: add suricata-stable repository apt-key
+  shell: "apt-key adv {%if proxy_env is defined %}--keyserver-options http-proxy={{ proxy_env.http_proxy }}{% endif %} --recv-keys --no-tty --keyserver hkp://keyserver.ubuntu.com:80 9F6FC9DDB1324714B78062CBD7F87B2966EB736F"
+
+- name: install suricata with dependencies
   package: 
     name:
     - software-properties-common
     - apt-transport-https
     - jq
-  tags: install
-
-- name: add suricata-stable repository
-  apt_repository:
-    repo: ppa:oisf/suricata-stable
-    state: present
-    update_cache: yes
-  tags: install
-
-- name: install suricata 
-  package: 
-    name:
     - suricata
   tags: install
-  notify: restart suricata
 
 - name: deploy suricata-nic.sh
   template:
@@ -75,4 +76,3 @@
       src: logrotate.conf
       dest: /etc/logrotate.d/suricata
   tags: configure
-  
