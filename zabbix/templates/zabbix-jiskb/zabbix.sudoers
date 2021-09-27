@@ -1,0 +1,7 @@
+# Cmnd alias specification
+# Cmnd_Alias ZABBIX_CMD=/usr/bin/nsenter -t * -n netstat -an
+Cmnd_Alias ZABBIX_CMD=/usr/local/bin/zabbix_jiskb.sh
+# defaults
+Defaults:zabbix !requiretty
+# for zabbix user
+zabbix ALL=(root) NOPASSWD: ZABBIX_CMD

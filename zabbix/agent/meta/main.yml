@@ -1,2 +1,2 @@
 dependencies:
- - common/zabbix/base
+ - sk-cert/zabbix/base

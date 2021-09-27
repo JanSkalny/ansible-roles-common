@@ -8,6 +8,10 @@
 
 - name: add host to zabbix server
   become: false
+  vars:
+    proxy_env:
+       http_proxy: http://proxy.int.sk-cert.sk:3128
+       https_proxy: http://proxy.int.sk-cert.sk:3128
   local_action:
     module: zabbix_host
     server_url: "{{ zabbix_url }}"
@@ -15,9 +19,8 @@
     login_password: "{{ zabbix_admin_password }}"
     host_name: "{{ inventory_hostname }}"
     visible_name: "{{ inventory_hostname }}"
-    host_groups:
-    - "{{ zabbix_group }}"
-    link_templates: "{{ zabbix_template_definitions | json_query('*.template') | unique }}"
+    host_groups: "{{ zabbix_group }}"
+    link_templates: "{{ ( zabbix_template_definitions | default({}) ) | json_query('*.template') | unique }}"
     status: enabled
     state: present
     interfaces:
@@ -26,7 +29,7 @@
         useip: 1
         ip: "{{ zabbix_agent_addr | default(ansible_default_ipv4.address) }}"
         dns: ""
-        port: 10050
+        port: "10050"
     tls_connect: 2 # psk
     tls_accept: 2  # psk
     tls_psk_identity: "{{ inventory_hostname }}"

@@ -1,0 +1,14 @@
+- name: suricata fix permissions
+  file:
+     path: "/var/lib/suricata/rules"
+     mode: "a+x"
+     state: "directory"
+  when: suricata is defined
+
+- name: openvpn fix permissions
+  file:
+     path: "/var/run/openvpn/server.status"
+     group: "zabbix"
+     mode: "g+r"
+     state: "file"
+  when: openvpn is defined

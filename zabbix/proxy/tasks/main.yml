@@ -1,7 +1,16 @@
-- name: install zabbix-proxy and dependecies
+- name:
+  debug: var=ansible_distribution_major_version
+
+- name: install python-mysqldb
   package:
     name:
     - python-mysqldb
+    state: present
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version <= "18"
+
+- name: install zabbix-proxy and python3-mysqldb
+  package:
+    name:
     - python3-mysqldb
     - zabbix-proxy-mysql
     state: present
@@ -73,6 +82,32 @@
     src: zabbix_proxy.conf 
     dest: /etc/zabbix/zabbix_proxy.conf
   notify: restart zabbix-proxy
+
+- name: add proxy to zabbix server
+  become: false
+  vars:
+    proxy_env:
+       http_proxy: ""
+       https_proxy: ""
+  local_action:
+    module: zabbix_proxy
+    server_url: "{{ zabbix_url }}"
+    login_user: "{{ zabbix_admin_login }}"
+    login_password: "{{ zabbix_admin_password }}"
+    proxy_name: "{{ zabbix_proxy }}"
+    status: active
+    state: present
+    description: "zabbix proxy pre suricata sensor v {{ zabbix_proxy }}"
+    interface:
+        useip: 1
+        ip: "{{ zabbix_proxy_addr | default(ansible_default_ipv4.address) }}"
+        port: "10051"
+    tls_connect: PSK # psk
+    tls_accept: PSK  # psk
+    tls_psk_identity: "{{ inventory_hostname }}"
+    tls_psk: "{{ zabbix_proxy_psk | default('00000000000000000000000000000000')}}"
+    validate_certs: false
+  tags: configure
 
 - name: enable and start zabbix proxy service
   systemd:

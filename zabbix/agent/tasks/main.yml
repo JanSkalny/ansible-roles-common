@@ -7,7 +7,7 @@
   tags: configure
   when: "ansible_distribution_release == 'xenial' or ansible_distribution_release == 'trusty'"
 
-- name: install zabbix-agent and dependencies
+- name: install SW dependencies and tools
   package:
     name: 
     - logtail
@@ -15,6 +15,12 @@
     - sudo
     - jq
     - zabbix-sender
+    - zabbix-get
+    state: latest
+
+- name: install zabbix-agent
+  package:
+    name:
     - "{{ zabbix_agent_service }}"
     state: latest
   notify: restart zabbix-agent
@@ -24,22 +30,42 @@
     name: zabbix_template_definitions
     file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
   with_items: "{{ zabbix_templates }}"
+  when: zabbix_templates is defined and zabbix_templates_dir is defined
 
 - name: DBG all templates
   debug:
-    msg: "{{ zabbix_templates }}"
+    msg: "zabbix_templates={{ zabbix_templates }}"
+  when: zabbix_templates is defined
 
 - name: DBG all template definitions
   debug:
-    msg: "{{ zabbix_template_definitions }}"
+    msg: "zabbix_template_definitions={{ zabbix_template_definitions }}"
+  when: zabbix_template_definitions is defined
 
 - name: DBG definitions with sudoers
   debug:
-    msg: "{{ zabbix_template_definitions | json_query(\"* | [?sudoers] .id\") }}"
+    msg: "sudoers={{ zabbix_template_definitions | json_query(\"* | [?sudoers] .id\") }}"
+  when: zabbix_template_definitions is defined
 
 - name: DBG scripts
   debug:
-    msg: "{{ zabbix_template_definitions | json_query('* | [?scripts] .scripts') | flatten }}"
+    msg: "scripts={{ zabbix_template_definitions | json_query('* | [?scripts] .scripts') | flatten }}"
+  when: zabbix_template_definitions is defined
+
+- name: Ensure group exists
+  group:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ zabbix_etc_groups }}"
+  when: zabbix_etc_groups is defined
+
+- name: Add the user 'zabbix' to the groups
+  user:
+    name: zabbix
+    groups: "{{ item }}"
+    append: yes
+  with_items: "{{ zabbix_etc_groups }}"
+  when: zabbix_etc_groups is defined
 
 - name: deploy zabbix sudoers.d
   copy:
@@ -48,7 +74,9 @@
     owner: "root"
     mode: 0640
   with_items: "{{ zabbix_templates }}"
-  when: zabbix_template_definitions[item].sudoers | default(false)
+  when:
+    - zabbix_template_definitions[item].sudoers | default(false)
+    - zabbix_templates is defined
 
 - name: deploy zabbix cron.d
   copy:
@@ -57,17 +85,36 @@
     owner: "root"
     mode: 0640
   with_items: "{{ zabbix_templates }}"
-  when: zabbix_template_definitions[item].crond | default(false)
+  when:
+    - zabbix_template_definitions[item].crond | default(false)
+    - zabbix_templates is defined
+    - zabbix_templates_dir is defined
+
+- name: make sure zabbix_agent.d directory is present
+  file:
+    path: "/etc/zabbix/{{ zabbix_agent_name }}.d/"
+    state: directory
+    mode: 0755
+  when: zabbix_agent_name is defined
 
 - name: deploy zabbix user parameters
   copy:
     src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].params }}"
     dest: "/etc/zabbix/{{ zabbix_agent_name }}.d/{{ item }}.conf"
-    owner: "root"
+    owner: "zabbix"
+    group: "zabbix"
     mode: 0640
   with_items: "{{ zabbix_templates }}"
-  when: zabbix_template_definitions[item].params | default(false)
+  when:
+    - zabbix_templates is defined
+    - zabbix_template_definitions is defined
+    - zabbix_templates_dir is defined
   notify: restart zabbix-agent
+
+- name: DBG all template definitions2
+  debug:
+    msg: "zabbix_template_definitions={{ zabbix_template_definitions }}"
+  when: zabbix_template_definitions is defined
 
 - name: deploy zabbix scripts
   copy:
@@ -75,13 +122,8 @@
     dest: "/usr/local/bin/{{ item | basename }}"
     owner: "root"
     mode: 0755
-  with_items: "{{ zabbix_template_definitions | json_query('* | [?scripts] .scripts') | flatten }}"
-
-- name: make sure zabbix_agent.d directory is present
-  file:
-    path: "/etc/zabbix/{{ zabbix_agent_name }}.d/"
-    state: directory
-    mode: 0755
+  with_items: "{{ ( zabbix_template_definitions | default({}) ) | json_query('* | [?scripts] .scripts') | flatten }}"
+  when: zabbix_template_definitions is defined
 
 - name: configure zabbix-agent
   template:
@@ -89,6 +131,7 @@
     dest: "/etc/zabbix/{{ zabbix_agent_name }}.conf"
   tags: configure
   notify: restart zabbix-agent
+  when: zabbix_agent_name is defined
 
 - name: make sure zabbix home directory is present
   file:
@@ -121,4 +164,4 @@
     enabled: yes
   tags: configure
   notify: restart zabbix-agent
-
+  when: zabbix_agent_service is defined

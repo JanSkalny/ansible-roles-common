@@ -1,0 +1,490 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-05-05T11:44:55Z'
+  groups:
+    -
+      name: SK-CERT/JISKB
+  templates:
+    -
+      template: 'Template App SK-CERT JISKB'
+      name: 'Template App SK-CERT JISKB'
+      description: 'Monitoring JISKB web Application and API and docker containers.'
+      templates:
+        -
+          name: 'Template App Docker'
+        -
+          name: 'Template App HTTPS Service'
+        -
+          name: 'Template App SSH Service'
+        -
+          name: 'Template OS Linux by Zabbix agent'
+      groups:
+        -
+          name: SK-CERT/JISKB
+      applications:
+        -
+          name: 'SK-CERT JISKB API'
+        -
+          name: 'SK-CERT JISKB Docker'
+        -
+          name: 'SK-CERT JISKB NGNIX'
+        -
+          name: 'SK-CERT JISKB OS'
+      discovery_rules:
+        -
+          name: 'Discover JISKB Docker Containers'
+          key: jiskb.docker.containers
+          delay: 15m
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#DKR_CONTAINER}'
+                value: '^{$JISKB_NAME}[-_]'
+                formulaid: A
+          lifetime: '3600'
+          description: |
+            OUTPUT: {#DKR_CONTAINER}
+            
+            Discovery all docker containers for every instances of JISKB application on this server. Start checking their status. Status should be "running".
+            Container name: <instance>-jiskb-<suffix>
+            
+            If you dont need some of them use FILTER.
+            
+            Normaly on one server only one instance is running and one container.
+            On jiskb.dev.sk-cert.sk more instances with more containers on the same server is running.
+          item_prototypes:
+            -
+              name: 'Docker Container Status {#DKR_CONTAINER}'
+              key: 'jiskb.docker.container.status["{#DKR_CONTAINER}"]'
+              history: 31d
+              description: 'Test if JISKB docker container is running or not :  {#DKR_CONTAINER}'
+              applications:
+                -
+                  name: 'SK-CERT JISKB Docker'
+              preprocessing:
+                -
+                  type: MATCHES_REGEX
+                  parameters:
+                    - running
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+                -
+                  type: REGEX
+                  parameters:
+                    - running
+                    - '1'
+              trigger_prototypes:
+                -
+                  expression: '{last()}<>1'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: '{last()}=1'
+                  name: 'JISKB is container status "running" - {#DKR_CONTAINER}'
+                  priority: DISASTER
+                  description: 'Aplikacia nefunguje spravne!'
+                  manual_close: 'YES'
+          graph_prototypes:
+            -
+              name: '{#DKR_CONTAINER} container status'
+              width: '300'
+              height: '100'
+              yaxismax: '1'
+              ymin_type_1: FIXED
+              ymax_type_1: FIXED
+              graph_items:
+                -
+                  sortorder: '1'
+                  drawtype: DASHED_LINE
+                  color: 199C0D
+                  item:
+                    host: 'Template App SK-CERT JISKB'
+                    key: 'jiskb.docker.container.status["{#DKR_CONTAINER}"]'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '120'
+        -
+          name: 'Discover JISKB Docker Instances'
+          key: jiskb.docker.instances
+          delay: 15m
+          filter:
+            conditions:
+              -
+                macro: '{#DKR_INSTANCE}'
+                value: '^{$JISKB_NAME}'
+                formulaid: A
+          lifetime: '3600'
+          description: |
+            Output: {#DKR_INSTANCE}
+            
+            Discovery docker instances (first part of container  name) of JISKB application.
+            For {#DKR_INSTANCE}=singlenbugovsk
+            Container_name: singlenbugovsk-jiskb-ui must exist
+          item_prototypes:
+            -
+              name: 'Docker Suffix Status {#DKR_INSTANCE} GUI'
+              key: 'jiskb.docker.suffix.status["{#DKR_INSTANCE}","ui"]'
+              history: 30d
+              description: 'Test if docker container for JISKB application with name {#DKR_INSTANCE}-jiskb-ui is running or not.'
+              applications:
+                -
+                  name: 'SK-CERT JISKB Docker'
+              preprocessing:
+                -
+                  type: MATCHES_REGEX
+                  parameters:
+                    - running
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+                -
+                  type: REGEX
+                  parameters:
+                    - running
+                    - '1'
+        -
+          name: 'Discover JISKB NGNIX Instances'
+          key: jiskb.ngnix.instances
+          lifetime: 1h
+          description: |
+            Output: {#NGNIX_INSTANCE}
+            
+            Discovery docker instances of NGNIX proxy in JISKB application.
+            For {#NGNIX_INSTANCE}=proxy-for-webs
+            Container_name: {#NGNIX_INSTANCE} must exist
+          item_prototypes:
+            -
+              name: 'NGNIX Connections count port {$NGNIX_PORT} status {$NGNIX_CONNECTION}'
+              type: DEPENDENT
+              key: 'jiskb.ngnix.connections.count[{#NGNIX_INSTANCE}]'
+              delay: '0'
+              history: 1d
+              trends: 7d
+              applications:
+                -
+                  name: 'SK-CERT JISKB NGNIX'
+              preprocessing:
+                -
+                  type: CSV_TO_JSON
+                  parameters:
+                    - ','
+                    - '"'
+                    - '1'
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[?(@.PORT=={$NGNIX_PORT} && @.STATUS==''{$NGNIX_CONNECTION}'')]'
+                  error_handler: CUSTOM_VALUE
+                -
+                  type: JSONPATH
+                  parameters:
+                    - $.length()
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              master_item:
+                key: 'jiskb.ngnix.connections[{#NGNIX_INSTANCE}]'
+            -
+              name: 'NGNIX opened connections {#NGNIX_INSTANCE}'
+              key: 'jiskb.ngnix.connections[{#NGNIX_INSTANCE}]'
+              history: 1h
+              trends: '0'
+              value_type: TEXT
+              applications:
+                -
+                  name: 'SK-CERT JISKB NGNIX'
+        -
+          name: 'Discover JISKB WebServer Instances'
+          key: jiskb.web.instances
+          delay: 15m
+          filter:
+            conditions:
+              -
+                macro: '{#WEB_INSTANCE}'
+                value: '{$JISKB_WEB}$'
+                formulaid: A
+          lifetime: '3600'
+          description: |
+            OUTPUT: {#WEB_INSTANCE}
+            
+            Discovery web instances (server_name with www) of JISKB on this server. This instance must have www server in nginx configuration.
+            For every instance the test for isalive is created.
+            
+            docker exec -it proxy-for-webs sh -c 'cat /etc/nginx/conf.d/default.conf' | grep "server_name\ "
+          item_prototypes:
+            -
+              name: 'Admin - Is alive status {#WEB_INSTANCE}'
+              key: 'web.page.regexp[{$JISKB_SCHEME}://api-admin.{#WEB_INSTANCE}/api/v1/isalive,,,HTTP.*\ (.*)\ (.*),20,\1]'
+              description: 'Test if isalive is working on ADMIN api. Output is HTTP status code. Should be 200.'
+              applications:
+                -
+                  name: 'SK-CERT JISKB API'
+              trigger_prototypes:
+                -
+                  expression: '{last(#2)}<>200'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: '{last(#2)}=200'
+                  name: 'JISKB Is alive ADMIN - {#WEB_INSTANCE}'
+                  priority: DISASTER
+                  description: 'Aplikacia nefunguje spravne!'
+                  manual_close: 'YES'
+            -
+              name: 'Core - Is alive {#WEB_INSTANCE}'
+              key: 'web.page.regexp[{$JISKB_SCHEME}://api-core.{#WEB_INSTANCE}/api/v1/isalive,,,HTTP.*\ (.*)\ (.*),20,\1]'
+              description: 'Test if isalive is working on CORE api. Output is HTTP status code. Should be 200.'
+              applications:
+                -
+                  name: 'SK-CERT JISKB API'
+              trigger_prototypes:
+                -
+                  expression: '{last(#2)}<>200'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: '{last(#2)}=200'
+                  name: 'JISKB Is alive CORE - {#WEB_INSTANCE}'
+                  priority: DISASTER
+                  description: 'Aplikacia nefunguje spravne!'
+                  manual_close: 'YES'
+            -
+              name: 'Auth - Is alive {#WEB_INSTANCE}'
+              key: 'web.page.regexp[{$JISKB_SCHEME}://auth.{#WEB_INSTANCE}/api/v1/isalive,,,HTTP.*\ (.*)\ (.*),20,\1]'
+              description: 'Test if isalive is working on AUTH api. Output is HTTP status code. Should be 200.'
+              applications:
+                -
+                  name: 'SK-CERT JISKB API'
+              trigger_prototypes:
+                -
+                  expression: '{last(#2)}<>200'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: '{last(#2)}=200'
+                  name: 'JISKB Is alive AUTH - {#WEB_INSTANCE}'
+                  priority: DISASTER
+                  description: 'Aplikacia nefunguje spravne!'
+                  manual_close: 'YES'
+            -
+              name: 'Login {#WEB_INSTANCE}'
+              key: 'web.page.regexp[{$JISKB_SCHEME}://www.{#WEB_INSTANCE}/,,,HTTP.*\ (.*)\ (.*),20,\1]'
+              description: 'Catch login page from www server. Output is HTTP status code. Should be 200.'
+              applications:
+                -
+                  name: 'SK-CERT JISKB API'
+              trigger_prototypes:
+                -
+                  expression: '{last(#2)}<>200'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: '{last(#2)}=200'
+                  name: 'JISKB is working LOGIN page - {#WEB_INSTANCE}'
+                  priority: DISASTER
+                  description: 'Aplikacia nefunguje spravne!'
+                  manual_close: 'YES'
+            -
+              name: 'VERSION {#WEB_INSTANCE}'
+              key: 'web.page.regexp[{$JISKB_SCHEME}://www.{#WEB_INSTANCE}/VERSION.txt,,,(v.?\..?\..?),10,\1]'
+              description: 'Catch VERSION.txt from www. Should be something like v1.0.0 and converted to number 100.'
+              applications:
+                -
+                  name: 'SK-CERT JISKB API'
+              preprocessing:
+                -
+                  type: LTRIM
+                  parameters:
+                    - v
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - .
+                    - ''
+          trigger_prototypes:
+            -
+              expression: '{Template App SK-CERT JISKB:web.page.regexp[{$JISKB_SCHEME}://www.{#WEB_INSTANCE}/VERSION.txt,,,(v.?\..?\..?),10,\1].change()}>0 and {Template App SK-CERT JISKB:web.page.regexp[{$JISKB_SCHEME}://api-admin.{#WEB_INSTANCE}/api/v1/isalive,,,HTTP.*\ (.*)\ (.*),20,\1].nodata(60)}=0'
+              recovery_mode: NONE
+              name: 'JISKB zmena verzie - {#WEB_INSTANCE}'
+              priority: INFO
+              description: 'Nastala zmena verzie aplikacie?'
+              manual_close: 'YES'
+          graph_prototypes:
+            -
+              name: '{#WEB_INSTANCE} Version'
+              width: '300'
+              height: '100'
+              yaxismin: '100'
+              yaxismax: '120'
+              ymin_type_1: FIXED
+              ymax_type_1: FIXED
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: 'Template App SK-CERT JISKB'
+                    key: 'web.page.regexp[{$JISKB_SCHEME}://www.{#WEB_INSTANCE}/VERSION.txt,,,(v.?\..?\..?),10,\1]'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - '60'
+      macros:
+        -
+          macro: '{$JISKB_NAME}'
+          value: jiskb
+          description: 'prefix jiskb instancie'
+        -
+          macro: '{$JISKB_PORT}'
+          value: '443'
+          description: 'web port = here web is listening'
+        -
+          macro: '{$JISKB_SCHEME}'
+          value: https
+          description: 'web schema (http/https)'
+        -
+          macro: '{$JISKB_WEB}'
+          value: jiskb.dev.sk-cert.sk
+          description: 'web hostname (without www)'
+        -
+          macro: '{$NGNIX_CONNECTION}'
+          value: ESTABLISHED
+          description: 'which connection status will be watched'
+        -
+          macro: '{$NGNIX_PORT}'
+          value: '443'
+          description: 'port where NGNIX is listening'
+      dashboards:
+        -
+          name: 'JISKB Overview'
+          widgets:
+            -
+              type: GRAPH_CLASSIC
+              width: '5'
+              height: '4'
+              fields:
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '1'
+            -
+              type: GRAPH_PROTOTYPE
+              'y': '4'
+              width: '23'
+              height: '4'
+              fields:
+                -
+                  type: INTEGER
+                  name: columns
+                  value: '6'
+                -
+                  type: GRAPH_PROTOTYPE
+                  name: graphid
+                  value:
+                    name: '{#DKR_CONTAINER} container status'
+                    host: 'Template App SK-CERT JISKB'
+            -
+              type: GRAPH_PROTOTYPE
+              x: '20'
+              width: '3'
+              height: '4'
+              fields:
+                -
+                  type: INTEGER
+                  name: columns
+                  value: '1'
+                -
+                  type: GRAPH_PROTOTYPE
+                  name: graphid
+                  value:
+                    name: '{#WEB_INSTANCE} Version'
+                    host: 'Template App SK-CERT JISKB'
+            -
+              type: GRAPH_PROTOTYPE
+              'y': '8'
+              width: '23'
+              height: '5'
+              fields:
+                -
+                  type: INTEGER
+                  name: columns
+                  value: '6'
+            -
+              type: GRAPH_PROTOTYPE
+              'y': '13'
+              width: '23'
+              height: '5'
+              fields:
+                -
+                  type: INTEGER
+                  name: columns
+                  value: '6'
+            -
+              type: GRAPH_PROTOTYPE
+              'y': '18'
+              width: '8'
+              height: '5'
+              fields:
+                -
+                  type: INTEGER
+                  name: columns
+                  value: '1'
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '3'
+            -
+              type: GRAPH_PROTOTYPE
+              name: 'Admin API'
+              x: '5'
+              width: '5'
+              height: '4'
+              fields:
+                -
+                  type: INTEGER
+                  name: columns
+                  value: '1'
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '3'
+                -
+                  type: ITEM_PROTOTYPE
+                  name: itemid
+                  value:
+                    key: 'web.page.regexp[{$JISKB_SCHEME}://api-admin.{#WEB_INSTANCE}/api/v1/isalive,,,HTTP.*\ (.*)\ (.*),20,\1]'
+                    host: 'Template App SK-CERT JISKB'
+            -
+              type: GRAPH_PROTOTYPE
+              name: 'Auth API'
+              x: '15'
+              width: '5'
+              height: '4'
+              fields:
+                -
+                  type: INTEGER
+                  name: columns
+                  value: '1'
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '3'
+                -
+                  type: ITEM_PROTOTYPE
+                  name: itemid
+                  value:
+                    key: 'web.page.regexp[{$JISKB_SCHEME}://auth.{#WEB_INSTANCE}/api/v1/isalive,,,HTTP.*\ (.*)\ (.*),20,\1]'
+                    host: 'Template App SK-CERT JISKB'
+            -
+              type: GRAPH_PROTOTYPE
+              name: 'Core API'
+              x: '10'
+              width: '5'
+              height: '4'
+              fields:
+                -
+                  type: INTEGER
+                  name: columns
+                  value: '1'
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '3'
+                -
+                  type: ITEM_PROTOTYPE
+                  name: itemid
+                  value:
+                    key: 'web.page.regexp[{$JISKB_SCHEME}://api-core.{#WEB_INSTANCE}/api/v1/isalive,,,HTTP.*\ (.*)\ (.*),20,\1]'
+                    host: 'Template App SK-CERT JISKB'

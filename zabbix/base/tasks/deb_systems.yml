@@ -1,8 +1,10 @@
 - name: check if zabbix-release is available
-  command: dpkg-query -W zabbix-release
+  command: apt list --installed zabbix-release
   register: res
   check_mode: no
   ignore_errors: True
+
+- debug: msg="res={{ res.stdout | regex_search(':[0-9].[0-9]') }}"
 
 - name: check if we need to reinstall zabbix-release
   set_fact:

@@ -1,14 +1,37 @@
+- debug: msg="zabbix_version={{ zabbix_version }}", verbosity=1
+
+- name: "Set distribution 5.0"
+  set_fact:
+    distribution: "{{ ansible_distribution_release }}"
+  when: zabbix_version == 5.0
+
+- # for 5.2 +
+  name: "Set distribution !5.0"
+  set_fact:
+    distribution: "{{ ansible_distribution | lower }}{{ ansible_distribution_version }}"
+  when: zabbix_version != 5.0
+
+- debug: msg="distribution={{ distribution }}", verbosity=1
+
+- name: "Set URL"
+  set_fact:
+    url: "https://repo.zabbix.com/zabbix/{{ zabbix_version }}/ubuntu/pool/main/z/zabbix-release/zabbix-release_{{ zabbix_version }}-1+{{ distribution }}_all.deb"
+#  url: "https://repo.zabbix.com/zabbix/{{ zabbix_version }}/ubuntu/pool/main/z/zabbix-release/zabbix-release_{{ zabbix_version }}-1+{{ ansible_distribution_release }}_all.deb"
+
+- debug: msg="Zabbix distribution url={{ url }}", verbosity=1
+
 - name: download zabbix release package (Ubuntu)
   get_url:
-    url: "https://repo.zabbix.com/zabbix/{{ zabbix_version }}/ubuntu/pool/main/z/zabbix-release/zabbix-release_{{ zabbix_version }}-1+{{ ansible_distribution_release }}_all.deb"
+    url: "{{ url }}"
     dest: "/tmp/zabbix-release.deb"
 
 - name: install zabbix-release.deb
   apt:
     deb: "/tmp/zabbix-release.deb"
 
-- name: apt-get update
-  shell: apt-get update
+- name: APT update
+  apt:
+    update_cache: yes
 
 # does not work on bionic
 #- name: apt-get update
