@@ -97,16 +97,17 @@
     proxy_name: "{{ zabbix_proxy }}"
     status: active
     state: present
-    description: "zabbix proxy pre suricata sensor v {{ zabbix_proxy }}"
+    description: "zabbix proxy sensor/agenta {{ zabbix_proxy }}"
     interface:
         useip: 1
         ip: "{{ zabbix_proxy_addr | default(ansible_default_ipv4.address) }}"
         port: "10051"
     tls_connect: PSK # psk
     tls_accept: PSK  # psk
-    tls_psk_identity: "{{ inventory_hostname }}"
+    tls_psk_identity: "{{ zabbix_proxy_psk_identity }}"
     tls_psk: "{{ zabbix_proxy_psk | default('00000000000000000000000000000000')}}"
     validate_certs: false
+  notify: restart zabbix-proxy
   tags: configure
 
 - name: enable and start zabbix proxy service

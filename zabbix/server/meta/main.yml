@@ -1,4 +1,4 @@
 dependencies:
  - common/mysql-server
- - sk-cert/zabbix/base
+ - common/zabbix/base
  - common/www
