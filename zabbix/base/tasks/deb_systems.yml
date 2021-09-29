@@ -4,14 +4,16 @@
   check_mode: no
   ignore_errors: True
 
-- debug: msg="res={{ res.stdout | regex_search(':[0-9].[0-9]') }}"
+- debug: msg="installed zabbix-release version={{ res.stdout | regex_search(':[0-9].[0-9]') }} expected zabbix_version={{ zabbix_version }}"
 
 - name: check if we need to reinstall zabbix-release
   set_fact:
     reinstall_zabbix: "{{ res.stdout | regex_search(':[0-9].[0-9]') != ':'+zabbix_version }}"
     check_mode: no
 
-- name: remove old zabbix-release 
+- debug: msg="reinstall_zabbix={{ reinstall_zabbix }}"
+
+- name: remove old zabbix-release
   apt:
       name: zabbix-release
       state: absent

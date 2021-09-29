@@ -1,15 +1,15 @@
 - debug: msg="zabbix_version={{ zabbix_version }}", verbosity=1
 
-- name: "Set distribution 5.0"
+- name: "Set distribution for zabbix_version <= 5.0"
   set_fact:
     distribution: "{{ ansible_distribution_release }}"
-  when: zabbix_version == 5.0
+  when: (zabbix_version is defined) and (zabbix_version <= "5.0")
 
 - # for 5.2 +
-  name: "Set distribution !5.0"
+  name: "Set distribution for zabbix_version > 5.0"
   set_fact:
     distribution: "{{ ansible_distribution | lower }}{{ ansible_distribution_version }}"
-  when: zabbix_version != 5.0
+  when: (zabbix_version is defined) and (zabbix_version > "5.0")
 
 - debug: msg="distribution={{ distribution }}", verbosity=1
 

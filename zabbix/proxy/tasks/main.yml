@@ -85,10 +85,10 @@
 
 - name: add proxy to zabbix server
   become: false
-  vars:
-    proxy_env:
-       http_proxy: ""
-       https_proxy: ""
+  environment:
+    # this is going from your own computer directly to server without proxy
+    http_proxy: ""
+    https_proxy: ""
   local_action:
     module: zabbix_proxy
     server_url: "{{ zabbix_url }}"
@@ -97,7 +97,7 @@
     proxy_name: "{{ zabbix_proxy }}"
     status: active
     state: present
-    description: "zabbix proxy sensor/agenta {{ zabbix_proxy }}"
+    description: "zabbix proxy for sensor/agent {{ zabbix_proxy }}"
     interface:
         useip: 1
         ip: "{{ zabbix_proxy_addr | default(ansible_default_ipv4.address) }}"
