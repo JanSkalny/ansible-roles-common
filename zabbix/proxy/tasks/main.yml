@@ -81,6 +81,9 @@
   template:
     src: zabbix_proxy.conf 
     dest: /etc/zabbix/zabbix_proxy.conf
+    owner: zabbix
+    group: zabbix
+    mode: u=rw,g=r,o=
   notify: restart zabbix-proxy
 
 - name: add proxy to zabbix server

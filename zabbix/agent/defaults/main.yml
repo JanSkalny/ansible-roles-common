@@ -1,3 +1,5 @@
+zabbix_etc_group: {}
+
 zabbix_agent_version: 2
 zabbix_agent_name: "zabbix_agent2"
 zabbix_agent_service: "zabbix-agent2"

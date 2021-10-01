@@ -110,16 +110,17 @@
       mode: 0755
     with_items: "{{ ( zabbix_template_definitions | default({}) ) | json_query('* | [?scripts] .scripts') | flatten }}"
 
-  - name: configure zabbix-agent
-    template:
-      src: "zabbix_agent.conf"
-      dest: "/etc/zabbix/{{ zabbix_agent_name }}.conf"
-    tags: configure
-    notify: restart zabbix-agent
-
   when: zabbix_agent_name is defined and zabbix_templates_dir is defined and zabbix_templates is defined and zabbix_template_definitions is defined and zabbix_agent_name != {} and zabbix_template_definitions != {} and zabbix_templates != {} and zabbix_templates_dir != {}
 
-- #debug: msg="zabbix_templates_dir={{ xx_zabbix_templates_dir }}", verbosity=1
+- name: configure zabbix-agent
+  template:
+    src: "zabbix_agent.conf"
+    dest: "/etc/zabbix/{{ zabbix_agent_name }}.conf"
+    owner: "zabbix"
+    group: "zabbix"
+    mode: u=rw,g=r,o=
+  tags: configure
+  notify: restart zabbix-agent
 
 - name: generate zabbix_agentd.psk
   template:
