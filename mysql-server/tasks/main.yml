@@ -5,7 +5,6 @@
       - mysql-server 
       - mysqltuner
       - python3-mysqldb
-      - python-mysqldb
     state: present
   tags: install
  
