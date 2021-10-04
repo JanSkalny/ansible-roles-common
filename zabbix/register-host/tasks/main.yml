@@ -1,5 +1,7 @@
 - debug: msg="zabbix_url={{ zabbix_url }}", verbosity=1
 - debug: msg="zabbix_admin_login={{ zabbix_admin_login }}", verbosity=1
+- debug: msg="zabbix_linked_templates={{ zabbix_linked_templates }}", verbosity=1
+#- debug: msg="xxx={{ xxx }}"
 
 - name: add host to zabbix server
   become: false
@@ -9,13 +11,14 @@
     https_proxy: ""
   local_action:
     module: zabbix_host
+    force: yes
     server_url: "{{ zabbix_url }}"
     login_user: "{{ zabbix_admin_login }}"
     login_password: "{{ zabbix_admin_password }}"
     host_name: "{{ inventory_hostname }}"
     visible_name: "{{ inventory_hostname }}"
     host_groups: "{{ zabbix_group }}"
-    link_templates: "{{ ( zabbix_template_definitions | default({}) ) | json_query('*.template') | unique }}"
+    link_templates: "{{ zabbix_linked_templates }}"
     status: enabled
     state: present
     interfaces:

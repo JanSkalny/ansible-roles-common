@@ -82,6 +82,7 @@
       owner: "root"
       mode: 0640
     with_items: "{{ zabbix_templates }}"
+    when: zabbix_templates_definitions is defined and zabbix_templates_definitions != {}
 
   - name: deploy zabbix cron.d
     copy:
@@ -90,6 +91,7 @@
       owner: "root"
       mode: 0640
     with_items: "{{ zabbix_templates }}"
+    when: zabbix_templates_definitions is defined and zabbix_templates_definitions != {}
 
   - name: deploy zabbix template parameters
     copy:
@@ -99,7 +101,7 @@
       group: "zabbix"
       mode: 0640
     with_items: "{{ zabbix_templates }}"
-    when:
+    when: zabbix_templates_definitions is defined and zabbix_templates_definitions != {}
     notify: restart zabbix-agent
 
   - name: deploy zabbix scripts
@@ -110,7 +112,7 @@
       mode: 0755
     with_items: "{{ ( zabbix_template_definitions | default({}) ) | json_query('* | [?scripts] .scripts') | flatten }}"
 
-  when: zabbix_agent_name is defined and zabbix_templates_dir is defined and zabbix_templates is defined and zabbix_template_definitions is defined and zabbix_agent_name != {} and zabbix_template_definitions != {} and zabbix_templates != {} and zabbix_templates_dir != {}
+  when: zabbix_agent_name is defined and zabbix_templates_dir is defined and zabbix_templates is defined and zabbix_agent_name != {} and zabbix_templates != {} and zabbix_templates_dir != {}
 
 - name: configure zabbix-agent
   template:

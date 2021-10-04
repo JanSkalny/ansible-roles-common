@@ -1,2 +1,8 @@
 zabbix_admin_login: "admin"
 zabbix_group: "Linux servers"
+zabbix_linked_templates:
+    - Template App NTP Service
+    #- Template App SK-CERT JISKB
+    - Template App SSH Service
+    #- Template App Zabbix Proxy
+    - Template OS Linux by Zabbix agent
