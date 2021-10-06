@@ -192,6 +192,8 @@ $IT6 -N CHECK_IF
   $IT6 -A CHECK_IF -m rt --rt-type 0 -j LOG_DROP
 
   # ND stuff
+  #FIXME: either...
+  $IT6 -A CHECK_IF -p ipv6-icmp -s fe80::/64 -m hl --hl-eq 255 -j RETURN
   $IT6 -A CHECK_IF -s fe80::/64 -j RETURN
 
   # per interface filter
@@ -268,6 +270,11 @@ done
 $IT6 -A INPUT -p ipv6-icmp --icmpv6-type 128 -m limit --limit 20/s -j ACCEPT
 $IT6 -A INPUT -p icmp -j LOG_DROP
 
+# ignore IGMP stuff...
+#FIXME:
+$IT6 -A INPUT -p ipv6-icmp --icmpv6-type 130 -d ff02::1 -j DROP
+$IT6 -A INPUT -p ipv6-icmp --icmpv6-type 143 -d ff02::16 -j DROP
+
 # default rule is
 $IT6 -A INPUT -j {{ firewall_default_rule_input }}
 
@@ -292,7 +299,9 @@ $IT4 -A OUTPUT -j {{ firewall_default_rule_output }}
 
 # IPv6 ND
 for TYPE in 133 134 135 136 137 ; do
+  #FIXME: either...
   $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type $TYPE -j ACCEPT
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type $TYPE -m hl --hl-eq 255 -j ACCEPT
 done
 
 # default to drop
