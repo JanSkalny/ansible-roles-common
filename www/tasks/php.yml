@@ -26,7 +26,7 @@
     - "php{{php_version}}-mbstring"
     - "php{{php_version}}-zip"
     - "php{{php_version}}-mysql"
-    - php-gettext
+#    - php-gettext
     - php-imagick
     - imagemagick
   notify: restart php
