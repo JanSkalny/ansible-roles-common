@@ -1,0 +1,5 @@
+{% for iface_name,iface in networking.items() %}
+{% if 'ether' in iface %}
+{{iface_name}} {{iface.ether | lower}}
+{% endif %}
+{% endfor %}

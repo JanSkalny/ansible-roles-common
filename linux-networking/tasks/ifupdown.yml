@@ -28,3 +28,10 @@
   notify: reboot host to apply networking changes
   tags: configure
 
+- name: generate mactab
+  template: 
+    src: mactab
+    dest: /etc/network/mactab
+  notify: reboot host to apply networking changes
+  tags: configure
+
