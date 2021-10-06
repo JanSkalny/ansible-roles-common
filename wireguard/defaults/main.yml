@@ -1,5 +1,7 @@
 wg_name: "wg0"
 
+wg_default_listen_port: 1501
+
 wg_interface:
   #priv_key: "$( wg gwkey )"
   address: "172.16.0.1/16"
