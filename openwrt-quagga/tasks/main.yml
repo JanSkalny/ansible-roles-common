@@ -1,0 +1,30 @@
+- name: install quagga
+  opkg:
+    update_cache: yes
+    name: "{{ item }}"
+  with_items:
+  - quagga-zebra 
+  - quagga-bgpd 
+  - quagga-vtysh
+  when: ansible_os_family == 'OpenWrt'
+  tags: install
+
+- name: configure quagga
+  template:
+    src: "{{ item }}"
+    dest: "/etc/quagga/{{ item }}"
+    owner: root
+    group: root
+  with_items:
+    - daemons
+    - zebra.conf
+    - bgpd.conf
+    - ospfd.conf
+  tags: configure
+
+- name: enable quagga at startup
+  file:
+    src: ../init.d/quagga
+    dest: /etc/rc.d/S60quagga
+    state: link
+  tags: install

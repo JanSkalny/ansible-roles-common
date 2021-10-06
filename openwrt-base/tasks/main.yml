@@ -1,0 +1,6 @@
+- name: deploy custom tools
+  copy:
+    src: opkg-user-installed.sh
+    dest: /root/opkg-user-installed.sh
+    perm: 0755
+
