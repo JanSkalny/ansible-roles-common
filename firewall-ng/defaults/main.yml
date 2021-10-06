@@ -11,27 +11,30 @@ firewall_ip_forward: 0
 firewall_log_martians: 1
 
 firewall_interfaces: "{{ networking }}"
+firewall6_interfaces: {}
+
+## EXAMPLES:
+#firewall_interface:
 #   mngPhys:
 #     deny:
-#     - 10.191.3.128/26
-#     - 10.191.3.192/26
+#     - 10.0.0.128/26
+#     - 10.0.0.192/26
 #     default: allow
 #   mngHw:
-#     allow: 10.191.3.64/26
+#     allow: 10.0.0.64/26
 #     allow_dhcp: true
 #   iscsi0:
-#     allow: 10.191.3.128/26
+#     allow: 10.0.0.128/26
 #   iscsi1:
-#     allow: 10.191.3.192/26
-
+#     allow: 10.0.0.192/26
 
 #firewall_objects_example:
-#   PUB: 10.191.0.0/24
+#   PUB: 10.0.0.0/24
 #   DMZ:
-#     - 10.191.1.0/24
-#     - 10.191.2.0/24
+#     - 10.0.1.0/24
+#     - 10.0.2.0/24
 #   ns.example.com:
-#     10.191.1.34
+#     10.0.1.34
 
 #firewall_input_example:
 #  - name: ssh from lan
@@ -51,8 +54,6 @@ firewall_output: "{{ vars | select('match', '^firewall_output_') | map('extract'
 firewall_forward: "{{ vars | select('match', '^firewall_forward_') | map('extract', vars) | flatten }}"
 firewall_objects: "{{ {} | combine(vars | select('match', '^firewall_objects_') | map('extract', vars)) }}"
 
-
-firewall6_interfaces: {}
 firewall6_input: "{{ vars | select('match', '^firewall6_input_') | map('extract', vars) | flatten }}"
 firewall6_output: "{{ vars | select('match', '^firewall6_output_') | map('extract', vars) | flatten }}"
 firewall6_forward: "{{ vars | select('match', '^firewall6_forward_') | map('extract', vars) | flatten }}"
