@@ -3,9 +3,9 @@ wg_name: "wg0"
 wg_default_listen_port: 1501
 
 wg_interface:
-  #priv_key: "$( wg gwkey )"
+  # priv_key: "$( wg gwkey )"
   address: "172.16.0.1/16"
-  listen_port: 1501
+  listen_port: "{{ wg_default_listen_port }}"
   # dns: 1.1.1.1 (mandatory for clients)
 
 wg_peers: {}
@@ -13,5 +13,5 @@ wg_peers: {}
 #  pub_key: "xxx"
 #  allowed_ips: "172.16.0.2/32"
 #  psk: "xxx" (optional)
-#  endpoint: "xxx:1501" (mandatory for clients)
+#  endpoint: "a.b.c.d:1501" (mandatory for clients)
 
