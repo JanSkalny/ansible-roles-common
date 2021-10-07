@@ -5,13 +5,6 @@
     owner: root
   tags: configure
 
-- name: generate /etc/iproute2/rt_tables
-  template:
-    src: rt_tables
-    dest: /etc/iproute2/rt_tables
-  tags: configure
-  notify: reboot host to apply networking changes
-
 - name: generate /etc/mactab
   template:
     src: mactab

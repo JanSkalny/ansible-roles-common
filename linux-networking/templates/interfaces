@@ -5,10 +5,10 @@ auto lo
 iface lo inet loopback
 	pre-up nameif
 {% for r in source_routing %}
-	up ip route flush table "{{ r.id }}" || true
-	up ip route add default via "{{ r.via }}" table "{{ r.id }}"
+	up ip route flush table "{{ r.routing_table }}" || true
+	up ip route add default via "{{ r.via }}" table "{{ r.routing_table }}"
 {% for s in r.sources %}
-	up ip rule add from "{{ s }}" lookup "{{ r.id }}"
+	up ip rule add from "{{ s }}" lookup "{{ r.routing_table }}"
 {% endfor %}
 {% endfor %}
 
