@@ -7,6 +7,7 @@ wg_interface:
   address: "172.16.0.1/16"
   listen_port: "{{ wg_default_listen_port }}"
   # dns: 1.1.1.1 (mandatory for clients)
+  # routing_table: 100
 
 wg_peers: {}
 #- name: "clientA"
