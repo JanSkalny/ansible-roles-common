@@ -4,6 +4,13 @@
 auto lo
 iface lo inet loopback
 	pre-up nameif
+{% for r in source_routing %}
+	up ip route flush table "{{ r.id }}" || true
+	up ip route add default via "{{ r.via }}" table "{{ r.id }}"
+{% for s in r.sources %}
+	up ip rule add from "{{ s }}" lookup "{{ r.id }}"
+{% endfor %}
+{% endfor %}
 
 {%- macro configure_interface(iface, iface_name) -%}
 {% if 'dns' in iface %}

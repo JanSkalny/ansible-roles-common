@@ -9,6 +9,10 @@ linux_networking_method: "ifupdown"
 
 networking: []
 
+routing_tables: []
+  # - id: 100
+  #   name: vpn
+
 dns_search: ""
 dns_servers:
 - 1.1.1.1
