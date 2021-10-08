@@ -59,7 +59,7 @@
     <controller type='ide' index='0'>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x1'/>
     </controller>
-{% for iface_name,iface in hostvars[virtual.fqdn].networking.items() %}
+{% for iface_name,iface in hostvars[virtual.fqdn | default(virtual.name)].networking.items() %}
     <interface type='bridge'>
       <mac address='{{ iface.ether }}'/>
       <source bridge='{{ iface.virtual_host_iface }}'/>

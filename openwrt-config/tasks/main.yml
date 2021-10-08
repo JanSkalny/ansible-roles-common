@@ -1,0 +1,23 @@
+- name: generate config files
+  template:
+    src: "{{ item }}"
+    dest: "/etc/config/{{ item }}"
+  with_items:
+    - dhcp
+    - dropbear
+    - network
+    - system
+  tags: configure
+
+- name: generate config files
+  file:
+    path: "/etc/config/{{ item }}"
+    state: absent
+  with_items:
+   - firewall
+   - luci
+   - rpcd
+   - ucitrack
+   - uhttpd
+  tags: configure
+

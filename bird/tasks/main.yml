@@ -1,0 +1,27 @@
+- name: install bird and dependencies
+  package:
+    name: bird
+    state: present
+  tags: install
+
+- name: configure bird
+  template:
+    src: "bird.conf"
+    dest: "/etc/bird/bird.conf"
+  vars:
+    ospf_instances: "{{ bird_ospf_instances }}"
+    bgp_instances: "{{ bird_bgp_instances }}"
+  tags: configure
+  notify: restart bird
+
+- name: configure bird6
+  template:
+    src: "bird.conf"
+    dest: "/etc/bird/bird6.conf"
+  vars:
+    ospf_instances: "{{ bird6_ospf_instances }}"
+    bgp_instances: "{{ bird6_bgp_instances }}"
+    bird_filters: "{{ bird6_filters }}"
+  tags: configure
+  notify: restart bird6
+

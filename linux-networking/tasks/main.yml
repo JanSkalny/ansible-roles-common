@@ -5,6 +5,12 @@
     owner: root
   tags: configure
 
+- name: generate /etc/mactab
+  template:
+    src: mactab
+    dest: /etc/mactab
+  tags: configure
+
 - name: generate /etc/hosts
   template:
     src: hosts

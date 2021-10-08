@@ -1,0 +1,4 @@
+zebra=yes
+bgpd={{ 'yes' if openwrt_quagga_bgp_instances | length else 'no' }}
+ospfd={{ 'yes' if openwrt_quagga_ospf_instances | length else 'no' }}
+ospf6d={{ 'yes' if openwrt_quagga_ospf_instances | length else 'no' }}

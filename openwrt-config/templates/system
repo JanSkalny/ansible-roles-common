@@ -1,0 +1,13 @@
+
+config system
+	option timezone 'UTC'
+	option log_size '64'
+	option urandom_seed '0'
+	option ttylogin '1'
+	option hostname '{{ inventory_hostname_short }}'
+
+config timeserver 'ntp'
+	option enabled '1'
+	option enable_server '0'
+	option server '{{ ntp_servers | default(['pool.ntp.org']) | join(" ") }}'
+

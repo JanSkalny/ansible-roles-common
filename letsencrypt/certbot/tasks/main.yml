@@ -1,13 +1,13 @@
-- name: add certbot ppa
-  apt_repository:
-    repo: ppa:certbot/certbot
-    state: present
-    update_cache: yes
-  tags: install
+#- name: add certbot ppa
+#  apt_repository:
+#    repo: ppa:certbot/certbot
+#    state: present
+#    update_cache: yes
+#  tags: install
 
 - name: install certbot
   package:
-    name: certbot
+    name: python3-certbot
     state: present
   tags: install
 

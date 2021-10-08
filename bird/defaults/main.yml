@@ -1,0 +1,8 @@
+bird_filters: {}
+bird_ospf_instances: {}
+bird_bgp_instances: {}
+
+bird6_filters: {}
+bird6_ospf_instances: {}
+bird6_bgp_instances: {}
+

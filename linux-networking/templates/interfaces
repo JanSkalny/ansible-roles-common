@@ -1,10 +1,16 @@
 # {{ ansible_managed }}
 
-source /etc/network/interfaces.d/*
-
 # The loopback network interface
 auto lo
 iface lo inet loopback
+	pre-up nameif
+{% for r in source_routing | default([]) %}
+	up ip route flush table "{{ r.routing_table }}" || true
+	up ip route add default via "{{ r.via }}" table "{{ r.routing_table }}"
+{% for s in r.sources %}
+	up ip rule add from "{{ s }}" lookup "{{ r.routing_table }}"
+{% endfor %}
+{% endfor %}
 
 {%- macro configure_interface(iface, iface_name) -%}
 {% if 'dns' in iface %}
@@ -31,8 +37,10 @@ iface lo inet loopback
 	bridge_maxwait 0
 {% endif %}
 {% if 'vlan-id' in iface and 'vlan-iface' in iface %}
+{% if iface_name is not match(":") %}
 	pre-up ip link add link {{ iface['vlan-iface'] }} name $IFACE type vlan id {{ iface['vlan-id'] }}
 	post-down ip link del link dev $IFACE
+{% endif %}
 {% endif %}
 {% if 'mtu' in iface %}
 	mtu {{ iface.mtu }}
@@ -53,19 +61,22 @@ iface lo inet loopback
 {% for iface_name,item in networking.items() %}
 
 # {{ item }}
-{% if 'address' in item and item.address != 'dhcp' %}
+{% if iface_name is not match(":") %}
 auto {{ iface_name }}
+{% endif %}
+{% if 'address' in item and item.address != 'dhcp' %}
 iface {{ iface_name }} inet static
-	address {{ item.address }}
+	address {{ item.address | ipaddr('address') }}
+	netmask {{ item.address | ipaddr('netmask') }}
 {% if 'gateway' in item %}
 	gateway {{ item.gateway }}
 {% endif %}
 {{ configure_interface(item, iface_name) }}
 {% endif %}
 {% if 'address6' in item and item.address6 != 'auto' %}
-auto {{ iface_name }}
 iface {{ iface_name }} inet6 static
-	address {{ item.address6 }}
+	address {{ item.address6 | ipaddr('address') }}
+	netmask {{ item.address6 | ipaddr('prefix') }}
 {% if 'gateway6' in item %}
 	gateway {{ item.gateway6 }}
 {% endif %}
@@ -74,12 +85,10 @@ iface {{ iface_name }} inet6 static
 {{ configure_interface(item, iface_name) }}
 {% endif %}
 {% if 'address' in item and item.address == 'dhcp' %}
-auto {{ iface_name }}
 iface {{ iface_name }} inet dhcp
 {{ configure_interface(item, iface_name) }}
 {% endif %}
 {% if 'address' not in item and 'address6' not in item %}
-auto {{ iface_name }}
 iface {{ iface_name }} inet manual
 {{ configure_interface(item, iface_name) }}
 {% endif %}

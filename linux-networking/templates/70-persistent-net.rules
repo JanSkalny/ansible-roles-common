@@ -1,3 +1,4 @@
+# {{ ansible_managed }}
 {% for iface_name,iface in networking.items() %}
 {% if 'ether' in iface %}
 SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="{{iface.ether | lower}}", NAME="{{iface_name}}"

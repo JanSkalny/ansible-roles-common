@@ -1,0 +1,5 @@
+config dropbear
+	option PasswordAuth '{{ openwrt_dropbear_password_auth }}'
+	option RootPasswordAuth '{{ openwrt_dropbear_password_auth }}'
+	option Port         '{{ openwrt_dropbear_port | default(22) }}'
+#	option BannerFile   '/etc/banner'

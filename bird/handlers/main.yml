@@ -1,0 +1,9 @@
+- name: restart bird
+  service:
+    name: bird
+    state: restarted
+
+- name: restart bird6
+  service:
+    name: bird6
+    state: restarted
