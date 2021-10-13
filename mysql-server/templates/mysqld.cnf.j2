@@ -1,10 +1,10 @@
 [mysqld]
 innodb_flush_log_at_trx_commit=2
+{% if ansible_distribution == 'Ubuntu' and ansible_distribution_major_version < "20" %}
+query_cache_type=1
+{% endif %}
 join_buffer_size=10M
 tmp_table_size=128M
 max_heap_table_size=128M
 table_open_cache=1024
 innodb_buffer_pool_size=1G
-
-; removed in mysql 8.0.3
-;query_cache_type=1

@@ -13,6 +13,10 @@
     update_cache: yes
   tags: install
 
+# if not honoring the proxy envs use this instead:
+#- name: add suricata-stable repository
+#  shell:  add-apt-repository ppa:oisf/suricata-stable --update
+
 - name: install suricata 
   package: 
     name:

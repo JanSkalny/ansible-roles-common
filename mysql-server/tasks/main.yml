@@ -4,13 +4,25 @@
     name:
       - mysql-server 
       - mysqltuner
+      - python-mysqldb
       - python3-mysqldb
     state: present
   tags: install
- 
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version <= "18"
+
+- name: install packages V3
+  package:
+    name:
+      - mysql-server
+      - mysqltuner
+      - python3-mysqldb
+    state: present
+  tags: install
+  when: ( ansible_distribution == 'Ubuntu' and ansible_distribution_major_version > "18" ) or ansible_distribution != 'Ubuntu'
+
 - name: configure mysqld
-  copy:
-    src: "mysqld.cnf"
+  template:
+    src: "mysqld.cnf.j2"
     dest: "/etc/mysql/mysql.conf.d/system.cnf"
   notify: restart mysql
   tags: configure

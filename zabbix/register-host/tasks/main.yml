@@ -1,32 +1,33 @@
-- name: enumerate zabbix templates
-  include_vars:
-    name: zabbix_template_definitions
-    file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
-  with_items: "{{ zabbix_templates }}"
-  tags: configure
-
+- debug: msg="zabbix_url={{ zabbix_url }}", verbosity=1
+- debug: msg="zabbix_admin_login={{ zabbix_admin_login }}", verbosity=1
+- debug: msg="zabbix_linked_templates={{ zabbix_linked_templates }}", verbosity=1
+#- debug: msg="xxx={{ xxx }}"
 
 - name: add host to zabbix server
   become: false
+  environment:
+    # this is going from your own computer directly to server without proxy
+    http_proxy: ""
+    https_proxy: ""
   local_action:
     module: zabbix_host
+    force: yes
     server_url: "{{ zabbix_url }}"
     login_user: "{{ zabbix_admin_login }}"
     login_password: "{{ zabbix_admin_password }}"
     host_name: "{{ inventory_hostname }}"
     visible_name: "{{ inventory_hostname }}"
-    host_groups:
-    - "{{ zabbix_group }}"
-    link_templates: "{{ zabbix_template_definitions | json_query('*.template') | unique }}"
+    host_groups: "{{ zabbix_group }}"
+    link_templates: "{{ zabbix_linked_templates }}"
     status: enabled
     state: present
     interfaces:
-      - type: 1
+      - type: agent
         main: 1
         useip: 1
         ip: "{{ zabbix_agent_addr | default(ansible_default_ipv4.address) }}"
         dns: ""
-        port: 10050
+        port: "10050"
     tls_connect: 2 # psk
     tls_accept: 2  # psk
     tls_psk_identity: "{{ inventory_hostname }}"

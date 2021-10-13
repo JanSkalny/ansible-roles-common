@@ -1,0 +1,6 @@
+jiskb:
+  template: "Template App SK-CERT JISKB"
+  sudoers: "zabbix-jiskb/zabbix.sudoers"
+  params: "zabbix-jiskb/jiskb.conf"
+  scripts:
+    - "zabbix-jiskb/zabbix_jiskb.sh"

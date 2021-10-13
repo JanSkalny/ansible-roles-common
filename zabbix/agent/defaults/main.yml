@@ -1,12 +1,15 @@
+zabbix_etc_group: {}
+
 zabbix_agent_version: 2
 zabbix_agent_name: "zabbix_agent2"
 zabbix_agent_service: "zabbix-agent2"
-
 zabbix_agent_port: 10050
 
 zabbix_server_addr: "127.0.0.1"
+
 zabbix_proxy_addr: "127.0.0.1"
 
+zabbix_template_definitions: {}
 zabbix_templates_dir: "../../templates/"
-
-zabbix_templates: {}
+zabbix_templates:
+  linux:

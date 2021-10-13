@@ -1,0 +1,25 @@
+- name: defaults
+  set_fact:
+    suricata_huge: {}
+    suricata_small: {}
+
+- name: suricata fix permissions
+  file:
+     path: "/var/lib/suricata/rules"
+     mode: "a+x"
+     state: "directory"
+  when: suricata is defined and 'suricata' in group_names
+
+- name: openvpn fix permissions
+  file:
+     path: "/var/run/openvpn/server.status"
+     group: "zabbix"
+     mode: "g+r"
+     state: "file"
+  when: openvpn is defined
+
+- name: docker fix group
+  user:
+    name: "zabbix"
+    group: "docker"
+  when: "'docker' in group_names"
