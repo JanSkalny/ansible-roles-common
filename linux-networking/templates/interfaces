@@ -47,7 +47,11 @@ iface lo inet loopback
 {% endif %}
 {% if 'routes' in iface %}
 {% for route in iface.routes %}
+{% if route.net is defined %}
 	up route add -net {{ route.net }} gw {{ route.via }} dev {{ iface_name }}
+{% elif route.host is defined %}
+	up route add -host {{ route.host }} gw {{ route.via }} dev {{ iface_name }}
+{% endif %}
 {% endfor %}
 {% endif %}
 {% if 'up' in iface %}

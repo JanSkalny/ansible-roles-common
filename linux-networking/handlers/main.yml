@@ -1,5 +1,6 @@
 - name: reboot host to apply networking changes
   reboot:
+    reboot_timeout: 900
   when: linux_networking_reboot
 
 - name: netplan apply
