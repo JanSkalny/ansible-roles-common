@@ -1,0 +1,2 @@
+apt:
+  params: "zabbix-apt/apt.conf"

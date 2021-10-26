@@ -23,3 +23,36 @@
     name: "zabbix"
     group: "docker"
   when: "'docker' in group_names"
+
+# old configs
+- name: Remove old config dir
+  file:
+    path: /etc/zabbix/zabbix_agent.d
+    state: absent
+
+# unused configs
+- name: Remove unused config dir
+  file:
+    path: /etc/zabbix/zabbix_agent2.d
+    state: absent
+  tags: never
+
+- name: Create config dir
+  file:
+    path: /etc/zabbix/zabbix_agent2.d
+    state: directory
+    owner: zabbix
+    group: zabbix
+    mode: 0775
+  tags: never
+
+# we are using some templates which needs this old configs
+- name: old configs to zabbix_agent2.d
+  copy:
+    src: "zabbix_agent2.d"
+    dest: /etc/zabbix
+    owner: zabbix
+    group: zabbix
+    mode: 0640
+    directory_mode: 0755
+  tags: never

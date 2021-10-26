@@ -1,0 +1,2 @@
+mysql:
+  template: "Template App MySQL"

@@ -2,6 +2,7 @@
   command: apt list --installed zabbix-release
   register: res
   check_mode: no
+  changed_when: False
   ignore_errors: True
 
 - debug: msg="installed zabbix-release version={{ res.stdout | regex_search(':[0-9].[0-9]') }} expected zabbix_version={{ zabbix_version }}"

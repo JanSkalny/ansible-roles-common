@@ -1,3 +1,17 @@
+# psk
+- block:
+  - name: generate PSK
+    shell: openssl rand -hex 48
+    register: psk
+    delegate_to: 127.0.0.1
+
+  - set_fact:
+      zabbix_agent_psk={{ psk.stdout }}
+
+  - debug: var=zabbix_agent_psk
+    run_once: true
+  when:  not (zabbix_agent_psk is defined and zabbix_agent_psk != {} )
+
 - debug: msg="ansible_distribution_release={{ ansible_distribution_release }}", verbosity=1
 
 #TODO: check for presence of zabbix-agent2 package
@@ -63,56 +77,14 @@
     group: zabbix
 
 - block:
-  - debug: msg="zabbix_template_definitions={{ zabbix_template_definitions }}", verbosity=1
   - debug: msg="zabbix_templates_dir={{ zabbix_templates_dir }}", verbosity=1
   - debug: msg="zabbix_templates={{ zabbix_templates }}", verbosity=1
-  - debug: msg="sudoers={{ zabbix_template_definitions | json_query(\"* | [?sudoers] .id\") }}", verbosity=1
-  - debug: msg="scripts={{ zabbix_template_definitions | json_query('* | [?scripts] .scripts') | flatten }}", verbosity=1
 
-  - name: enumerate zabbix templates - file must exist
-    include_vars:
-      name: zabbix_template_definitions
-      file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
+  - name: LOOP for templates
+    include_tasks: "template_loop.yml"
     with_items: "{{ zabbix_templates }}"
 
-  - name: deploy zabbix sudoers.d
-    copy:
-      src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].sudoers }}"
-      dest: "/etc/sudoers.d/zabbix-{{ item }}"
-      owner: "root"
-      mode: 0640
-    with_items: "{{ zabbix_templates }}"
-    when: zabbix_templates_definitions is defined and zabbix_templates_definitions != {}
-
-  - name: deploy zabbix cron.d
-    copy:
-      src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].crond }}"
-      dest: "/etc/crond.d/zabbix-{{ item }}"
-      owner: "root"
-      mode: 0640
-    with_items: "{{ zabbix_templates }}"
-    when: zabbix_templates_definitions is defined and zabbix_templates_definitions != {}
-
-  - name: deploy zabbix template parameters
-    copy:
-      src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].params }}"
-      dest: "/etc/zabbix/{{ zabbix_agent_name }}.d/{{ item }}.conf"
-      owner: "zabbix"
-      group: "zabbix"
-      mode: 0640
-    with_items: "{{ zabbix_templates }}"
-    when: zabbix_templates_definitions is defined and zabbix_templates_definitions != {}
-    notify: restart zabbix-agent
-
-  - name: deploy zabbix scripts
-    copy:
-      src: "{{ zabbix_templates_dir }}/{{ item }}"
-      dest: "/usr/local/bin/{{ item | basename }}"
-      owner: "root"
-      mode: 0755
-    with_items: "{{ ( zabbix_template_definitions | default({}) ) | json_query('* | [?scripts] .scripts') | flatten }}"
-
-  when: zabbix_agent_name is defined and zabbix_templates_dir is defined and zabbix_templates is defined and zabbix_agent_name != {} and zabbix_templates != {} and zabbix_templates_dir != {}
+  when: zabbix_templates_dir is defined and zabbix_templates is defined and zabbix_templates != {} and zabbix_templates_dir != {}
 
 - name: configure zabbix-agent
   template:
@@ -124,7 +96,7 @@
   tags: configure
   notify: restart zabbix-agent
 
-- name: generate zabbix_agentd.psk
+- name: save zabbix_agentd.psk
   template:
     src: "zabbix_agent.psk"
     dest: "/etc/zabbix/{{ zabbix_agent_name }}.psk"

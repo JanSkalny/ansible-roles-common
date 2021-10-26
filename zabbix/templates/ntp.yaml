@@ -1,0 +1,3 @@
+ntp:
+  template: "Template App NTP Service"
+
