@@ -31,7 +31,7 @@
   - name: deploy zabbix cron.d
     copy:
       src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definition[item].crond }}"
-      dest: "/etc/crond.d/zabbix-{{ item }}"
+      dest: "/etc/cron.d/zabbix-{{ item }}"
       owner: "root"
       mode: 0640
     when:  zabbix_template_definition[item].crond is defined and zabbix_template_definition[item].crond != {}

@@ -1,0 +1,1 @@
+* * * * * root [ -r /var/log/suricata/stats.log ] && tail -n 500 "/var/log/suricata/stats.log" | tac | awk '/---/ { exit } { print }' | tac | grep Total | tr -d ' ' > "/var/log/suricata/stats.last"

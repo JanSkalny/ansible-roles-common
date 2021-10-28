@@ -1,2 +1,2 @@
 mysql:
-  template: "Template App MySQL"
+  template: "Template DB MySQL by Zabbix agent 2"
