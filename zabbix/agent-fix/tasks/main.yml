@@ -18,13 +18,19 @@
      state: "directory"
   when: suricata is defined and 'suricata' in group_names
 
+- name: openvpn check status file presence
+  file:
+     path: "/var/run/openvpn/server.status"
+     state: "file"
+  register: openvpn_status_file
+
 - name: openvpn fix permissions
   file:
      path: "/var/run/openvpn/server.status"
      group: "zabbix"
      mode: "g+r"
      state: "file"
-  when: openvpn is defined
+  when: openvpn_status_file.state == 'file'
 
 - name: docker fix group
   user:
