@@ -44,7 +44,7 @@
 - name: "fancy .profile for user {{ item }}"
   copy: 
     src: dotprofile
-    dest: "/home/{{ item }}/.profile"
+    dest: "{{ '~' + item | expanduser }}/.profile"
     owner: "{{ item }}"
     group: "{{ item }}"
     mode: 0640
