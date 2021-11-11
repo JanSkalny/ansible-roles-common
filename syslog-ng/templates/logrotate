@@ -13,7 +13,7 @@
 /var/log/error
 /var/log/syslog
 {
-	rotate 14
+	rotate 60
 	daily
 	dateext
 	missingok

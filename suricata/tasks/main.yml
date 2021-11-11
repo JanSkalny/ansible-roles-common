@@ -54,6 +54,17 @@
   tags: configure
   notify: restart suricata
 
+- name: LOCAL RULE - empty file
+  file:
+    path: /etc/suricata/local.rules
+    mode: 0644
+    owner: root
+    group: root
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+  tags: always
+
 - name: configure suricata (threshold.config)
   template:
       src: threshold.config
