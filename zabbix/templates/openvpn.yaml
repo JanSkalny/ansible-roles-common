@@ -1,0 +1,3 @@
+openvpn:
+  template: "Template App OpenVPN 2.4.4"
+

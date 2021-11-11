@@ -22,6 +22,7 @@
   file:
      path: "/var/run/openvpn/server.status"
      state: "file"
+  failed_when: false
   register: openvpn_status_file
 
 - name: openvpn fix permissions
