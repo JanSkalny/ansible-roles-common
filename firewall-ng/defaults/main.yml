@@ -52,10 +52,9 @@ firewall6_interfaces: {}
 firewall_input: "{{ vars | select('match', '^firewall_input_') | map('extract', vars) | flatten }}"
 firewall_output: "{{ vars | select('match', '^firewall_output_') | map('extract', vars) | flatten }}"
 firewall_forward: "{{ vars | select('match', '^firewall_forward_') | map('extract', vars) | flatten }}"
-firewall_objects: "{{ {} | combine(vars | select('match', '^firewall_objects_') | map('extract', vars)) }}"
+firewall_objects: "{{ {} | combine(vars | select('match', '^firewall_objects_') | map('extract', vars) | list) }}"
 
 firewall6_input: "{{ vars | select('match', '^firewall6_input_') | map('extract', vars) | flatten }}"
 firewall6_output: "{{ vars | select('match', '^firewall6_output_') | map('extract', vars) | flatten }}"
 firewall6_forward: "{{ vars | select('match', '^firewall6_forward_') | map('extract', vars) | flatten }}"
-firewall6_objects: "{{ {} | combine(vars | select('match', '^firewall6_objects_') | map('extract', vars)) }}"
-
+firewall6_objects: "{{ {} | combine(vars | select('match', '^firewall6_objects_') | map('extract', vars) | list) }}"
