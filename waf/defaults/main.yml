@@ -3,6 +3,5 @@ waf_letsencrypt: true
 
 waf_vsf_rules:
   - dos.vcl
-  - request.vcl
   - paths.vcl
   - protocol.vcl
