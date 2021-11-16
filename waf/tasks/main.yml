@@ -3,8 +3,8 @@
   package:
     name:
     - apt-transport-https
-    - curl 
-    - gnupg 
+    - curl
+    - gnupg
     - git
   tags: install
 
@@ -23,14 +23,14 @@
   tags: install
 
 - name: install waf packages
-  package: 
-    name: 
-    - varnish-dev 
+  package:
+    name:
+    - varnish-dev
     - build-essential
-    - varnish 
+    - varnish
     - pkgconf
     - supervisor
-    - autoconf 
+    - autoconf
     - libtool
     - haproxy
     - python3-docutils
@@ -88,7 +88,7 @@
   copy:
     src: "varnish-override.conf"
     dest: "/etc/systemd/system/varnish.service.d/override.conf"
-  notify: 
+  notify:
   - reload systemctl
   - restart varnish
   tags: configure
@@ -102,11 +102,11 @@
   - default.vcl
   - letsencrypt.vcl
   tags: configure
-  
+
 #- name: list all local varnish rules
 #  connection: local
 #  become: no
-#  changed_when: false 
+#  changed_when: false
 #  check_mode: no
 #  command: "ls \"{{ role_path }}/files/rules/\""
 #  register: varnish_rules
@@ -140,24 +140,34 @@
 - name: run all handlers at this point. we will need it for letsencrypt
   meta: flush_handlers
 
+- name: stop varnish to release port tcp/80 for certbot
+  service:
+    name: varnish
+    state: stopped
+
 - name: generate letsencrypt certificates for each https enabled domain
   include_role:
-    name: common/letsencrypt/want 
+    name: common/letsencrypt/want
   vars:
     domain: "{{ item }}"
     aliases: "{{ waf_domains | selectattr('domain', '==', item) | selectattr('aliases', 'defined') | map(attribute='aliases') | list | join(' ') }}"
   with_items: "{{ waf_domains | selectattr('https', 'defined') | selectattr('https') | map(attribute='domain') | list }}"
   when: waf_letsencrypt == true
-  tags: 
+  tags:
   - configure
   - letsencrypt
+
+- name: start varnish
+  service:
+    name: varnish
+    state: started
 
 - name: configure haproxy
   template:
     src: haproxy.cfg
     dest: /etc/haproxy/haproxy.cfg
   tags: configure
-  notify: 
+  notify:
   - concat ssl
   - restart haproxy
 
@@ -177,14 +187,14 @@
   when: waf_letsencrypt == true
 
 - name: deploy varnish log parser
-  copy: 
+  copy:
     src: varnisher_speedy.py
     dest: /root/varnisher.py
     owner: root
     mode: 500
   notify: restart varnish
 
-- name: supervisor config 
+- name: supervisor config
   copy:
     src: supervisor.conf
     dest: "/etc/supervisor/conf.d/varnisher.conf"
