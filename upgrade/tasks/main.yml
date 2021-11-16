@@ -5,10 +5,12 @@
 - name: apt-get upgrade
   apt:
     upgrade: safe
+    autoremove: true
 
 - name: apt-get dist-upgrade
   apt:
     upgrade: dist
+    autoremove: true
   register: "upgrade_kernel"
 
 - meta: flush_handlers
