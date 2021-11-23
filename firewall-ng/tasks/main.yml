@@ -1,3 +1,25 @@
+- name: Save current state of the iptables to root HOME
+  shell: iptables-save > ~/iptables.v4-{{ '%Y-%m-%d-%H-%M-%S' | strftime(ansible_date_time.epoch) }}
+  become: yes
+
+- name: Save current state of the ip6tables to root HOME
+  shell: ip6tables-save > ~/iptables.v6-{{ '%Y-%m-%d-%H-%M-%S' | strftime(ansible_date_time.epoch) }}
+  become: yes
+
+- name: Save old fw.sh to root HOME
+  copy:
+    src: /etc/init.d/fw.sh
+    remote_src: true
+    dest: ~/fw-{{ '%Y-%m-%d-%H-%M-%S' | strftime(ansible_date_time.epoch) }}.sh
+    owner: root
+    group: root
+    mode: 0750
+    backup: yes
+    force: no
+  become: yes
+  failed_when: false # if file does not exist
+  when: firewall_template is defined and firewall_interfaces|length
+
 - name: generate fw.sh
   template: 
     src: "{{ firewall_template }}"
@@ -15,6 +37,5 @@
     owner: root
     group: root
     state: link
+  ignore_errors: "{{ ansible_check_mode }}" # errors not in checking mode
   when: firewall_template is defined and firewall_interfaces|length
-
-
