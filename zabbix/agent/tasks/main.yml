@@ -110,7 +110,7 @@
 - name: rotate zabbix logs
   copy:
     src: logrotate
-    dest: /etc/logrotate.d/zabbix-agent
+    dest: /etc/logrotate.d/{{ zabbix_agent_service }}
   tags: configure
 
 - name: enable zabbix-agent service

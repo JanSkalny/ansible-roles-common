@@ -1,7 +1,26 @@
+- name: save zabbix PSK
+  local_action:
+    module: lineinfile
+    line: "zabbix_agent_psk: \"{{  zabbix_agent_psk }}\""
+    path: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/zabbix.yml"
+
+- name: remove old logrotate for zabbix
+  file:
+    path: "/etc/logrotate.d/zabbix-agent"
+    state: absent
+
 - name: defaults
   set_fact:
     suricata_huge: {}
     suricata_small: {}
+
+- name: suricata fix permissions and group
+  file:
+     path: "/var/log/suricata"
+     group: zabbix
+     mode: "a+x"
+     state: "directory"
+  when: suricata is defined and 'suricata' in group_names
 
 - name: suricata fix permissions and group
   file:
