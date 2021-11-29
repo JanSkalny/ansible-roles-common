@@ -1,0 +1,8 @@
+- name: update suricata-update sources
+  shell: suricata-update update-sources
+  tags: suricata-update
+
+- name: run suricata-update
+  shell: suricata-update
+  tags: suricata-update
+  notify: restart suricata
