@@ -3,12 +3,16 @@
    path: /etc/apt/apt.conf.d
   register: st
 
-- name: set proxy for apt
+- name: set https proxy for apt
   lineinfile:
     path: /etc/apt/apt.conf.d/99proxy
     create: yes
     state: present
-    line: 'Acquire::http::Proxy "http://{{ proxy_host }}:{{ proxy_port }}";'
+    line: 'Acquire::{{ item }}::Proxy "http://{{ proxy_host }}:{{ proxy_port }}";'
+  with_items:
+   - http
+   - https
+   - ftp
   when: st.stat.exists
 
 - name: do we have wget?
