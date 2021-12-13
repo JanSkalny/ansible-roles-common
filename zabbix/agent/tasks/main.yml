@@ -7,6 +7,7 @@
 
   - set_fact:
       zabbix_agent_psk={{ psk.stdout }}
+    ignore_errors: "{{ ansible_check_mode }}"
 
   - debug: var=zabbix_agent_psk
     run_once: true
@@ -80,9 +81,10 @@
   - debug: msg="zabbix_templates_dir={{ zabbix_templates_dir }}", verbosity=1
   - debug: msg="zabbix_templates={{ zabbix_templates }}", verbosity=1
 
-  - name: LOOP for templates
+  - name: LOOP for ALL templates
     include_tasks: "template_loop.yml"
     with_items: "{{ zabbix_templates }}"
+    #with_items: "{{ vars | select('match', '^zabbix_templates') | map('extract', vars) | flatten }}"
 
   when: zabbix_templates_dir is defined and zabbix_templates is defined and zabbix_templates != {} and zabbix_templates_dir != {}
 

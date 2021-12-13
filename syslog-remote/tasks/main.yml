@@ -4,3 +4,11 @@
     dest: "/etc/syslog-ng/conf.d/remote.conf"
   tags: configure
   notify: restart syslog-ng
+  when: syslog_remote is defined and syslog_remote != {}
+
+- name: configure syslog-ng
+  file:
+    path: "/etc/syslog-ng/conf.d/remote.conf"
+    state: absent
+  notify: restart syslog-ng
+  when: syslog_remote is not defined or syslog_remote == {}
