@@ -5,13 +5,47 @@
     state: present
   tags: install
 
+- set_fact:
+    __elastic_jvmoptions: "./etc/elasticsearch/jvm.options"
+  tags: configure
+
+- name: retrieve elasticsearch deb package
+  command: "apt-get download elasticsearch"
+  args:
+    chdir: /tmp
+  tags: configure
+
+- name: extract jvm.options original file
+  shell: "dpkg-deb --fsys-tarfile elasticsearch_*.deb | tar -x {{ __elastic_jvmoptions }}"
+  args:
+    chdir: /tmp
+  tags: configure
+
+- name: ensure original jvm.options is present
+  copy:
+    remote_src: true
+    src: "/tmp/{{ __elastic_jvmoptions }}"
+    dest: "/etc/elasticsearch/jvm.options"
+  tags: configure
+
+- name: cleanup
+  file:
+    state: absent
+    path: "{{ item }}"
+  loop:
+    - "/tmp/elasticsearch*.deb"
+    - "/tmp/etc"
+  tags: configure
+
 - name: configure elastic
   template:
-    src: "{{ item }}"
-    dest: "/etc/elasticsearch/{{ item }}"
+    src: "{{ item.src }}"
+    dest: "/etc/elasticsearch/{{ item.dest }}"
   with_items:
-    - elasticsearch.yml
-    - jvm.options
+    - src: elasticsearch.yml
+      dest: elasticsearch.yml
+    - src: jvm.options
+      dest: jvm.options.d/jvm.options
   notify: restart elasticsearch
   tags: configure
 
