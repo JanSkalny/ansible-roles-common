@@ -10,9 +10,6 @@ HostKey /etc/ssh/ssh_host_ed25519_key
 
 UsePrivilegeSeparation yes
 
-KeyRegenerationInterval 3600
-ServerKeyBits 1024
-
 SyslogFacility AUTH
 LogLevel INFO
 
@@ -20,11 +17,9 @@ LoginGraceTime 60
 StrictModes yes
 
 IgnoreRhosts yes
-RhostsRSAAuthentication no
 HostbasedAuthentication no
 ChallengeResponseAuthentication no
 PasswordAuthentication no
-RSAAuthentication no
 KerberosAuthentication no
 GSSAPIAuthentication no
 PermitEmptyPasswords no
@@ -50,4 +45,3 @@ Banner /etc/issue.net
 AcceptEnv LANG LC_*
 
 Subsystem sftp /usr/lib/openssh/sftp-server
-
