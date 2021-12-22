@@ -10,6 +10,9 @@
   ignore_errors: true
 
 - block:
+  - name: "Registrujem template item"
+    debug: var=item
+
   - set_fact:
       zabbix_template_definitions: "{{ zabbix_template_definitions | combine(zabbix_template_definition) }}"
 
