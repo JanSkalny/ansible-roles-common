@@ -24,6 +24,26 @@
   tags: configure
   when: "ansible_distribution_release == 'xenial' or ansible_distribution_release == 'trusty'"
 
+- block:
+    - name: remove older zabbix-agent
+      package:
+        name:
+        - "zabbix-agent"
+        state: absent
+    - file:
+        path: "/etc/zabbix/zabbix_agentd.conf"
+        state: absent
+    - file:
+        path: "/etc/zabbix/zabbix_agentd.conf.dpkg-dist"
+        state: absent
+    - file:
+        path: "/etc/zabbix/zabbix_agentd.d"
+        state: absent
+    - file:
+        path: "/etc/zabbix/zabbix_agentd.psk"
+        state: absent
+  when: "not ( ansible_distribution_release == 'xenial' or ansible_distribution_release == 'trusty' )"
+
 - name: install SW dependencies and tools
   package:
     name: 
