@@ -106,7 +106,7 @@
     #with_items: "{{ zabbix_templates }}"
     with_items: "{{ zabbix_merged_templates }}"
     vars:
-      zabbix_add_templates: "{{ vars | select('match', '^zabbix_templates_add_[a-z]*$') | map('extract', vars) | first | flatten }}"
+      zabbix_add_templates: "{{ vars | select('match', '^zabbix_templates_add_[a-z]*$') | map('extract', vars) | combine | flatten }}"
       zabbix_conv_templates: "{{ zabbix_templates | list }}"
       zabbix_merged_templates: "{{ zabbix_conv_templates }} + {{ zabbix_add_templates }}"
 
