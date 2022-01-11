@@ -48,11 +48,11 @@ resource {{drbd_res_name}} {
   }
 
   on {{drbd_peers[0].name}} {
-    disk /dev/{{drbd_vg}}/{{drbd_res_name}};
+    disk /dev/{{drbd_peers[0].default_vg | default(drbd_vg)}}/{{drbd_res_name}};
     address {{drbd_peers[0].address}}:{{drbd_base_port+drbd_res_id|int}};
   }
   on {{drbd_peers[1].name}} {
-    disk /dev/{{drbd_vg}}/{{drbd_res_name}};
+    disk /dev/{{drbd_peers[1].default_vg | default(drbd_vg)}}/{{drbd_res_name}};
     address {{drbd_peers[1].address}}:{{drbd_base_port+drbd_res_id|int}};
   }
 }
