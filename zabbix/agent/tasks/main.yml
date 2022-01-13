@@ -1,6 +1,7 @@
 # psk
 - block:
   - name: generate PSK
+    become: false
     shell: openssl rand -hex 48
     register: psk
     delegate_to: 127.0.0.1
@@ -46,7 +47,7 @@
 
 - name: install SW dependencies and tools
   package:
-    name: 
+    name:
     - logtail
     - logrotate
     - sudo
