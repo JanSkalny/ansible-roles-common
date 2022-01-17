@@ -1,3 +1,9 @@
+- name: remove invalid users
+  user:
+    name: "{{ item }}"
+    state: absent
+  with_items : "{{ users_remove }}"
+
 - name: create user
   user:
     name: "{{ item }}"
