@@ -1,8 +1,6 @@
 - debug: msg="openvpn_client_remotes={{ openvpn_client_remotes }}"
 - debug: msg="soc_vpn_servers={{ soc_vpn_servers }}"
 
-
-# 'remotes': ['c1.tech.sk-cert.sk 1194 udp  #vpn-sensor-1']
 - name: "Ensure /etc/hosts contains server name from item.remote"
   register: result
   command: "grep '.*{{ item.remotes | first | split(' ') | first }}.*' /etc/hosts"
@@ -33,4 +31,3 @@
     dest: "/etc/openvpn/{{ openvpn_instance }}.conf"
   tags: configure
   notify: restart openvpn
-
