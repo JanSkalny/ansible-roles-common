@@ -4,6 +4,7 @@
     line: "zabbix_agent_psk: \"{{  zabbix_agent_psk }}\""
     path: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/zabbix.yml"
     create: yes
+  notify: restart zabbix-agent
   become: no
 
 - name: remove old logrotate for zabbix
@@ -51,6 +52,7 @@
     name: "zabbix"
     group: "zabbix"
     groups: "docker"
+  notify: restart zabbix-agent
   #when: "'docker' in group_names"
   when: inventory_hostname in groups.docker
 
@@ -77,6 +79,7 @@
   tags: never
 
 # we are using some templates which needs this old configs
+# not any more
 - name: old configs to zabbix_agent2.d
   copy:
     src: "zabbix_agent2.d"
