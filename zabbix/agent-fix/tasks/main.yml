@@ -2,6 +2,7 @@
   local_action:
     module: lineinfile
     line: "zabbix_agent_psk: \"{{  zabbix_agent_psk }}\""
+    regexp: '^zabbix_agent_psk: '
     path: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/zabbix.yml"
     create: yes
   notify: restart zabbix-agent

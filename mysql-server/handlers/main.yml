@@ -2,3 +2,4 @@
   service:
     name: mysql
     state: restarted
+  when: not ansible_check_mode

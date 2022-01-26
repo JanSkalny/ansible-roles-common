@@ -2,3 +2,4 @@
   systemd:
     name: zabbix-proxy
     state: restarted
+  when: not ansible_check_mode
