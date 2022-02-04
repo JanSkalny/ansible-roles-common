@@ -1,0 +1,12 @@
+---
+proxy_host: "proxy"
+proxy_port: "3128"
+proxy_env:
+  HTTP_PROXY:   "http://{{proxy_host}}:{{proxy_port}}"
+  HTTPS_PROXY:  "http://{{proxy_host}}:{{proxy_port}}"
+  FTP_PROXY:    "http://{{proxy_host}}:{{proxy_port}}"
+  NO_PROXY:     "localhost,127.0.0.1"
+  http_proxy:   "http://{{proxy_host}}:{{proxy_port}}"
+  https_proxy:  "http://{{proxy_host}}:{{proxy_port}}"
+  ftp_proxy:    "http://{{proxy_host}}:{{proxy_port}}"
+  no_proxy:     "localhost,127.0.0.1"
