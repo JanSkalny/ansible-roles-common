@@ -64,15 +64,15 @@ iface lo inet loopback
 
 
 {% set ordered_networking = networking.copy() %}
-{% for iface in networking %}
-{% if iface.startswith('bond') %}
-{% set x=ordered_networking[iface].update({'order': 10})  %}
-{% elif iface.startswith('vlan') %}
-{% set x=ordered_networking[iface].update({'order': 20})  %}
-{% elif iface.startswith('brVlan') %}
-{% set x=ordered_networking[iface].update({'order': 30})  %}
-{% else %}
-{% set x=ordered_networking[iface].update({'order': 100})  %}
+{% for iface_name,item in networking.items() %}
+{% if iface_name.startswith('bond') and 'order' not in item %}
+{% set x=ordered_networking[iface_name].update({'order': 10})  %}
+{% elif iface_name.startswith('vlan') and 'order' not in item %}
+{% set x=ordered_networking[iface_name].update({'order': 20})  %}
+{% elif iface_name.startswith('brVlan') and 'order' not in item %}
+{% set x=ordered_networking[iface_name].update({'order': 30})  %}
+{% elif 'order' not in item %}
+{% set x=ordered_networking[iface_name].update({'order': 100})  %}
 {% endif %}
 {% endfor %}
 
