@@ -26,7 +26,7 @@
    path: /etc/wgetrc
    create: yes
    state: present
-   regexp: "^{{ item.key }}\s*=.*$"
+   regexp: "^{{ item.key }} *=.*$"
    line: '{{ item.key }} = {{ item.value }}'
    insertbefore: '^.?use_proxy'
   with_items:
