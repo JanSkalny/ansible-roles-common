@@ -8,6 +8,7 @@
     path: /etc/apt/apt.conf.d/99proxy
     create: yes
     state: present
+    regexp: "^Acquire::{{ item }}::Proxy.*$"
     line: 'Acquire::{{ item }}::Proxy "http://{{ proxy_host }}:{{ proxy_port }}";'
   with_items:
    - http
@@ -25,7 +26,8 @@
    path: /etc/wgetrc
    create: yes
    state: present
-   line: '{{ item.key }}="{{ item.value }}"'
+   regexp: "^{{ item.key }}\s*=.*$"
+   line: '{{ item.key }} = {{ item.value }}'
    insertbefore: '^.?use_proxy'
   with_items:
    - { "key": "http_proxy", "value": "{{ proxy_env.http_proxy | default() }}" }
@@ -56,6 +58,7 @@
 - name: set proxy for the shell
   lineinfile:
    path: /etc/environment
+   regexp: "^{{ item.key }}=.*$"
    line: '{{ item.key }}="{{ item.value }}"'
   with_items:
    - { "key": "http_proxy", "value": "{{ proxy_env.http_proxy | default() }}" }
