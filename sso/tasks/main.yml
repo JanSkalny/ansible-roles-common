@@ -120,23 +120,14 @@
     "{{ ldap_users_remove }}"
   tags: configure
 
-- name: refresh user names
-  ldap_attr:
+- name: refresh user names and passwords
+  ldap_attrs:
     dn: 'uid={{ item.login }},ou=users,{{ ldap_base_dn }}'
-    name: description
-    values: "{{ item.name }}"
-    state: exact
-    bind_dn: "{{ ldap_root_dn }}"
-    bind_pw: "{{ ldap_root_pw }}"
-  with_items:
-   "{{ ldap_users }}"
-  tags: configure
-
-- name: refresh user passwords
-  ldap_attr:
-    dn: 'uid={{ item.login }},ou=users,{{ ldap_base_dn }}'
-    name: userPassword
-    values: "{{ item.password }}"
+    attributes:
+      description:
+        - "{{ item.name }}"
+      userPassword:
+        - "{{ item.password }}"
     state: exact
     bind_dn: "{{ ldap_root_dn }}"
     bind_pw: "{{ ldap_root_pw }}"
