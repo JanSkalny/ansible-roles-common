@@ -3,8 +3,13 @@ cluster:
 {% if elastic.version == 6 %}
   remote.connect: {{ elastic.node_remote_cluster }}
 {% endif %}
-{% if elastic.version >= 7 %}
+{% if elastic.version >= 7 and elastic.node_master %}
   initial_master_nodes: {{ elastic.master_nodes | to_json }}
+{% endif %}
+{% if elastic_custom_cluster_settings is defined and elastic_custom_cluster_settings %}
+{% for key, value in elastic_custom_cluster_settings.items() %}
+  {{ key }}: {{ value }}
+{% endfor %}
 {% endif %}
 
 node:
@@ -30,4 +35,3 @@ bootstrap.memory_lock: true
 
 network.host: "{{ elastic.bind }}"
 http.port: "{{ elastic.port }}"
-

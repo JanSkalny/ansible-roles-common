@@ -5,37 +5,48 @@
     state: present
   tags: install
 
-- set_fact:
-    __elastic_jvmoptions: "./etc/elasticsearch/jvm.options"
-  tags: configure
+- name: configure jvm.options from pacakge source
+  block:
+    - set_fact:
+        __elastic_jvmoptions: "./etc/elasticsearch/jvm.options"
+      tags: configure
 
-- name: retrieve elasticsearch deb package
-  command: "apt-get download elasticsearch"
-  args:
-    chdir: /tmp
-  tags: configure
+    - name: retrieve elasticsearch deb package
+      check_mode: false
+      command: "apt-get download elasticsearch"
+      args:
+        chdir: /tmp
+      tags: configure
 
-- name: extract jvm.options original file
-  shell: "dpkg-deb --fsys-tarfile elasticsearch_*.deb | tar -x {{ __elastic_jvmoptions }}"
-  args:
-    chdir: /tmp
-  tags: configure
+    - name: extract jvm.options original file
+      check_mode: false
+      shell: "dpkg-deb --fsys-tarfile elasticsearch_*.deb | tar -x {{ __elastic_jvmoptions }}"
+      args:
+        chdir: /tmp
+      tags: configure
 
-- name: ensure original jvm.options is present
-  copy:
-    remote_src: true
-    src: "/tmp/{{ __elastic_jvmoptions }}"
-    dest: "/etc/elasticsearch/jvm.options"
-  tags: configure
+    - name: backup current jvm.options config
+      copy:
+        remote_src: true
+        src: /etc/elasticsearch/jvm.options
+        dest: /etc/elasticsearch/jvm.options.bak.ansible
+      tags: configure
 
-- name: cleanup
-  file:
-    state: absent
-    path: "{{ item }}"
-  loop:
-    - "/tmp/elasticsearch*.deb"
-    - "/tmp/etc"
-  tags: configure
+    - name: ensure original jvm.options is present
+      copy:
+        remote_src: true
+        src: "/tmp/{{ __elastic_jvmoptions }}"
+        dest: "/etc/elasticsearch/jvm.options"
+      tags: configure
+
+    - name: cleanup
+      file:
+        state: absent
+        path: "{{ item }}"
+      loop:
+        - "/tmp/elasticsearch*.deb"
+        - "/tmp/etc"
+      tags: configure
 
 - name: configure elastic
   template:
@@ -102,6 +113,9 @@
     - reload systemctl
     - restart elasticsearch
   tags: configure
+
+- name: flush handlers
+  meta: flush_handlers
 
 #- name: change mem limits MAX_LOCKED_MEMORY=unlimited and LimitMEMLOCK=infinity
 
