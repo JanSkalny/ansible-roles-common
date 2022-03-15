@@ -2,3 +2,8 @@
   service: 
     name: "{{ ntp_service }}" 
     state: restarted
+
+- name: restart chrony
+  service:
+    name: "chrony"
+    state: restarted

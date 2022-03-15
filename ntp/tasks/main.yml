@@ -1,62 +1,132 @@
-- name: install ntp
-  package:
-    name: "{{item}}"
-    state: present
-  with_items:
-  - ntp
-  - ntpdate
-  tags: install
+- name: Install NTP
+  block:
+  - debug: var=ntp_servers
 
-- name: check time difference
-  shell: "ntpdate -q {{ ntp_servers[0] | quote}} | tail -n1 | sed 's/.* offset \\(.*\\) sec/\\1/'"
-  ignore_errors: true
-  check_mode: no
-  register: ntpdate_offset
-  tags:
-  - ntpdate
-  - configure
+  - name: install ntp
+    package:
+      name: "{{item}}"
+      state: present
+    with_items:
+    - ntp
+    - ntpdate
+    tags: install
 
-- name: stop ntp
-  service:
-    name: "{{ ntp_service }}"
-    state: stopped
-  when: ntpdate_offset.stdout | int > 10
-  notify: restart ntp
-  tags:
-  - ntpdate
-  - configure
+  - name: check time difference
+    shell: "ntpdate -q {{ ntp_servers[0] | quote}} | tail -n1 | sed 's/.* offset \\(.*\\) sec/\\1/'"
+    ignore_errors: true
+    check_mode: no
+    register: ntpdate_offset
+    tags:
+    - ntpdate
+    - configure
 
-- name: syncronize time
-  command: ntpdate {{ ntp_servers[0] | quote }}
-  ignore_errors: true
-  when: ntpdate_offset.stdout | int > 10
-  tags:
-  - ntpdate
-  - configure
+  - name: stop ntp
+    service:
+      name: "{{ ntp_service }}"
+      state: stopped
+    when: ntpdate_offset.stdout | int > 10
+    notify: restart ntp
+    tags:
+    - ntpdate
+    - configure
+
+  - name: syncronize time
+    command: ntpdate {{ ntp_servers[0] | quote }}
+    ignore_errors: true
+    when: ntpdate_offset.stdout | int > 10
+    tags:
+    - ntpdate
+    - configure
 
 
-- name: syncronize time
-  command: ntpdate {{ ntp_servers[0] | quote }}
-  ignore_errors: true
-  when: ntpdate_offset.stdout | int > 10
-  tags:
-  - configure
+  - name: syncronize time
+    command: ntpdate {{ ntp_servers[0] | quote }}
+    ignore_errors: true
+    when: ntpdate_offset.stdout | int > 10
+    tags:
+    - configure
 
-#TODO: centos/redhat
-- name: configure ntp
-  template:
-    src: "ntp.conf"
-    dest: "/etc/ntp.conf"
-    owner: root
-    mode: 0640
-  tags: configure
-  notify: restart ntp
+  #TODO: centos/redhat
+  - name: configure ntp
+    template:
+      src: "{{ ntp_template | default('ntp.conf') }}"
+      dest: "/etc/ntp.conf"
+      owner: root
+      mode: 0640
+    tags: configure
+    notify: restart ntp
 
-#TODO: bionic?
-- name: remove ntpdate if-up script (blocks ntp on startup)
-  file:
-    path: "/etc/network/if-up.d/ntpdate"
-    state: absent
-  tags: configure
-  notify: restart ntp
+  #TODO: bionic?
+  - name: remove ntpdate if-up script (blocks ntp on startup)
+    file:
+      path: "/etc/network/if-up.d/ntpdate"
+      state: absent
+    tags: configure
+    notify: restart ntp
+  when: ntp_servers is defined and ntp_servers|length
 
+- name: Uninstall NTP
+  block:
+  - name: uninstall ntp
+    package:
+      name: "{{item}}"
+      state: absent
+    with_items:
+    - ntp
+    - ntpdate
+    tags: install
+
+  - name: disable timesyncd
+    systemd:
+      name: "{{item}}"
+      enabled: no
+      state: stopped
+    with_items:
+    - systemd-timesyncd
+    tags: install
+  when: host_type is defined and 'virtual' in host_type
+  #ntp_servers is not defined or not ntp_servers|length
+
+- name: Debug
+  block:
+  - debug:
+   - var=ntp_servers verbosity=2
+   - var=host_type verbosity=2
+   - var=ansible_kernel verbosity=1
+   - var=hostvars[inventory_hostname].ansible_distribution_version verbosity=1
+
+- name: Install CHRONY
+  block:
+  - name: install chrony
+    package:
+      name: "{{item}}"
+      state: present
+    with_items:
+    - chrony
+    - linux-generic # ptp kernel module
+    tags: install
+
+  - name: configure ptp
+    template:
+      src: "ptp_kvm.conf"
+      dest: "/etc/modules-load.d/ptp_kvm.conf"
+      owner: root
+      mode: 0640
+    tags: configure
+    register: output
+
+  - name: reboot host
+    reboot:
+      reboot_timeout: 300
+    when: output is defined and output.changed
+
+  - name: configure chrony
+    template:
+      src: "{{ chrony_template | default('chrony.conf') }}"
+      dest: "/etc/chrony/chrony.conf"
+      owner: root
+      mode: 0640
+    tags: configure
+    notify: restart chrony
+  # this is working from kernel 4.5, Ubuntu 18
+  when: "host_type is defined and 'virtual' in host_type and hostvars[inventory_hostname].ansible_distribution_version is version('18.0', operator='ge', strict=True) "
