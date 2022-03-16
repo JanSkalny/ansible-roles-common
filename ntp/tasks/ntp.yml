@@ -1,0 +1,78 @@
+- block:
+  - name: uninstall chrony
+    package:
+      name: "{{item}}"
+      state: absent
+    with_items:
+    - chrony
+    tags: install
+
+  - name: disable timesyncd
+    systemd:
+      name: "{{item}}"
+      enabled: no
+      state: stopped
+    with_items:
+    - systemd-timesyncd
+    tags: install
+
+  - name: install ntp
+    package:
+      name: "{{item}}"
+      state: present
+    with_items:
+    - ntp
+    - ntpdate
+    tags: install
+
+  - name: check time difference
+    shell: "ntpdate -q {{ ntp_servers[0] | quote}} | tail -n1 | sed 's/.* offset \\(.*\\) sec/\\1/'"
+    ignore_errors: true
+    check_mode: no
+    register: ntpdate_offset
+    tags:
+    - ntpdate
+    - configure
+
+  - name: stop ntp
+    service:
+      name: "{{ ntp_service }}"
+      state: stopped
+    when: ntpdate_offset.stdout | int > 10
+    notify: restart ntp
+    tags:
+    - ntpdate
+    - configure
+
+  - name: syncronize time
+    command: ntpdate {{ ntp_servers[0] | quote }}
+    ignore_errors: true
+    when: ntpdate_offset.stdout | int > 10
+    tags:
+    - ntpdate
+    - configure
+
+  - name: syncronize time
+    command: ntpdate {{ ntp_servers[0] | quote }}
+    ignore_errors: true
+    when: ntpdate_offset.stdout | int > 10
+    tags:
+    - configure
+
+  #TODO: centos/redhat
+  - name: configure ntp
+    template:
+      src: "{{ ntp_template | default('ntp.conf') }}"
+      dest: "/etc/ntp.conf"
+      owner: root
+      mode: 0640
+    tags: configure
+    notify: restart ntp
+
+  #TODO: bionic?
+  - name: remove ntpdate if-up script (blocks ntp on startup)
+    file:
+      path: "/etc/network/if-up.d/ntpdate"
+      state: absent
+    tags: configure
+    notify: restart ntp
