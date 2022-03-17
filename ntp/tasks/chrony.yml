@@ -54,5 +54,5 @@
       owner: root
       mode: 0640
     tags: configure
-    notify: restart chrony
+    notify: restart ntp
   when: "hostvars[inventory_hostname].ansible_distribution_version is version('18.0', operator='ge', strict=True)"
