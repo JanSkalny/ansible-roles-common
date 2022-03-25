@@ -65,6 +65,19 @@
       olcModulePath: /usr/lib/ldap
   tags: install
 
+- name: enable slapd tls and logging
+  ldap_attrs:
+    dn: 'cn=config'
+    attributes:
+      olcTLSCertificateFile: "/etc/ldap/certs/server.crt"
+      olcTLSCertificateKeyFile: "/etc/ldap/certs/server.key"
+      olcTLSCACertificateFile: "/etc/ldap/certs/ca.crt"
+      olcTLSCipherSuite: 'SECURE:-VERS-ALL:+VERS-TLS1.3'
+      olcTLSVerifyClient: 'try'
+      olcLogLevel: 'stats'
+    state: exact
+  tags: install
+
 - name: create technical and user sub-trees
   ldap_entry:
    dn: '{{ item }}'
@@ -147,6 +160,18 @@
   with_items: "{{ ldap_groups }}"
   tags: configure
 
+- name: configure ldap.conf
+  template:
+    src: "ldap/{{ item.src }}"
+    dest: "{{ item.dst }}"
+  with_items:
+    - src: ldap.conf
+      dst: /etc/ldap/ldap.conf
+    - src: default
+      dst: /etc/default/slapd
+  tags: configure
+  notify: restart slapd
+
 #XXX: not required?
 #- name: add users to groups
 #  ldap_attr:
@@ -156,19 +181,6 @@
 #    bind_dn: "{{ ldap_root_dn }}"
 #    bind_pw: "{{ ldap_root_pw }}"
 #  with_items: "{{ ldap_groups }}"
-
-
-#- name: deploy ldap templates
-#  template:
-#    src: "{{ item }}"
-#    dest: "/etc/ldap/{{ item }}"
-#  with_items:
-#    - ldap.conf
-#    - slapd.conf
-#  tags: configure
-#  notify: restart slapd
-#
-
 
 - name: configure freeradius
   template:
