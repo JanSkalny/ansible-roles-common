@@ -11,3 +11,8 @@
   systemd:
     name: pacemaker
     state: restarted
+
+- name: reload corosync
+  shell: >
+    corosync-cfgtool  -R
+
