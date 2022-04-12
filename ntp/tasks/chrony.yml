@@ -15,8 +15,10 @@
       name: "{{item}}"
       enabled: no
       state: stopped
+      no_block: yes
     with_items:
     - systemd-timesyncd
+    failed_when: false
     tags: install
 
   - name: install chrony
