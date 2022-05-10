@@ -26,7 +26,7 @@ iface lo inet loopback
 {% if 'bond_slaves' in iface %}
 	bond-slaves none
 	bond-mode 802.3ad
-	bond-xmit-hash-policy layer2+3
+	bond-xmit-hash-policy {{ iface.bond_hash_policy | default('layer2+3') }}
 	bond-miimon 100
 	bond-lacp-rate 1
 {% endif %}
@@ -49,6 +49,9 @@ iface lo inet loopback
 {% for route in iface.routes %}
 	up route add -net {{ route.net }} gw {{ route.via }} dev {{ iface_name }}
 {% endfor %}
+{% endif %}
+{% if 'preup' in iface %}
+	pre-up {{ iface.preup }}
 {% endif %}
 {% if 'up' in iface %}
 	up {{ iface.up }}
