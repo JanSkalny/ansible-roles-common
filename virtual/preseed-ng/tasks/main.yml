@@ -19,12 +19,17 @@
   ignore_errors: yes
   register: virtual_existing_vm
 
-#- debug:
-#    msg: "virtual_preseed_lock={{ virtual_preseed_lock }}"
-#- debug:
-#    msg: "virtual_existing_conf={{ virtual_existing_conf }}"
-#- debug:
-#    msg: "virtual_existing_vm={{ virtual_existing_vm }}"
+- debug:
+    msg: "[LOCK FAIL] virtual_preseed_lock={{ virtual_preseed_lock }}"
+  when: "virtual_preseed_lock.rc|default(0) != 0"
+
+- debug:
+    msg: "[CONF ALREADY EXISTS] virtual_existing_conf={{ virtual_existing_conf }}"
+  when: "virtual_existing_conf.stat.exists == True"
+
+- debug:
+    msg: "[VM ALREADY EXISTS] virtual_existing_vm={{ virtual_existing_vm }}"
+  when: "'status' in virtual_existing_vm"
 
 - name: "run only when we got exclusive lock and no conf file is present"
   meta: end_host
