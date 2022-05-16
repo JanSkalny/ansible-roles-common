@@ -13,3 +13,5 @@ multipath_devices:
     failback immediate
     no_path_retry fail
 
+# additional blacklisting
+multipath_blacklist: ""
