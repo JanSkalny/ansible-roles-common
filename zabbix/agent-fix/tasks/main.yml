@@ -24,14 +24,14 @@
      group: zabbix
      mode: "a+x"
      state: "directory"
-  when: suricata is defined and 'suricata' in group_names
+  when: '"suricata" in group_names'
 
 - name: suricata fix permissions
   file:
      path: "/var/lib/suricata/rules"
      mode: "a+x"
      state: "directory"
-  when: suricata is defined and 'suricata' in group_names
+  when: '"suricata" in group_names'
 
 - name: openvpn check status file presence
   file:
