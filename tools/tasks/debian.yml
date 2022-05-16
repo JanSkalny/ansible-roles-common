@@ -1,4 +1,8 @@
-- name: install usefull tools
+- name: refresh the list of packages
+  apt:
+    update_cache: true
+
+- name: install useful tools
   package: 
     name:
     - vim
