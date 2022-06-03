@@ -1,0 +1,38 @@
+- package: 
+    name: 
+      - arpwatch
+      - tcpdump
+      - rsync
+    state: present
+
+- name: configure arpwatch
+  copy:
+    dest: '/etc/arpwatch/{{ hole_interface }}.iface'
+    content: |
+      IFACE_ARGS="-Q"
+
+- name: enable arpwatch
+  service:
+    name: "arpwatch@{{ hole_interface }}"
+    enabled: true
+    state: started
+
+- name: create directory structure
+  file:
+    path: "{{ hole_dir }}/data/"
+    owner: tcpdump
+    group: tcpdump
+    state: directory
+
+- name: deploy capture.sh
+  template:
+    src: 'capture.sh'
+    dest: '{{ hole_dir }}/capture.sh'
+    mode: 0755
+
+- name: deploy supervisor config
+  template:
+    src: "supervisor.conf"
+    dest: "{{ supervisor_conf_d }}/hole{{ supervisor_conf_suffix }}"
+    # <3 supervisor :)
+  notify: restart supervisor

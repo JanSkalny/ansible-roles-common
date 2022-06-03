@@ -1,0 +1,3 @@
+hole_interface: "eth0"
+hole_name: "{{ inventory_hostname }}"
+hole_dir: "/opt/hole"
