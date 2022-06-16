@@ -1,0 +1,13 @@
+- name: install filebeat
+  package:
+    name: filebeat
+  notify: restart filebeat
+  tags: install
+
+- name: enable filebeat service
+  systemd:
+    name: filebeat
+    enabled: yes
+    state: started
+  tags: install
+
