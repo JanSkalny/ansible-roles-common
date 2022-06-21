@@ -95,7 +95,7 @@ IT6="{{ firewall6_iptables }}"
 
 # load additional modules
 for M in ip_conntrack ip_conntrack_ftp; do
-  modprobe ip_conntrack 2>/dev/null
+  modprobe $M 2>/dev/null
 done
 
 echo {{ firewall_ip_forward | default(0) | int }} > /proc/sys/net/ipv4/ip_forward
