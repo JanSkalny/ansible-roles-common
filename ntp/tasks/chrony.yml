@@ -1,23 +1,25 @@
+---
+
 - block:
   - name: uninstall ntp
     package:
       name: "{{item}}"
       state: absent
-      autoremove: yes
+      autoremove: true
     with_items:
-    - ntp
-    - ntpdate
-    - linux-generic # toto treba po 1 kole instalacii vymazat
+      - ntp
+      - ntpdate
+      - linux-generic  # toto treba po 1 kole instalacii vymazat
     tags: install
 
   - name: disable timesyncd
     systemd:
       name: "{{item}}"
-      enabled: no
+      enabled: false
       state: stopped
-      no_block: yes
+      no_block: true
     with_items:
-    - systemd-timesyncd
+      - systemd-timesyncd
     failed_when: false
     tags: install
 
@@ -26,8 +28,8 @@
       name: "{{item}}"
       state: present
     with_items:
-    - chrony
-    - linux-modules-extra-{{ ansible_kernel }}
+      - chrony
+      - linux-modules-extra-{{ ansible_kernel }}
     tags: install
 
   - name: Configure ptp_kvm module to be loaded
@@ -43,6 +45,7 @@
     modprobe:
       name: ptp_kvm
       state: present
+    notify: restart ntp
 
 #  - name: reboot host
 #    reboot:

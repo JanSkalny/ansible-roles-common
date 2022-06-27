@@ -1,7 +1,4 @@
-- debug: var=ntp_servers verbosity=2
-- debug: var=host_type verbosity=2
-- debug: var=ansible_kernel verbosity=1
-- debug: var=hostvars[inventory_hostname].ansible_distribution_version verbosity=1
+---
 
 - import_tasks: ntp.yml
   when: ntp_servers is defined and 'ntp' in ntp_service
