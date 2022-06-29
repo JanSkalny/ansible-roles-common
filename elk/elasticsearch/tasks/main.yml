@@ -1,5 +1,14 @@
 ---
-- name: install elasticsearch
+
+- name: install elasticsearch on Debian
+  when: ansible_os_family == 'Debian'
+  package:
+    name: "elasticsearch={{ elastic_version }}"
+    state: present
+  tags: install
+
+- name: install elasticsearch on other distro
+  when: ansible_os_family != 'Debian'
   package:
     name: elasticsearch
     state: present
@@ -11,41 +20,47 @@
         __elastic_jvmoptions: "./etc/elasticsearch/jvm.options"
       tags: configure
 
+    - name: fetch elasticsearch current version
+      package_facts:
+
+    - name: create temp dir
+      check_mode: false
+      file:
+        path: /tmp/elastic_pkg
+        state: directory
+
     - name: retrieve elasticsearch deb package
       check_mode: false
-      command: "apt-get download elasticsearch"
+      command: "apt-get download elasticsearch={{ ansible_facts.packages['elasticsearch'][0].version }}"
       args:
-        chdir: /tmp
+        chdir: /tmp/elastic_pkg
       tags: configure
 
     - name: extract jvm.options original file
       check_mode: false
       shell: "dpkg-deb --fsys-tarfile elasticsearch_*.deb | tar -x {{ __elastic_jvmoptions }}"
       args:
-        chdir: /tmp
+        chdir: /tmp/elastic_pkg
       tags: configure
 
     - name: backup current jvm.options config
       copy:
         remote_src: true
         src: /etc/elasticsearch/jvm.options
-        dest: /etc/elasticsearch/jvm.options.bak.ansible
+        dest: "/etc/elasticsearch/jvm.options.{{ ansible_date_time.epoch }}.{{ ansible_facts.packages['elasticsearch'][0].version }}.bak"
       tags: configure
 
     - name: ensure original jvm.options is present
       copy:
         remote_src: true
-        src: "/tmp/{{ __elastic_jvmoptions }}"
+        src: "/tmp/elastic_pkg/{{ __elastic_jvmoptions }}"
         dest: "/etc/elasticsearch/jvm.options"
       tags: configure
 
     - name: cleanup
       file:
         state: absent
-        path: "{{ item }}"
-      loop:
-        - "/tmp/elasticsearch*.deb"
-        - "/tmp/etc"
+        path: "/tmp/elastic_pkg/"
       tags: configure
 
 - name: configure elastic
