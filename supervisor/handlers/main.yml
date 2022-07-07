@@ -3,3 +3,8 @@
     name: "{{ supervisor_service }}"
     enabled: yes
     state: restarted
+
+- name: restart supervisor
+  service:
+    name: "{{ supervisor_service }}"
+    state: restarted

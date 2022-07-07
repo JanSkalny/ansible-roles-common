@@ -59,13 +59,15 @@
     <controller type='ide' index='0'>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x1'/>
     </controller>
-{% for iface_name,iface in networking.items() %}
+{% for iface_name,iface in hostvars[virtual.fqdn | default(virtual.name)].networking.items() %}
+{% if 'virtual_host_iface' in iface %}
     <interface type='bridge'>
       <mac address='{{ iface.ether }}'/>
       <source bridge='{{ iface.virtual_host_iface }}'/>
       <model type='virtio'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='{{ '0x%02x' | format(loop.index + 5) }}' function='0x0'/>
     </interface>
+{% endif %}
 {% endfor %}
     <serial type='pty'>
       <target type='isa-serial' port='0'>

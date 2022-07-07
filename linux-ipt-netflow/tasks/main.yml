@@ -1,0 +1,22 @@
+
+package:
+  name: 
+    - module-assistant 
+    - git
+    - iptables-dev 
+    - pkg-config 
+    - snmpd 
+    - libsnmp-dev
+
+#TODO: m-a prepare
+
+git:
+  repo: https://github.com/aabc/ipt-netflow.git
+  dest: /opt/ipt-netflow
+
+shell: |
+  cd /opt/ipt-netflow
+  ./configure
+  make all install
+
+

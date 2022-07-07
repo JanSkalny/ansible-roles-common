@@ -3,3 +3,10 @@
     src: virtual.xml
     dest: "{{ virtual_dir }}/conf/{{ virtual.name }}.xml"
   register: virtual_generate_config
+
+- name: "make sure vm has a lock file"
+  file: 
+    path: "{{ virtual_dir }}/preseed/{{ virtual.name }}.lock"
+    state: touch
+
+
