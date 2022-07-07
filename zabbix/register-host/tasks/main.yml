@@ -1,7 +1,11 @@
+- set_fact:
+      zabbix_linked_templates:  "{{ zabbix_template_definitions | json_query('*.template') | unique }}"
+
 - debug: msg="zabbix_url={{ zabbix_url }}", verbosity=1
 - debug: msg="zabbix_admin_login={{ zabbix_admin_login }}", verbosity=1
+#- debug: msg="zabbix_linked_templates={{ zabbix_linked_templates }}", verbosity=1
+- debug: msg="zabbix_template_definitions={{ zabbix_template_definitions }}", verbosity=1
 - debug: msg="zabbix_linked_templates={{ zabbix_linked_templates }}", verbosity=1
-#- debug: msg="xxx={{ xxx }}"
 
 - name: add host to zabbix server
   become: false
@@ -35,6 +39,7 @@
     proxy: "{{ zabbix_proxy | default('') }}"
     validate_certs: false
   tags: configure
+  when: not ansible_check_mode
 
 - name: Create zabbix macros
   become: false

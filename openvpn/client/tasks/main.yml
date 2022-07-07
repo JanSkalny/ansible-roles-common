@@ -1,3 +1,14 @@
+#TODO: check for only fqdns
+- name: "Ensure /etc/hosts contains server name from item.remote"
+  register: result
+  check_mode: no
+  command: "grep '.*{{ item | split(' ') | first }}.*' /etc/hosts"
+  loop:  "{{ openvpn_config.remotes }}"
+  changed_when: false
+  failed_when: >
+    (result is not defined) or
+    (result.rc > 0)
+
 - name: deploy x509
   copy:
     src: "{{ item.src }}"
@@ -19,4 +30,3 @@
     dest: "/etc/openvpn/{{ openvpn_instance }}.conf"
   tags: configure
   notify: restart openvpn
-

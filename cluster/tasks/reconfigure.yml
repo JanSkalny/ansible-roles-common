@@ -1,0 +1,28 @@
+- name: configure pacemaker systemd override
+  copy:
+    src: pacemaker_override.conf
+    dest: "/etc/systemd/system/pacemaker.service.d/override.conf"
+  tags: configure
+  notify:
+    - restart corosync
+    - restart pacemaker
+
+- name: deploy corosync authkey
+  copy:
+    content: "{{ cluster.authkey|b64decode }}" 
+    dest: /etc/corosync/authkey
+    mode: 0400
+    owner: root
+    group: root
+  tags: configure
+  notify:
+    - restart corosync
+    - restart pacemaker
+
+- name: configure corosync
+  template:
+    src: corosync.conf
+    dest: /etc/corosync/corosync.conf
+  tags: configure
+  notify:
+    - reload corosync

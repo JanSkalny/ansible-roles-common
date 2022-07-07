@@ -22,6 +22,7 @@
     collation: utf8_bin
     state: present
   register: zabbix_proxy_db_present
+  when: not ansible_check_mode
 
 - name: create zabbix user
   mysql_user:
@@ -29,6 +30,7 @@
     password: "{{ zabbix_proxy_db_password }}"
     priv: "{{ zabbix_proxy_db_name }}.*:ALL"
     state: present
+  when: not ansible_check_mode
 
 - name: import zabbix database
   mysql_db:
@@ -118,4 +120,5 @@
     name: zabbix-proxy
     enabled: true
     state: started
+  when: not ansible_check_mode
 

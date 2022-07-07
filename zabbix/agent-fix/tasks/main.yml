@@ -1,14 +1,44 @@
+- name: save zabbix PSK
+  local_action:
+    module: lineinfile
+    line: "zabbix_agent_psk: \"{{  zabbix_agent_psk }}\""
+    regexp: '^zabbix_agent_psk: '
+    path: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/zabbix.yml"
+    create: yes
+  notify: restart zabbix-agent
+  become: no
+
+- name: remove old logrotate for zabbix
+  file:
+    path: "/etc/logrotate.d/zabbix-agent"
+    state: absent
+
 - name: defaults
   set_fact:
     suricata_huge: {}
     suricata_small: {}
+
+- name: suricata fix permissions and group
+  file:
+     path: "/var/log/suricata"
+     group: zabbix
+     mode: "a+x"
+     state: "directory"
+  when: '"suricata" in group_names'
 
 - name: suricata fix permissions
   file:
      path: "/var/lib/suricata/rules"
      mode: "a+x"
      state: "directory"
-  when: suricata is defined and 'suricata' in group_names
+  when: '"suricata" in group_names'
+
+- name: openvpn check status file presence
+  file:
+     path: "/var/run/openvpn/server.status"
+     state: "file"
+  failed_when: false
+  register: openvpn_status_file
 
 - name: openvpn fix permissions
   file:
@@ -16,10 +46,47 @@
      group: "zabbix"
      mode: "g+r"
      state: "file"
-  when: openvpn is defined
+  when: openvpn_status_file is defined and openvpn_status_file.state is defined and openvpn_status_file.state == 'file'
 
 - name: docker fix group
   user:
     name: "zabbix"
-    group: "docker"
-  when: "'docker' in group_names"
+    group: "zabbix"
+    groups: "docker"
+  notify: restart zabbix-agent
+  #when: "'docker' in group_names"
+  when: inventory_hostname in groups.docker
+
+# old configs
+- name: Remove old config dir
+  file:
+    path: /etc/zabbix/zabbix_agent.d
+    state: absent
+
+# unused configs
+- name: Remove unused config dir
+  file:
+    path: /etc/zabbix/zabbix_agent2.d
+    state: absent
+  tags: never
+
+- name: Create config dir
+  file:
+    path: /etc/zabbix/zabbix_agent2.d
+    state: directory
+    owner: zabbix
+    group: zabbix
+    mode: 0775
+  tags: never
+
+# we are using some templates which needs this old configs
+# not any more
+- name: old configs to zabbix_agent2.d
+  copy:
+    src: "zabbix_agent2.d"
+    dest: /etc/zabbix
+    owner: zabbix
+    group: zabbix
+    mode: 0640
+    directory_mode: 0755
+  tags: never

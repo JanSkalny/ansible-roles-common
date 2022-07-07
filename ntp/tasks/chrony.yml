@@ -1,0 +1,63 @@
+---
+
+- block:
+  - name: uninstall ntp
+    package:
+      name: "{{item}}"
+      state: absent
+      autoremove: true
+    with_items:
+      - ntp
+      - ntpdate
+      - linux-generic  # toto treba po 1 kole instalacii vymazat
+    tags: install
+
+  - name: disable timesyncd
+    systemd:
+      name: "{{item}}"
+      enabled: false
+      state: stopped
+      no_block: true
+    with_items:
+      - systemd-timesyncd
+    failed_when: false
+    tags: install
+
+  - name: install chrony
+    package:
+      name: "{{item}}"
+      state: present
+    with_items:
+      - chrony
+      - linux-modules-extra-{{ ansible_kernel }}
+    tags: install
+
+  - name: Configure ptp_kvm module to be loaded
+    template:
+      src: "ptp_kvm.conf"
+      dest: "/etc/modules-load.d/ptp_kvm.conf"
+      owner: root
+      mode: 0640
+    tags: configure
+    register: output
+
+  - name: Load module ptp_kvm into kernel
+    modprobe:
+      name: ptp_kvm
+      state: present
+    notify: restart ntp
+
+#  - name: reboot host
+#    reboot:
+#      reboot_timeout: 300
+#    when: output is defined and output.changed
+
+  - name: configure chrony
+    template:
+      src: "{{ chrony_template | default('chrony.conf') }}"
+      dest: "/etc/chrony/chrony.conf"
+      owner: root
+      mode: 0640
+    tags: configure
+    notify: restart ntp
+  when: "hostvars[inventory_hostname].ansible_distribution_version is version('18.0', operator='ge', strict=True)"

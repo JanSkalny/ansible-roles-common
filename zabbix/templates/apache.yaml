@@ -1,0 +1,4 @@
+apache:
+  #template: "Template App Apache Status"
+  #template: "Template App Apache by HTTP"
+  template: "Template App Apache by Zabbix agent"

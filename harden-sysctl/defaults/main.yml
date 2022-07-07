@@ -3,7 +3,7 @@ sysctl_config:
     fs.protected_symlinks: 1
     fs.suid_dumpable: 2
 
-    net.ipv4.ip_forward: 0
+    net.ipv4.ip_forward: "{{ firewall_ip_forward | default(0) }}"
 
     net.ipv4.tcp_syncookies: 1
     net.ipv4.tcp_retries2: 5

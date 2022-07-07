@@ -3,9 +3,13 @@
     url: "https://repo.zabbix.com/zabbix/{{ zabbix_version }}/debian/pool/main/z/zabbix-release/zabbix-release_{{ zabbix_version }}-1+{{ ansible_distribution_release }}_all.deb"
     dest: "/tmp/zabbix-release.deb"
 
+- stat: path=/tmp/zabbix-release.deb
+  register: p
+
 - name: install zabbix-release.deb
   apt:
     deb: "/tmp/zabbix-release.deb"
+  when: p.stat.isfile is defined and p.stat.isfile
 
 - name: apt-get update
   shell: apt-get update

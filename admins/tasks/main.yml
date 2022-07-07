@@ -45,11 +45,12 @@
     exclusive: yes
     key: "{{ lookup('file', root_dir+'/files/ssh-keys/'+item) }}"
   with_items: "{{ users }}"
+  when: not ansible_check_mode
 
 - name: "fancy .profile for user {{ item }}"
   copy: 
     src: dotprofile
-    dest: "/home/{{ item }}/.profile"
+    dest: "{{ '~' + item | expanduser }}/.profile"
     owner: "{{ item }}"
     group: "{{ item }}"
     mode: 0640

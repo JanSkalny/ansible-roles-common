@@ -1,0 +1,6 @@
+http:
+  template: "Template App HTTP Service"
+
+https:
+  template: "Template App HTTPS Service"
+

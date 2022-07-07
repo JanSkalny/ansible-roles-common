@@ -1,0 +1,3 @@
+ssh:
+  template: "Template App SSH Service"
+

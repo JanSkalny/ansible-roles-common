@@ -1,24 +1,27 @@
 - name: install suricata dependencies
-  package: 
+  package:
     name:
     - software-properties-common
     - apt-transport-https
     - jq
   tags: install
 
+# XXX: if not honoring the proxy envs use this instead:
+# should be tested every once in a while, if it got fixed...
+- name: add suricata-stable repository (respecting proxy)
+  when: ansible_env.http_proxy is defined
+  shell: add-apt-repository ppa:oisf/suricata-stable --update
+
 - name: add suricata-stable repository
+  when: ansible_env.http_proxy is not defined
   apt_repository:
     repo: ppa:oisf/suricata-stable
     state: present
     update_cache: yes
   tags: install
 
-# if not honoring the proxy envs use this instead:
-#- name: add suricata-stable repository
-#  shell:  add-apt-repository ppa:oisf/suricata-stable --update
-
-- name: install suricata 
-  package: 
+- name: install suricata
+  package:
     name:
     - suricata
   tags: install
@@ -41,8 +44,8 @@
   tags: suricata-update
   with_items: "{{ suricata_sources }}"
 
-- name: run suricata-update 
-  shell: suricata-update 
+- name: run suricata-update
+  shell: suricata-update
   tags: suricata-update
   notify: restart suricata
 
@@ -53,6 +56,17 @@
       mode: 0644
   tags: configure
   notify: restart suricata
+
+- name: LOCAL RULE - empty file
+  file:
+    path: /etc/suricata/local.rules
+    mode: 0644
+    owner: root
+    group: root
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+  tags: always
 
 - name: configure suricata (threshold.config)
   template:
@@ -79,4 +93,3 @@
       src: logrotate.conf
       dest: /etc/logrotate.d/suricata
   tags: configure
-  

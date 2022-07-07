@@ -1,0 +1,3 @@
+zabbix-proxy:
+  template: "Template App Zabbix Proxy"
+

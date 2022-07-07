@@ -47,7 +47,11 @@ iface lo inet loopback
 {% endif %}
 {% if 'routes' in iface %}
 {% for route in iface.routes %}
+{% if route.net is defined %}
 	up route add -net {{ route.net }} gw {{ route.via }} dev {{ iface_name }}
+{% elif route.host is defined %}
+	up route add -host {{ route.host }} gw {{ route.via }} dev {{ iface_name }}
+{% endif %}
 {% endfor %}
 {% endif %}
 {% if 'preup' in iface %}
@@ -61,7 +65,24 @@ iface lo inet loopback
 {% endif %}
 {%- endmacro -%}
 
+
+{% set ordered_networking = networking.copy() %}
 {% for iface_name,item in networking.items() %}
+{% if iface_name.startswith('bond') and 'order' not in item %}
+{% set x=ordered_networking[iface_name].update({'order': 10})  %}
+{% elif iface_name.startswith('vlan') and 'order' not in item %}
+{% set x=ordered_networking[iface_name].update({'order': 20})  %}
+{% elif iface_name.startswith('brVlan') and 'order' not in item %}
+{% set x=ordered_networking[iface_name].update({'order': 30})  %}
+{% elif 'order' not in item %}
+{% set x=ordered_networking[iface_name].update({'order': 100})  %}
+{% endif %}
+{% endfor %}
+
+
+{% for iterator in ordered_networking.items() | sort(attribute='1.order') %}
+{% set iface_name = iterator[0] %}
+{% set item = iterator[1] %}
 
 # {{ item }}
 {% if iface_name is not match(":") %}
@@ -95,4 +116,4 @@ iface {{ iface_name }} inet dhcp
 iface {{ iface_name }} inet manual
 {{ configure_interface(item, iface_name) }}
 {% endif %}
-{%endfor %}
+{% endfor %}

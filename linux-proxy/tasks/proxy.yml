@@ -3,12 +3,17 @@
    path: /etc/apt/apt.conf.d
   register: st
 
-- name: set proxy for apt
+- name: set https proxy for apt
   lineinfile:
     path: /etc/apt/apt.conf.d/99proxy
     create: yes
     state: present
-    line: 'Acquire::http::Proxy "http://{{ proxy_host }}:{{ proxy_port }}";'
+    regexp: "^Acquire::{{ item }}::Proxy.*$"
+    line: 'Acquire::{{ item }}::Proxy "http://{{ proxy_host }}:{{ proxy_port }}";'
+  with_items:
+   - http
+   - https
+   - ftp
   when: st.stat.exists
 
 - name: do we have wget?
@@ -21,12 +26,19 @@
    path: /etc/wgetrc
    create: yes
    state: present
-   line: '{{ item }}_proxy = http://{{ proxy_host }}:{{ proxy_port }}'
+   regexp: "^{{ item.key }} *=.*$"
+   line: '{{ item.key }} = {{ item.value }}'
    insertbefore: '^.?use_proxy'
   with_items:
-   - http
-   - https
-   - ftp
+   - { "key": "http_proxy", "value": "{{ proxy_env.http_proxy | default() }}" }
+   - { "key": "https_proxy", "value": "{{ proxy_env.https_proxy | default() }}" }
+   - { "key": "ftp_proxy", "value": "{{ proxy_env.ftp_proxy | default() }}" }
+   - { "key": "no_proxy", "value": "{{ proxy_env.no_proxy | default() }}" }
+
+   - { "key": "HTTP_PROXY", "value": "{{ proxy_env.HTTP_PROXY | default() }}" }
+   - { "key": "HTTPS_PROXY", "value": "{{ proxy_env.HTTPS_PROXY | default() }}" }
+   - { "key": "FTP_PROXY", "value": "{{ proxy_env.FTP_PROXY | default() }}" }
+   - { "key": "NO_PROXY", "value": "{{ proxy_env.NO_PROXY | default() }}" }
   when: st.stat.exists
 
 - name: do we have pip?
@@ -46,12 +58,15 @@
 - name: set proxy for the shell
   lineinfile:
    path: /etc/environment
-   line: '{{ item }}="http://{{ proxy_host }}:{{ proxy_port }}"'
+   regexp: "^{{ item.key }}=.*$"
+   line: '{{ item.key }}="{{ item.value }}"'
   with_items:
-   - http_proxy
-   - https_proxy
-   - ftp_proxy
-   - HTTP_PROXY
-   - HTTPS_PROXY
-   - FTP_PROXY
+   - { "key": "http_proxy", "value": "{{ proxy_env.http_proxy | default() }}" }
+   - { "key": "https_proxy", "value": "{{ proxy_env.https_proxy | default() }}" }
+   - { "key": "ftp_proxy", "value": "{{ proxy_env.ftp_proxy | default() }}" }
+   - { "key": "no_proxy", "value": "{{ proxy_env.no_proxy | default() }}" }
 
+   - { "key": "HTTP_PROXY", "value": "{{ proxy_env.HTTP_PROXY | default() }}" }
+   - { "key": "HTTPS_PROXY", "value": "{{ proxy_env.HTTPS_PROXY | default() }}" }
+   - { "key": "FTP_PROXY", "value": "{{ proxy_env.FTP_PROXY | default() }}" }
+   - { "key": "NO_PROXY", "value": "{{ proxy_env.NO_PROXY | default() }}" }

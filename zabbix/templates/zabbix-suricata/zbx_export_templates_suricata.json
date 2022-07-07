@@ -1,0 +1,368 @@
+{
+    "zabbix_export": {
+        "version": "5.2",
+        "date": "2021-10-28T06:33:50Z",
+        "groups": [
+            {
+                "name": "Templates/Applications"
+            }
+        ],
+        "templates": [
+            {
+                "template": "Template App Suricata by Zabbix agent",
+                "name": "Template App Suricata by Zabbix agent",
+                "groups": [
+                    {
+                        "name": "Templates/Applications"
+                    }
+                ],
+                "applications": [
+                    {
+                        "name": "Suricata"
+                    }
+                ],
+                "items": [
+                    {
+                        "name": "Suricata proc count",
+                        "key": "proc.num[suricata]",
+                        "applications": [
+                            {
+                                "name": "Suricata"
+                            }
+                        ],
+                        "triggers": [
+                            {
+                                "expression": "{last()}=0",
+                                "name": "Suricata is down (proc count is zero)",
+                                "priority": "HIGH"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Suricata capture kernel_drops",
+                        "key": "suricata.stats[capture.kernel_drops]",
+                        "units": "pps",
+                        "applications": [
+                            {
+                                "name": "Suricata"
+                            }
+                        ],
+                        "preprocessing": [
+                            {
+                                "type": "CHANGE_PER_SECOND",
+                                "parameters": [
+                                    ""
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Suricata capture kernel_packets",
+                        "key": "suricata.stats[capture.kernel_packets]",
+                        "units": "pps",
+                        "applications": [
+                            {
+                                "name": "Suricata"
+                            }
+                        ],
+                        "preprocessing": [
+                            {
+                                "type": "CHANGE_PER_SECOND",
+                                "parameters": [
+                                    ""
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Suricata memuse flow",
+                        "key": "suricata.stats[flow.memuse]",
+                        "units": "B",
+                        "applications": [
+                            {
+                                "name": "Suricata"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Suricata memuse ftp",
+                        "key": "suricata.stats[ftp.memuse]",
+                        "units": "B",
+                        "applications": [
+                            {
+                                "name": "Suricata"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Suricata memuse http",
+                        "key": "suricata.stats[http.memuse]",
+                        "units": "B",
+                        "applications": [
+                            {
+                                "name": "Suricata"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Suricata memuse tcp",
+                        "key": "suricata.stats[tcp.memuse]",
+                        "units": "B",
+                        "applications": [
+                            {
+                                "name": "Suricata"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Suricata memuse tcp.reassembly",
+                        "key": "suricata.stats[tcp.reassembly_memuse]",
+                        "units": "B",
+                        "applications": [
+                            {
+                                "name": "Suricata"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Suricata systemd service",
+                        "key": "systemd.unit.info[suricata.service]",
+                        "trends": "0",
+                        "value_type": "TEXT",
+                        "applications": [
+                            {
+                                "name": "Suricata"
+                            }
+                        ],
+                        "triggers": [
+                            {
+                                "expression": "{last()}<>\"active\"",
+                                "name": "Suricata is down",
+                                "priority": "HIGH"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "vfs.file.time[/var/lib/suricata/rules/suricata.rules,modify]",
+                        "key": "vfs.file.time[/var/lib/suricata/rules/suricata.rules,modify]",
+                        "delay": "1h",
+                        "history": "7d",
+                        "trends": "30d",
+                        "applications": [
+                            {
+                                "name": "Suricata"
+                            }
+                        ],
+                        "triggers": [
+                            {
+                                "expression": "{fuzzytime(14d)}=0",
+                                "recovery_mode": "RECOVERY_EXPRESSION",
+                                "recovery_expression": "{fuzzytime(14d)}<>0",
+                                "name": "Suricata rules update time",
+                                "priority": "WARNING",
+                                "description": "Testujem ci su aktualizovane ruly na suricate. Musia byt aktualizovane do 14 dni.",
+                                "manual_close": "YES"
+                            }
+                        ]
+                    }
+                ],
+                "discovery_rules": [
+                    {
+                        "name": "Suricata App protocols",
+                        "key": "suricata.discover-apps",
+                        "delay": "30m",
+                        "item_prototypes": [
+                            {
+                                "name": "Suricata app {#APP}",
+                                "key": "suricata.stats[app_layer.flow.{#APP}]",
+                                "units": "pps",
+                                "applications": [
+                                    {
+                                        "name": "Suricata"
+                                    }
+                                ],
+                                "preprocessing": [
+                                    {
+                                        "type": "CHANGE_PER_SECOND",
+                                        "parameters": [
+                                            ""
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "dashboards": [
+                    {
+                        "name": "Suricata",
+                        "widgets": [
+                            {
+                                "type": "GRAPH_PROTOTYPE",
+                                "y": "6",
+                                "width": "21",
+                                "height": "5",
+                                "fields": [
+                                    {
+                                        "type": "INTEGER",
+                                        "name": "source_type",
+                                        "value": "3"
+                                    },
+                                    {
+                                        "type": "ITEM_PROTOTYPE",
+                                        "name": "itemid",
+                                        "value": {
+                                            "key": "suricata.stats[app_layer.flow.{#APP}]",
+                                            "host": "Template App Suricata by Zabbix agent"
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "GRAPH_CLASSIC",
+                                "y": "11",
+                                "width": "11",
+                                "height": "6",
+                                "fields": [
+                                    {
+                                        "type": "GRAPH",
+                                        "name": "graphid",
+                                        "value": {
+                                            "name": "Suricata memory usage",
+                                            "host": "Template App Suricata by Zabbix agent"
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "GRAPH_CLASSIC",
+                                "x": "11",
+                                "y": "11",
+                                "width": "10",
+                                "height": "6",
+                                "fields": [
+                                    {
+                                        "type": "GRAPH",
+                                        "name": "graphid",
+                                        "value": {
+                                            "name": "Suricata packet drops",
+                                            "host": "Template App Suricata by Zabbix agent"
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "GRAPH_PROTOTYPE",
+                                "width": "21",
+                                "height": "6",
+                                "fields": [
+                                    {
+                                        "type": "INTEGER",
+                                        "name": "columns",
+                                        "value": "9"
+                                    },
+                                    {
+                                        "type": "INTEGER",
+                                        "name": "rows",
+                                        "value": "3"
+                                    },
+                                    {
+                                        "type": "INTEGER",
+                                        "name": "show_legend",
+                                        "value": "0"
+                                    },
+                                    {
+                                        "type": "INTEGER",
+                                        "name": "source_type",
+                                        "value": "3"
+                                    },
+                                    {
+                                        "type": "ITEM_PROTOTYPE",
+                                        "name": "itemid",
+                                        "value": {
+                                            "key": "suricata.stats[app_layer.flow.{#APP}]",
+                                            "host": "Template App Suricata by Zabbix agent"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "graphs": [
+            {
+                "name": "Suricata memory usage",
+                "type": "STACKED",
+                "graph_items": [
+                    {
+                        "sortorder": "1",
+                        "color": "1A7C11",
+                        "item": {
+                            "host": "Template App Suricata by Zabbix agent",
+                            "key": "suricata.stats[flow.memuse]"
+                        }
+                    },
+                    {
+                        "sortorder": "2",
+                        "color": "F63100",
+                        "item": {
+                            "host": "Template App Suricata by Zabbix agent",
+                            "key": "suricata.stats[ftp.memuse]"
+                        }
+                    },
+                    {
+                        "sortorder": "3",
+                        "color": "2774A4",
+                        "item": {
+                            "host": "Template App Suricata by Zabbix agent",
+                            "key": "suricata.stats[http.memuse]"
+                        }
+                    },
+                    {
+                        "sortorder": "4",
+                        "color": "A54F10",
+                        "item": {
+                            "host": "Template App Suricata by Zabbix agent",
+                            "key": "suricata.stats[tcp.memuse]"
+                        }
+                    },
+                    {
+                        "sortorder": "5",
+                        "color": "FC6EA3",
+                        "item": {
+                            "host": "Template App Suricata by Zabbix agent",
+                            "key": "suricata.stats[tcp.reassembly_memuse]"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Suricata packet drops",
+                "show_work_period": "NO",
+                "type": "STACKED",
+                "graph_items": [
+                    {
+                        "sortorder": "1",
+                        "drawtype": "BOLD_LINE",
+                        "color": "FF0000",
+                        "item": {
+                            "host": "Template App Suricata by Zabbix agent",
+                            "key": "suricata.stats[capture.kernel_drops]"
+                        }
+                    },
+                    {
+                        "sortorder": "2",
+                        "drawtype": "FILLED_REGION",
+                        "color": "43A047",
+                        "item": {
+                            "host": "Template App Suricata by Zabbix agent",
+                            "key": "suricata.stats[capture.kernel_packets]"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -10,6 +10,7 @@ zabbix_server_addr: "127.0.0.1"
 zabbix_proxy_addr: "127.0.0.1"
 
 zabbix_template_definitions: {}
+zabbix_templates_add_null: {}
 zabbix_templates_dir: "../../templates/"
 zabbix_templates:
   linux:

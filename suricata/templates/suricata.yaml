@@ -74,11 +74,23 @@ outputs:
       append: yes
       #filetype: regular # 'regular', 'unix_stream' or 'unix_dgram'
 
+  # EVE event log in JSON format through SYSLOG
+  - eve-log:
+      enabled: yes
+      filetype: syslog #regular|syslog|unix_dgram|unix_stream|redis
+      #filename: neweve-%Y-%m-%d-%H:%M.json
+      identity: "suricata-json"
+      facility: local5
+      level: Info ## possible levels: Emergency, Alert, Critical, Error, Warning, Notice, Info, Debug
+      types:
+         - alert:
+           tagged-packets: yes
+
   # Extensible Event Format (nicknamed EVE) event log in JSON format
   - eve-log:
       enabled: {{ suricata_eve }}
       filetype: regular #regular|syslog|unix_dgram|unix_stream|redis
-      filename: eve.json
+      #filename: eve.json
       filename: eve-%Y-%m-%d-%H:%M.json
       rotate-interval: {{ suricata_eve_rotate_interval }}
       #prefix: "@cee: " # prefix to prepend to each log entry
@@ -1880,6 +1892,7 @@ mpipe:
 default-rule-path: /var/lib/suricata/rules
 rule-files:
  - suricata.rules
+ - /etc/suricata/local.rules
 
 ##
 ## Advanced rule file configuration.

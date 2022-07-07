@@ -25,13 +25,18 @@
     url: "{{ url }}"
     dest: "/tmp/zabbix-release.deb"
 
+- stat: path=/tmp/zabbix-release.deb
+  register: p
+
 - name: install zabbix-release.deb
   apt:
     deb: "/tmp/zabbix-release.deb"
+  when: p.stat.exists is defined and p.stat.exists
 
 - name: APT update
   apt:
     update_cache: yes
+  when: p.stat.exists is defined and p.stat.exists
 
 # does not work on bionic
 #- name: apt-get update

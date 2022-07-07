@@ -1,8 +1,8 @@
 waf_directors: []
 waf_letsencrypt: true
+waf_stats_enabled: false
 
 waf_vsf_rules:
   - dos.vcl
-  - request.vcl
   - paths.vcl
   - protocol.vcl

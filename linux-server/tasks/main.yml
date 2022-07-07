@@ -1,15 +1,20 @@
-
-- include_role:
-    name: "{{ x_role_name }}"
-  loop_control:
-    loop_var: x_role_name
-  with_items:
-  - common/linux-hostname
-  - common/harden-ssh
-  - common/harden-sysctl
-  - common/sweeten
-  - common/tools
-  - common/ntp
-  - common/fail2ban
-  - common/linux-compact-memory
-  - common/linux-journal
+- import_role:
+    name: common/linux-proxy
+- import_role:
+    name: common/linux-hostname
+- import_role:
+    name: common/harden-ssh
+- import_role:
+    name: common/harden-sysctl
+- import_role:
+    name: common/sweeten
+- import_role:
+    name: common/tools
+- import_role:
+    name: common/ntp
+- import_role:
+    name: common/fail2ban
+- import_role:
+    name: common/linux-compact-memory
+- import_role:
+    name: common/linux-journal

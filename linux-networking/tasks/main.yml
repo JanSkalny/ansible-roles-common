@@ -17,6 +17,11 @@
     dest: /etc/hosts
   tags: configure
 
+- name: change hostname
+  include_role:
+    name: common/linux-hostname
+  tags: configure
+
 - name: remove resolvconf
   package:
     name: resolvconf

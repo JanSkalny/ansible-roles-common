@@ -1,0 +1,73 @@
+- debug: msg="item={{ item }}", verbosity=1
+
+- name: enumerate zabbix template - install only when file exist (pls ignore errors)
+  include_vars:
+    name: zabbix_template_definition
+    #file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
+    dir: "{{ zabbix_templates_dir }}"
+    files_matching: "{{ item }}"
+    depth: 1
+  ignore_errors: true
+
+- block:
+  - name: "Registrujem template item"
+    debug: var=item
+
+  - set_fact:
+      zabbix_template_definitions: "{{ zabbix_template_definitions | combine(zabbix_template_definition) }}"
+
+  - debug: msg="zabbix_template_definition={{ zabbix_template_definition }}", verbosity=1
+
+  - debug: msg="sudoers={{ zabbix_template_definition[item].sudoers }}", verbosity=1
+    when:  zabbix_template_definition[item].sudoers is defined and zabbix_template_definition[item].sudoers != {}
+
+  - debug: msg="scripts={{ zabbix_template_definition | json_query('* | [?scripts] .scripts') | flatten }}", verbosity=1
+
+  - name: deploy zabbix sudoers.d
+    copy:
+      src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definition[item].sudoers }}"
+      dest: "/etc/sudoers.d/zabbix-{{ item }}"
+      owner: "root"
+      mode: 0640
+    when:  zabbix_template_definition[item].sudoers is defined and zabbix_template_definition[item].sudoers != {}
+
+  - name: deploy zabbix cron.d
+    copy:
+      src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definition[item].crond }}"
+      dest: "/etc/cron.d/zabbix-{{ item }}"
+      owner: "root"
+      mode: 0640
+    when:  zabbix_template_definition[item].crond is defined and zabbix_template_definition[item].crond != {}
+
+  - name: deploy zabbix template parameters
+    copy:
+      src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definition[item].params }}"
+      dest: "/etc/zabbix/{{ zabbix_agent_name }}.d/{{ item }}.conf"
+      owner: "zabbix"
+      group: "zabbix"
+      mode: 0640
+    notify: restart zabbix-agent
+    when:  zabbix_template_definition[item].params is defined and zabbix_template_definition[item].params != {}
+
+  - name: deploy zabbix scripts
+    copy:
+      src: "{{ zabbix_templates_dir }}/{{ script }}"
+      dest: "/usr/local/bin/{{ script | basename }}"
+      owner: "root"
+      mode: 0755
+    loop: "{{ ( zabbix_template_definition | default({}) ) | json_query('* | [?scripts] .scripts') | flatten }}"
+    loop_control:
+      loop_var: script
+    when:  zabbix_template_definition[item].scripts is defined and zabbix_template_definition[item].scripts != {}
+
+  when: zabbix_template_definition is defined and zabbix_template_definition != {}
+
+- name: deploy zabbix template config (solo)
+  copy:
+    src: "{{ zabbix_templates_dir }}/zabbix-{{ item }}/{{ item }}.conf"
+    dest: "/etc/zabbix/{{ zabbix_agent_name }}.d/{{ item }}.conf"
+    owner: "zabbix"
+    group: "zabbix"
+    mode: 0640
+  notify: restart zabbix-agent
+  when: not (zabbix_template_definition is defined and zabbix_template_definition != {})
