@@ -1,10 +1,9 @@
-- debug: msg="openvpn_client_remotes={{ openvpn_client_remotes }}"
-- debug: msg="soc_vpn_servers={{ soc_vpn_servers }}"
-
+#TODO: check for only fqdns
 - name: "Ensure /etc/hosts contains server name from item.remote"
   register: result
-  command: "grep '.*{{ item.remotes | first | split(' ') | first }}.*' /etc/hosts"
-  loop:  "{{ soc_vpn_servers }}"
+  check_mode: no
+  command: "grep '.*{{ item | split(' ') | first }}.*' /etc/hosts"
+  loop:  "{{ openvpn_config.remotes }}"
   changed_when: false
   failed_when: >
     (result is not defined) or
