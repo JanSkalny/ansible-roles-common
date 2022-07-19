@@ -110,7 +110,7 @@
       #zabbix_add_templates: "{{ vars | select('match', '^zabbix_templates_add_[a-z]*$') | map('extract', vars) | combine | flatten }}"
       zabbix_add_templates: "{{ vars | select('match', '^zabbix_templates_add_[a-z]*$') | map('extract', vars) | list | combine | flatten }}"
       zabbix_conv_templates: "{{ zabbix_templates | list }}"
-      zabbix_merged_templates: "{{ zabbix_conv_templates }} + {{ zabbix_add_templates }}"
+      zabbix_merged_templates: "{{ zabbix_conv_templates + zabbix_add_templates }}"
 
   when: zabbix_templates_dir is defined and zabbix_templates is defined and zabbix_templates != {} and zabbix_templates_dir != {}
 
