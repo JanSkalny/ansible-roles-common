@@ -8,33 +8,27 @@
     - git
   tags: install
 
-- name: add varnish apt key
-  apt_key:
-    url: "https://packagecloud.io/varnishcache/varnish60lts/gpgkey"
-    state: present
-  tags: install
+- name: install varnish from package
+  when: not waf_install_from_source
+  include_tasks: varnish_from_package.yml
 
-- name: add varnish apt repository
-  apt_repository:
-    repo: "deb https://packagecloud.io/varnishcache/varnish60lts/ubuntu/ {{ ansible_distribution_release }} main"
-    filename: "varnishcache_varnish60lts"
-    state: present
-    update_cache: yes
-  tags: install
+# TODO: install varnish from source (git) with specific version
+- name: install varnish from source
+  when: waf_install_from_source
+  include_tasks: varnish_from_source.yml
 
-- name: install waf packages
+- name: install packages
   package:
     name:
-    - varnish-dev
+    state: present
+  loop:
     - build-essential
-    - varnish
     - pkgconf
     - supervisor
     - autoconf
     - libtool
     - haproxy
     - python3-docutils
-    state: present
   tags: install
 
 - name: create haproxy ssl dir
@@ -53,30 +47,30 @@
     repo: "https://github.com/comotion/VSF.git"
     force: yes
     update: yes
-    version: "6.0"
+    version: "{{ waf_vsf_version }}"
     dest: "/opt/vsf"
   register: git_clone_vsf
   tags:
   - install
   - update
 
-- name: build vsf
-  make:
-    chdir: "/opt/vsf"
-  when: git_clone_vsf.changed
-  tags:
-  - install
-  - update
+- when: git_clone_vsf.changed
+  block:
+    - name: build vsf
+      make:
+        chdir: "/opt/vsf"
+      tags:
+      - install
+      - update
 
-- name: install vsf
-  make:
-    chdir: "/opt/vsf"
-    target: "install"
-  when: git_clone_vsf.changed
-  notify: restart varnish
-  tags:
-  - install
-  - update
+    - name: install vsf
+      make:
+        chdir: "/opt/vsf"
+        target: "install"
+      notify: restart varnish
+      tags:
+      - install
+      - update
 
 - name: prepare systemd override directory
   file:
@@ -85,7 +79,7 @@
   tags: configure
 
 - name: configure varnish systemd override
-  copy:
+  template:
     src: "varnish-override.conf"
     dest: "/etc/systemd/system/varnish.service.d/override.conf"
   notify:
@@ -187,7 +181,7 @@
   when: waf_letsencrypt == true
 
 - name: deploy varnish log parser
-  copy:
+  template:
     src: varnisher_speedy.py
     dest: /root/varnisher.py
     owner: root

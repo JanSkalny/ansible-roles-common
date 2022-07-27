@@ -2,7 +2,7 @@
 
 import subprocess, json, syslog
 
-p = subprocess.Popen(["/usr/bin/varnishlog","-a"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=-1)
+p = subprocess.Popen(["{{ waf_varnishlog_executable }}","-A"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=-1)
 
 def req_flush(req):
   s = json.dumps(req)

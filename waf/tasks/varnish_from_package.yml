@@ -1,0 +1,22 @@
+---
+
+- name: add varnish apt key
+  apt_key:
+    url: "https://packagecloud.io/varnishcache/varnish60lts/gpgkey"
+    state: present
+  tags: install
+
+- name: add varnish apt repository
+  apt_repository:
+    repo: "deb https://packagecloud.io/varnishcache/varnish60lts/ubuntu/ {{ ansible_distribution_release }} main"
+    filename: "varnishcache_varnish60lts"
+    state: present
+    update_cache: true
+  tags: install
+
+- name: install waf packages
+  package:
+    name:
+      - varnish-dev
+      - varnish
+  tags: install

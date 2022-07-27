@@ -6,3 +6,11 @@ waf_vsf_rules:
   - dos.vcl
   - paths.vcl
   - protocol.vcl
+
+waf_install_from_source: false
+
+waf_vsf_version: 6.0
+
+# if installing from source
+# is either a tag or a branch
+#waf_varnish_version: 6.0

@@ -1,0 +1,28 @@
+---
+
+waf_varnish_executable: /usr/sbin/varnishd
+waf_varnishlog_executable: /usr/bin/varnishlog
+
+waf_debian_dependencies:
+  bionic:
+    - make
+    - automake
+    - autotools-dev
+    - libedit-dev
+    - libjemalloc-dev
+    - libncurses-dev
+    - libtool
+    - pkg-config
+    - python-docutils
+    - python-sphinx
+  focal:
+    - make
+    - automake
+    - autotools-dev
+    - libedit-dev
+    - libjemalloc-dev
+    - libncurses-dev
+    - libtool
+    - pkg-config
+    - python3-docutils
+    - python3-sphinx

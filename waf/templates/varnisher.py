@@ -2,7 +2,7 @@
 
 import subprocess, re, json, os, time, random, string
 
-p = subprocess.Popen(["/usr/bin/varnishlog","-a"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=-1)
+p = subprocess.Popen(["{{ waf_varnishlog_executable }}","-A"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=-1)
 block_dir = '/tmp/varnish_bls/'
 
 if not os.path.exists(block_dir):
@@ -16,7 +16,7 @@ url = None
 log = None
 while p.poll() is None:
 	line = p.stdout.readline()
-	
+
 	cmd = line[4:]
 	#print "cmd", cmd
 
@@ -45,5 +45,3 @@ while p.poll() is None:
 			    json.dump({ 'addr': ip, 'url': url, "time": time.time() }, outfile)
 		ip = None
 		url = None
-
-
