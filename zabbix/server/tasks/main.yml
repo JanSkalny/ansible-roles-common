@@ -3,7 +3,9 @@
     name:
     - python-mysqldb
     - python3-mysqldb
-    - php-bcmath
+    - php{{ php_version }}-bcmath
+    - php{{ php_version }}-xml
+    - php{{ php_version }}-ldap
     - zabbix-server-mysql
     - zabbix-frontend-php
     state: present
@@ -31,8 +33,8 @@
   when: zabbix_server_db_present.changed == True
 
 - name: configure zabbix-server
-  template: 
-    src: "zabbix_server.conf" 
+  template:
+    src: "zabbix_server.conf"
     dest: "/etc/zabbix/zabbix_server.conf"
 
 - name: enable auto-start of zabbix-server
@@ -40,5 +42,3 @@
 
 - name: restart zabbix-server
   service: name=zabbix-server state=restarted
-
-
