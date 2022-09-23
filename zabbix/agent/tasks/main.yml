@@ -114,7 +114,8 @@
   copy:
     src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].params }}"
     dest: "/etc/zabbix/{{ zabbix_agent_name }}.d/{{ item }}.conf"
-    owner: "root"
+    owner: "zabbix"
+    group: "zabbix"
     mode: 0640
   with_items: "{{ zabbix_templates }}"
   when: zabbix_template_definitions[item].params | default(false)
