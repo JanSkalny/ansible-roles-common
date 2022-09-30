@@ -1,19 +1,3 @@
-# psk
-- block:
-  - name: generate PSK
-    become: false
-    shell: openssl rand -hex 48
-    register: psk
-    delegate_to: 127.0.0.1
-
-  - set_fact:
-      zabbix_agent_psk={{ psk.stdout }}
-    ignore_errors: "{{ ansible_check_mode }}"
-
-  - debug: var=zabbix_agent_psk
-    run_once: true
-  when:  not (zabbix_agent_psk is defined and zabbix_agent_psk != {} )
-
 - debug: msg="ansible_distribution_release={{ ansible_distribution_release }}", verbosity=1
 
 #TODO: check for presence of zabbix-agent2 package
@@ -67,7 +51,10 @@
 
 - block:
   - debug: msg="zabbix_etc_groups={{ zabbix_etc_groups }}", verbosity=1
-
+ 
+  #XXX: this is not PC - dpkg might create group with different GID than ansible
+  # check if group exists, and add only when it does - do not create group here
+  # make user re-run zabbix role, when new sw is installed
   - name: ensure group exists
     group:
       name: "{{ item }}"
@@ -81,7 +68,7 @@
       append: yes
     with_items: "{{ zabbix_etc_groups }}"
 
-  when: zabbix_etc_groups is defined and zabbix_etc_group != {}
+  when: zabbix_etc_groups 
 
 - name: make sure zabbix_agent.d directory is present
   file:
@@ -98,21 +85,49 @@
     owner: zabbix
     group: zabbix
 
-- block:
-  - debug: msg="zabbix_templates_dir={{ zabbix_templates_dir }}", verbosity=1
-  - debug: msg="zabbix_templates={{ zabbix_templates }}", verbosity=1
+- name: enumerate available zabbix templates
+  include_vars:
+    hash_behaviour: merge
+    name: zabbix_template_definitions
+    file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
+  with_items: "{{ zabbix_templates }}"
 
-  - name: LOOP for ALL templates
-    include_tasks: "template_loop.yml"
-    #with_items: "{{ zabbix_templates }}"
-    with_items: "{{ zabbix_merged_templates }}"
-    vars:
-      #zabbix_add_templates: "{{ vars | select('match', '^zabbix_templates_add_[a-z]*$') | map('extract', vars) | combine | flatten }}"
-      zabbix_add_templates: "{{ vars | select('match', '^zabbix_templates_add_[a-z]*$') | map('extract', vars) | list | combine | flatten }}"
-      zabbix_conv_templates: "{{ zabbix_templates | list }}"
-      zabbix_merged_templates: "{{ zabbix_conv_templates }} + {{ zabbix_add_templates }}"
+- name: deploy zabbix sudoers.d
+  copy:
+    src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].sudoers }}"
+    dest: "/etc/sudoers.d/zabbix-{{ item }}"
+    owner: "root"
+    mode: 0640
+  with_items: "{{ zabbix_templates }}"
+  when: zabbix_template_definitions[item].sudoers | default(false)
 
-  when: zabbix_templates_dir is defined and zabbix_templates is defined and zabbix_templates != {} and zabbix_templates_dir != {}
+- name: deploy zabbix cron.d
+  copy:
+    src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].crond }}"
+    dest: "/etc/crond.d/zabbix-{{ item }}"
+    owner: "root"
+    mode: 0640
+  with_items: "{{ zabbix_templates }}"
+  when: zabbix_template_definitions[item].crond | default(false)
+
+- name: deploy zabbix user parameters
+  copy:
+    src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].params }}"
+    dest: "/etc/zabbix/{{ zabbix_agent_name }}.d/{{ item }}.conf"
+    owner: "zabbix"
+    group: "zabbix"
+    mode: 0640
+  with_items: "{{ zabbix_templates }}"
+  when: zabbix_template_definitions[item].params | default(false)
+  notify: restart zabbix-agent
+
+- name: deploy zabbix scripts
+  copy:
+    src: "{{ zabbix_templates_dir }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item | basename }}"
+    owner: "root"
+    mode: 0755
+  with_items: "{{ zabbix_template_definitions | json_query('* | [?scripts] .scripts') | flatten }}"
 
 - name: configure zabbix-agent
   template:

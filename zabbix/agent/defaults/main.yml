@@ -1,4 +1,6 @@
-zabbix_etc_group: {}
+zabbix_etc_groups: []
+# or merge all "zabbix_etc_groups_add_*" variables in your group_vars/all/zabbix.yml
+# zabbix_etc_groups: "{{ vars | select('match', '^zabbix_etc_groups_add_') | map('extract', vars) | list | combine | flatten }}"
 
 zabbix_agent_version: 2
 zabbix_agent_name: "zabbix_agent2"
@@ -6,11 +8,27 @@ zabbix_agent_service: "zabbix-agent2"
 zabbix_agent_port: 10050
 
 zabbix_server_addr: "127.0.0.1"
-
 zabbix_proxy_addr: "127.0.0.1"
 
-zabbix_template_definitions: {}
-zabbix_templates_add_null: {}
+# directory with all zabbix_templates definitions
+# for each template referenced by host, there must be a specific "{template}.yaml" file present
+# use this variable to "fork" your own list of zabbix templates (eg. for proprietary sw)
 zabbix_templates_dir: "../../templates/"
+
+# default set of templates (see zabbix_templates_dir)
 zabbix_templates:
-  linux:
+ - linux
+# or merge all "zabbix_templates_add_*" variables in your group_vars/all/zabbix.yml
+#zabbix_templates: "{{ vars | select('match', '^zabbix_templates_add_') | map('extract', vars) | list | combine | flatten }}"
+
+#XXX: defined inside tasks/main.yml through:
+# ```
+#   include_vars:
+#     hash_behaviour: merge
+#     name: zabbix_template_definitions
+#     file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
+#   with_items: "{{ zabbix_templates }}"
+# ```
+# leave default set to {}, so default can be merged...
+zabbix_template_definitions: {}
+

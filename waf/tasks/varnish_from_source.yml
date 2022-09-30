@@ -1,0 +1,83 @@
+---
+
+- set_fact:
+    waf_varnish_executable: /usr/local/sbin/varnishd
+    waf_varnishlog_executable: /usr/local/bin/varnishlog
+
+- name: ensure package varnish is removed
+  apt:
+    name:
+      - varnish
+      - varnish-dev
+    purge: true
+    state: absent
+
+- name: install dependencies
+  apt:
+    name: "{{ item }}"
+  loop: "{{ waf_debian_dependencies[ansible_distribution_release] }}"
+
+- name: install correct PCRE version
+  apt:
+    name: "{{ waf_varnish_version is version('7.0.0', '>=') | ternary('libpcre2-dev', 'libpcre3-dev') }}"
+
+- name: clone varnish repo (version={{ waf_varnish_version }})
+  git:
+    repo: "https://github.com/varnishcache/varnish-cache"
+    force: true
+    update: true
+    version: "varnish-{{ waf_varnish_version }}"
+    dest: "/opt/varnish-cache"
+  register: git_clone_varnish
+
+- when: git_clone_varnish.changed
+  block:
+    - name: run autogen.sh
+      shell: >
+        ./autogen.sh
+      args:
+        chdir: "/opt/varnish-cache"
+
+    - name: run configure
+      shell: >
+        ./configure --sysconfdir=/etc
+      args:
+        chdir: "/opt/varnish-cache"
+
+    - name: make varnish
+      make:
+        chdir: "/opt/varnish-cache"
+
+    - name: make install varnish
+      make:
+        target: install
+        chdir: "/opt/varnish-cache"
+      notify: restart varnish
+
+- name: create /usr/share/varnish
+  file:
+    path: /usr/share/varnish
+    state: directory
+
+- name: retrieve the varnishreload script
+  get_url:
+    url: https://raw.githubusercontent.com/varnishcache/pkg-varnish-cache/master/systemd/varnishreload
+    dest: /usr/share/varnish/varnishreload
+    mode: '0755'
+
+- name: create varnish systemd service
+  template:
+    src: varnish.service
+    dest: /lib/systemd/system/varnish.service
+  notify:
+    - reload systemctl
+    - restart varnish
+
+- name: flush all handlers to ensure the systemd service is configured
+  meta: flush_handlers
+
+- name: enable varnish systemd service
+  service:
+    name: varnish
+    enabled: true
+    state: started

@@ -72,7 +72,7 @@
       olcTLSCertificateFile: "/etc/ldap/certs/server.crt"
       olcTLSCertificateKeyFile: "/etc/ldap/certs/server.key"
       olcTLSCACertificateFile: "/etc/ldap/certs/ca.crt"
-      olcTLSCipherSuite: 'SECURE:-VERS-ALL:+VERS-TLS1.3'
+      olcTLSCipherSuite: 'SECURE:-VERS-ALL:+VERS-TLS1.3:+VERS-TLS1.2'
       olcTLSVerifyClient: 'try'
       olcLogLevel: 'stats'
     state: exact
