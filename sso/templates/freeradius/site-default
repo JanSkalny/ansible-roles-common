@@ -47,10 +47,30 @@ authorize {
 		ok = return
 #		updated = return
 	}
+
+{% if sso_allow_insecure %}
+	-ldap
+
+{% for radius_client in radius_clients %}
+{% if radius_client.name != 'localhost' %}
+  {{ radius_client.name }}
+{% endif %}
+{% endfor %}
+
+	expiration
+	logintime
+
+	pap
+{% endif %}
 }
 
 authenticate {
 	eap
+{% if sso_allow_insecure %}
+	Auth-Type PAP {
+		pap
+	}
+{% endif %}
 }
 
 preacct {

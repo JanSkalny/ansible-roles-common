@@ -21,7 +21,7 @@
     login_password: "{{ zabbix_admin_password }}"
     host_name: "{{ inventory_hostname }}"
     visible_name: "{{ inventory_hostname }}"
-    host_groups: "{{ zabbix_group }}"
+    host_groups: "{{ zabbix_groups }}"
     link_templates: "{{ zabbix_linked_templates }}"
     status: enabled
     state: present
@@ -53,5 +53,5 @@
     macro_value: "{{ item['macro_value'] }}"
     state: present
     validate_certs: false
-  with_items: "{{ hostvars[inventory_hostname]['zabbix_macro'] | default([]) }}"
+  with_items: "{{ zabbix_macros | default([]) }}"
   tags: configure
