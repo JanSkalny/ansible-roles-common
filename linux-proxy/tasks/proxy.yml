@@ -8,12 +8,15 @@
     path: /etc/apt/apt.conf.d/99proxy
     create: yes
     state: present
-    regexp: "^Acquire::{{ item }}::Proxy.*$"
-    line: 'Acquire::{{ item }}::Proxy "http://{{ proxy_host }}:{{ proxy_port }}";'
+    regexp: "^Acquire::{{ item.proto }}::Proxy.*$"
+    line: 'Acquire::{{ item.proto }}::Proxy "{{ item.proxy }}";'
   with_items:
-   - http
-   - https
-   - ftp
+    - proto: http
+      proxy: "{{ proxy_env.http_proxy | default() }}"
+    - proto: https
+      proxy: "{{ proxy_env.https_proxy | default() }}"
+    - proto: ftp
+      proxy: "{{ proxy_env.ftp_proxy | default() }}"
   when: st.stat.exists
 
 - name: do we have wget?
@@ -51,7 +54,7 @@
    path: /etc/pip.conf
    section: global
    option: proxy
-   value: '{{ proxy_host }}:{{ proxy_port }}'
+   value: '{{ proxy_env.http_proxy | default() }}'
    create: yes
    state: present
 

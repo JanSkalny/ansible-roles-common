@@ -43,7 +43,7 @@
 
 - name: fancy issue message
   copy: 
-    src: issue
+    content: "{{ issue }}"
     dest: "/etc/issue"
     owner: "root"
     group: "root"
@@ -52,7 +52,7 @@
 
 - name: fancy motd message
   copy: 
-    src: issue
+    content: "{{ issue }}"
     dest: "/etc/motd"
     owner: "root"
     group: "root"
@@ -61,7 +61,7 @@
 
 - name: fancy issue.net message
   copy: 
-    src: issue
+    content: "{{ issue }}"
     dest: "/etc/issue.net"
     owner: "root"
     group: "root"

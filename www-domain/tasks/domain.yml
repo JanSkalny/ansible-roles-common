@@ -6,12 +6,14 @@
     shell: "/bin/false"
     createhome: no 
     state: present
+  when: www_user != 'www-data'
 
 - name: add www-data to new group
   user:
     name: www-data
     groups: "{{ www_user }}"
     append: yes
+  when: www_user != 'www-data'
 
 - name: create domain directory
   file: 
@@ -26,6 +28,7 @@
     dest: "/etc/php/{{ www_php_version }}/fpm/pool.d/{{ www_user }}.conf"
   notify:
     - restart php
+  when: not www_domain_use_global_php
 
 - name: create vhost 
   template:

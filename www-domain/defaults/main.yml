@@ -1,2 +1,5 @@
 www_domain_enable_ssl: false
+www_domain_redirect_https: true
 www_php_version: 7.4
+www_domain_root: "/var/www/{{ www_domain }}"
+www_domain_use_global_php: false
