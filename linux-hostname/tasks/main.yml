@@ -1,3 +1,22 @@
- - name: set hostname from ansible
-   hostname: 
-     name: "{{ inventory_hostname }}"
+---
+
+- name: check if hostname is in /etc/hosts
+  check_mode: true
+  lineinfile:
+    regexp: '^[\s]*[0-9].*\s{{ inventory_hostname }}'
+    path: /etc/hosts
+    state: absent
+  changed_when: false
+  register: hostname_in_hosts_file
+
+- name: add hostname to /etc/hosts before setting hostname
+  when:
+    - hostname_in_hosts_file.found == 0
+    - linux_networking_hostname_localhost | default(true)
+  lineinfile:
+    line: "127.0.0.1 {{ inventory_hostname }}"
+    path: /etc/hosts
+
+- name: set hostname from ansible
+  hostname:
+    name: "{{ inventory_hostname }}"
