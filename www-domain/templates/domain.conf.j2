@@ -1,18 +1,27 @@
 
-<Directory "/var/www/{{ www_domain }}">
+<Directory "{{ www_domain_root | default('/var/www/{{ www_domain }}') }}">
   AllowOverride All
   Order Allow,Deny
   Allow from All
   Options SymLinksIfOwnerMatch
 
   <FilesMatch "\.php$">
-    SetHandler "proxy:unix:/var/run/php-fpm-{{ www_user }}.sock|fcgi://localhost/"
+  {% if www_domain_use_global_php %}
+    SetHandler "proxy:unix:/run/php/php-fpm.sock|fcgi://localhost/"
+  {% else %}
+    SetHandler "proxy:unix:/run/php/php-fpm-{{ www_user }}.sock|fcgi://localhost/"
+  {% endif %}
   </FilesMatch>
 </Directory>
 
 <VirtualHost *:80>
   ServerName {{ www_domain }}
-  DocumentRoot /var/www/{{ www_domain }}/
+
+  {% if www_domain_enable_ssl and www_domain_redirect_https %} 
+  Redirect / https://{{ www_domain }}
+  {% else %}
+  DocumentRoot {{ www_domain_root | default('/var/www/{{ www_domain }}/') }}
+  {% endif %}
 
   ErrorLog /var/log/apache2/{{ www_domain }}_error.log
   CustomLog /var/log/apache2/{{ www_domain }}_access.log combined
@@ -21,7 +30,7 @@
 {% if www_domain_enable_ssl %}
 <VirtualHost *:443>
   ServerName {{ www_domain }}
-  DocumentRoot /var/www/{{ www_domain }}/
+  DocumentRoot {{ www_domain_root | default('/var/www/{{ www_domain }}/') }}
 
   ErrorLog /var/log/apache2/{{ www_domain }}_error.log
   CustomLog /var/log/apache2/{{ www_domain }}_access.log combined
