@@ -9,6 +9,13 @@
     - ocfs2-tools
   tags: install
 
+- name: install additional cluster sw (jammy)
+  apt: 
+    name: 
+    - resource-agents-extra
+  when: ansible_distribution_major_version|int >= 22
+  tags: install
+
 - name: prepare directories
   file: 
     path: "{{item}}"

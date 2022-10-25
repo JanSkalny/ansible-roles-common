@@ -1,7 +1,6 @@
 - name: install virtualization packages
   package:
     name:
-    - qemu-kvm
     - python3-libvirt
     - virtinst
     - unar
@@ -16,15 +15,17 @@
   package: 
     name:
     - libvirt-bin
+    - qemu-kvm
   tags: install
-  when: ansible_os_family == "Debian" and ansible_distribution_major_version <= "18"
+  when: ansible_os_family == "Debian" and ansible_distribution_major_version|int <= 18
 
 - name: install virtualization packages
   package: 
     name:
     - libvirt-daemon-system
     - libvirt-clients
-  when: ansible_os_family == "Debian" and ansible_distribution_major_version > "18"
+    - qemu-system-x86
+  when: ansible_os_family == "Debian" and ansible_distribution_major_version|int > 18
   tags: install
 
 - name: prepare directories
