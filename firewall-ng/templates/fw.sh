@@ -64,16 +64,17 @@ $IT{{ ip_ver }} -A {{ chain }}{{ " -s "+src_addr if src_addr|length else "" }}{{
 {%- macro generate_interface_rules(firewall_iface_name, firewall_iface, ip_ver=4) -%}
 {% set allow_nets = normalize_addrs(firewall_iface, 'allow', ip_ver).split(',') | difference(['']) %}
 {% set deny_nets = normalize_addrs(firewall_iface, 'deny', ip_ver).split(',') | difference(['']) %}
+{% set allow_dst = '-d '+firewall_iface.allow_dst if 'allow_dst' in firewall_iface else '' %}
 {% for deny_net in deny_nets %}
   $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP
 {% endfor %}
 {% for allow_net in allow_nets %}
-  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ allow_net }} -j RETURN
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ allow_net }} {{ allow_dst }} -j RETURN
 {% endfor %}
 {% if firewall_iface.default | default('allow' if firewall_interfaces|length == 1 else 'deny') == 'allow' %}
-  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -j RETURN
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} {{ allow_dst }} -j RETURN
 {% else %}
-  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -j LOG_DROP
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -j {{ firewall_default_rule_checkif }}
 {% endif %}
 {%- endmacro -%}
 
@@ -185,7 +186,7 @@ $IT4 -N CHECK_IF
 {% endfor %}
 
   # everything else is dropped!
-  $IT4 -A CHECK_IF -j LOG_DROP
+  $IT4 -A CHECK_IF -j {{ firewall_default_rule_checkif }}
 
 $IT6 -N CHECK_IF
   # disable IPv6 source routing (and ping-pong)
@@ -202,7 +203,7 @@ $IT6 -N CHECK_IF
 {% endfor %}
 
   # everything else is dropped!
-  $IT6 -A CHECK_IF -j LOG_DROP
+  $IT6 -A CHECK_IF -j {{ firewall_default_rule_checkif }}
 
 
 ############################################################
