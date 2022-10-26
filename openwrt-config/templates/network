@@ -20,8 +20,8 @@ config interface '{{ iface_name }}'
 	option ifname '{{ iface_name }}'
 {% endif %}
 {% if 'address' in iface and iface.address != 'dhcp' %}
-	option ipaddr '{{ iface.address | ipaddr('address') }}'
-	option netmask '{{ iface.address | ipaddr('netmask') }}'
+	option ipaddr '{{ iface.address | ansible.utils.ipaddr('address') }}'
+	option netmask '{{ iface.address | ansible.utils.ipaddr('netmask') }}'
 {% endif %}
 {% if 'gateway' in iface %}
 	option gateway {{ iface.gateway }}

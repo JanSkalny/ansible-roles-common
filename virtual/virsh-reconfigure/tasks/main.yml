@@ -1,4 +1,4 @@
-- include_role: 
+- import_role: 
     name: common/virtual/shutdown
 
 - name: undefine old vm
@@ -11,5 +11,5 @@
     command: define
     xml: "{{ lookup('template', '../generate-config/templates/virtual.xml') }}"
 
-- include_role: 
+- import_role: 
     name: common/virtual/start

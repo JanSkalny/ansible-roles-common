@@ -11,8 +11,8 @@
     loop_var: php_version
   with_items: "{{ php_remove_versions }}"
 
-- include_tasks: composer.yml 
+- import_tasks: composer.yml 
 
 # install and secure apache
-- include_tasks: apache2.yml
+- import_tasks: apache2.yml
 

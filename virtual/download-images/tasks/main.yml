@@ -7,5 +7,5 @@
   get_url:
     url: "{{ item.url }}"
     dest: "{{ virtual_dir }}/images/{{ item.name }}"
-    sha256sum: "{{ item.sha256 | default('')}}"
+    checksum: "{{ item.checksum | default('')}}"
   with_items: "{{ virtual_images }}"

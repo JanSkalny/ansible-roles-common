@@ -3,6 +3,7 @@ firewall_template: "fw.sh"
 firewall_default_rule_input: "LOG_DROP"
 firewall_default_rule_output: "LOG_WILL_DROP"
 firewall_default_rule_forward: "LOG_DROP"
+firewall_default_rule_checkif: "LOG_DROP"
 
 firewall_iptables: "$( which iptables )"
 firewall6_iptables: "$( which ip6tables )"

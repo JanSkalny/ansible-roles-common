@@ -9,12 +9,15 @@
   apt_key:
     url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x4F4EA0AAE5267A6C"
     state: present
+  when: www_use_ondrej
+
 - name: add apache2 repo
   apt_repository:
     repo: "deb http://ppa.launchpad.net/ondrej/apache2/ubuntu {{ ansible_distribution_release }} main"
     filename: php
     state: present
     update_cache: yes
+  when: www_use_ondrej
 
 - name: install packages
   apt:
@@ -60,20 +63,27 @@
     path: "{{ item }}"
     state: absent
   with_items:
-  - "/var/www/html/index.html"
   - "/etc/apache2/sites-available/default-ssl.conf"
   - "/etc/apache2/sites-available/default-tls.conf"
   notify: restart apache2
 
-#TODO: disable phpXXX-fpm.conf files
+- name: generate empty index.html
+  copy:
+    dest: "/var/www/html/index.html"
+    content: ""
+    group: www-data
+    owner: www-data
+    mode: 0400
 
+#TODO: disable phpXXX-fpm.conf files
 - name: enable apache2 configs
   shell: a2enconf {{ item }} || true
+  changed_when: false
   with_items:
   - php-fpm
   notify: restart apache2
 
-- name: disable mod_php and autoindex
+- name: disable mod_php 
   apache2_module:
     name: "{{ item }}"
     force: true
@@ -85,7 +95,15 @@
   - php7.2
   - php7.3
   - php7.4
-  - autoindex
+  - php8.0
   notify: restart apache2
   ignore_errors: yes
+
+- name: disable autoindex 
+  apache2_module:
+    name: audoindex
+    force: true
+    state: absent
+  when: www_disable_autoindex
+  notify: restart apache2
 

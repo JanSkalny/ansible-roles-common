@@ -2,6 +2,12 @@
     name: common/linux-proxy
 - import_role:
     name: common/linux-hostname
+- include_role:
+    name: common/linux-virtual
+  when: host_type == 'virtual'
+- include_role:
+    name: common/linux-physical
+  when: host_type == 'physical'
 - import_role:
     name: common/harden-ssh
 - import_role:

@@ -1,3 +1,6 @@
+www_use_ondrej: true
+www_disable_autoindex: true
+
 php_versions:
  - 8.0
 default_php_version: 8.0

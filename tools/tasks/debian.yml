@@ -1,6 +1,8 @@
 - name: refresh the list of packages
   apt:
     update_cache: true
+    cache_valid_time: 600
+  changed_when: false
 
 - name: install useful tools
   package: 
