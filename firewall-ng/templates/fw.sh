@@ -14,7 +14,7 @@
 {% set xaddr = firewallx_objects[name_or_addr] %}
 {% do results.append(xaddr.replace(' ','').split(',') if xaddr is string else xaddr) %}
 {% else %}
-{% if name_or_addr | ipaddr %}
+{% if name_or_addr | ansible.utils.ipaddr %}
 {% do results.append([name_or_addr]) %}
 {% else %}
 {{ xxx_invalid|mandatory("Object not found and direct DNS referencing not allowed: "+name_or_addr+" ip_ver="+ip_ver|string+" rule="+(rule|to_json)) }}

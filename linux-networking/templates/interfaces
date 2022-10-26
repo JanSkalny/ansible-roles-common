@@ -90,8 +90,8 @@ auto {{ iface_name }}
 {% endif %}
 {% if 'address' in item and item.address != 'dhcp' %}
 iface {{ iface_name }} inet static
-	address {{ item.address | ipaddr('address') }}
-	netmask {{ item.address | ipaddr('netmask') }}
+	address {{ item.address | ansible.utils.ipaddr('address') }}
+	netmask {{ item.address | ansible.utils.ipaddr('netmask') }}
 {% if 'gateway' in item %}
 	gateway {{ item.gateway }}
 {% endif %}
@@ -99,8 +99,8 @@ iface {{ iface_name }} inet static
 {% endif %}
 {% if 'address6' in item and item.address6 != 'auto' %}
 iface {{ iface_name }} inet6 static
-	address {{ item.address6 | ipaddr('address') }}
-	netmask {{ item.address6 | ipaddr('prefix') }}
+	address {{ item.address6 | ansible.utils.ipaddr('address') }}
+	netmask {{ item.address6 | ansible.utils.ipaddr('prefix') }}
 {% if 'gateway6' in item %}
 	gateway {{ item.gateway6 }}
 {% endif %}
