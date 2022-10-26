@@ -76,9 +76,9 @@
     mode: 0400
 
 #TODO: disable phpXXX-fpm.conf files
-
 - name: enable apache2 configs
   shell: a2enconf {{ item }} || true
+  changed_when: false
   with_items:
   - php-fpm
   notify: restart apache2

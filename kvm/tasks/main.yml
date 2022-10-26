@@ -53,7 +53,9 @@
   tags:
   - configure
 
+#XXX: ugly
 - name: get rid of default networking
   shell:
     virsh net-destroy default 2>&1 || true
+  changed_when: false
   tags: install
