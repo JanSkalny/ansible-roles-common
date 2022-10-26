@@ -9,12 +9,15 @@
   apt_key:
     url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x4F4EA0AAE5267A6C"
     state: present
+  when: www_use_ondrej
+
 - name: add apache2 repo
   apt_repository:
     repo: "deb http://ppa.launchpad.net/ondrej/apache2/ubuntu {{ ansible_distribution_release }} main"
     filename: php
     state: present
     update_cache: yes
+  when: www_use_ondrej
 
 - name: install packages
   apt:
@@ -60,10 +63,18 @@
     path: "{{ item }}"
     state: absent
   with_items:
-  - "/var/www/html/index.html"
   - "/etc/apache2/sites-available/default-ssl.conf"
   - "/etc/apache2/sites-available/default-tls.conf"
   notify: restart apache2
+
+- name: generate empty index.html
+  copy:
+    dest: "/var/www/html/index.html"
+    content: ""
+    group: www-data
+    owner: www-data
+    mode: 0400
+
 
 #TODO: disable phpXXX-fpm.conf files
 
