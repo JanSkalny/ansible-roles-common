@@ -1,4 +1,4 @@
 # create domains as requested
-- include: domain.yml
+- import_tasks: domain.yml
   #  vars:
   #  www_domain_extra_vhost_config: "{{ lookup('file', 'files/www-domain-append/{{ www_domain }}x') }}"

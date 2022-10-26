@@ -1,11 +1,11 @@
 
 # create database and user
-- include: db.yml
+- import_tasks: db.yml
 
 # install mailadmin, mailgraph and webmail
-- include: admin.yml
-- include: mailgraph.yml
-- include: webmail.yml
+- import_tasks: admin.yml
+- import_tasks: mailgraph.yml
+- import_tasks: webmail.yml
 
 # configure apache
-- include: apache.yml
+- import_tasks: apache.yml

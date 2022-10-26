@@ -1,6 +1,6 @@
-- include: smartmontools.yml
-- include: mdadm.yml
-- include: sensors.yml
+- import_tasks: smartmontools.yml
+- import_tasks: mdadm.yml
+- import_tasks: sensors.yml
 
 - package:
     name:
