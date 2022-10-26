@@ -1,0 +1,17 @@
+- name: restart bareos-storage
+  service:
+    name: bareos-storage
+    state: restarted
+- name: restart bareos-director
+  service:
+    name: bareos-director
+    state: restarted
+- name: restart bareos-filedaemon
+  service:
+    name: bareos-filedaemon
+    state: restarted
+- name: reload bareos-director
+  service:
+    name: bareos-director
+    state: reloaded
+
