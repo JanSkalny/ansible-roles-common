@@ -1,0 +1,26 @@
+- name: install dependencies
+  package:
+      name:
+      - apt-transport-https
+      state: present
+  tags: install
+
+- name: add bareos apt key
+  apt_key:
+    url: "https://download.bareos.org/bareos/release/{{ bareos_version }}/xUbuntu_{{ ansible_distribution_version }}/Release.key"
+    state: present
+  tags: install
+
+- name: add bareos apt repository
+  get_url:
+    url: "https://download.bareos.org/bareos/release/{{ bareos_version }}/xUbuntu_{{ ansible_distribution_version }}/bareos.list"
+    dest: "/etc/apt/sources.list.d/bareos.list"
+  register: "bareos_apt_list"
+  tags: install
+
+- name: update apt cache
+  apt:
+    update_cache: true
+  when: bareos_apt_list.changed
+  tags: install
+

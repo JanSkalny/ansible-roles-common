@@ -15,7 +15,7 @@
 
 - name: "Set URL"
   set_fact:
-    url: "https://repo.zabbix.com/zabbix/{{ zabbix_version }}/ubuntu/pool/main/z/zabbix-release/zabbix-release_{{ zabbix_version }}-1+{{ distribution }}_all.deb"
+    url: "https://repo.zabbix.com/zabbix/{{ zabbix_version }}/ubuntu/pool/main/z/zabbix-release/zabbix-release_{{ zabbix_version }}-4+{{ distribution }}_all.deb"
 #  url: "https://repo.zabbix.com/zabbix/{{ zabbix_version }}/ubuntu/pool/main/z/zabbix-release/zabbix-release_{{ zabbix_version }}-1+{{ ansible_distribution_release }}_all.deb"
 
 - debug: msg="Zabbix distribution url={{ url }}", verbosity=1

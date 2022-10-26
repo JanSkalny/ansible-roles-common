@@ -1,0 +1,4 @@
+- name: restart bareos-filedaemon
+  service:
+    name: bareos-filedaemon
+    state: restarted

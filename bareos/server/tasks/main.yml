@@ -1,0 +1,39 @@
+- name: install bareos server and dependencies
+  package: 
+    name: 
+      - postgresql-all
+      - bareos
+    state: present
+  notify:
+    - restart bareos-storage
+    - restart bareos-director
+    - restart bareos-filedaemon
+  tags: install
+
+- name: configure bareos-director
+  template:
+    src: "{{ item.src }}"
+    dest: "/etc/bareos/bareos-dir.d/{{ item.dest }}"
+    owner: bareos
+    group: bareos
+    mode: 0640
+  tags: configure
+  with_items:
+    - src: DefaultJob.conf
+      dest: jobdefs/DefaultJob.conf
+  notify:
+    - restart bareos-director
+
+- name: deploy client configurations
+  template:
+    src: "Client.conf"
+    dest: "/etc/bareos/bareos-dir.d/client/{{ bareos_client.name }}.conf"
+    owner: bareos
+    group: bareos
+    mode: 0640
+  loop: "{{ bareos_clients | default([]) }}"
+  loop_control:
+    loop_var: bareos_client
+  tags: configure
+  notify:
+    - reload bareos-director

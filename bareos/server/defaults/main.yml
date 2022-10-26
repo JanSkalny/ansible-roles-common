@@ -1,0 +1,2 @@
+#XXX: define in group_vars/all/, since variable is used on dir and fds
+# bareos_secret: "fooBarBaz"

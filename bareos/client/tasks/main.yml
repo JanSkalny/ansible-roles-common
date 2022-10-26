@@ -1,0 +1,26 @@
+- name: install bareos filedaemon
+  package: 
+    name: 
+      - bareos-filedaemon
+    state: present
+  notify:
+    - restart bareos-filedaemon
+  tags: install
+
+- name: configure bareos-filedaemon
+  template:
+    src: "{{ item.src }}"
+    dest: "/etc/bareos/bareos-fd.d/{{ item.dest }}"
+    owner: bareos
+    group: bareos
+    mode: 0640
+  tags: configure
+  with_items:
+    - src: myself.conf
+      dest: client/myself.conf
+    - src: bareos-dir.conf
+      dest: director/bareos-dir.conf
+  notify:
+    - restart bareos-filedaemon
+
+
