@@ -1,5 +1,5 @@
-- import_tasks: oracle.yml
+- include_tasks: oracle.yml
   when: java.use_oracle
 
-- import_tasks: openjdk.yml
+- include_tasks: openjdk.yml
   when: not java.use_oracle

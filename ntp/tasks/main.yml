@@ -1,7 +1,7 @@
 ---
 
-- import_tasks: ntp.yml
+- include_tasks: ntp.yml
   when: ntp_servers is defined and 'ntp' in ntp_service
 
-- import_tasks: chrony.yml
+- include_tasks: chrony.yml
   when: ntp_servers is defined and 'chrony' in ntp_service

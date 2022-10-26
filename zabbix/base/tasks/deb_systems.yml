@@ -23,9 +23,9 @@
   when: reinstall_zabbix
 
 - name: download and install zabbix-release for Ubuntu
-  import_tasks: ubuntu_install.yml
+  include_tasks: ubuntu_install.yml
   when: ansible_distribution == 'Ubuntu' and reinstall_zabbix
 
 - name: download and install zabbix-release for Debian
-  import_tasks: debian_install.yml
+  include_tasks: debian_install.yml
   when: ansible_distribution == 'Debian' and reinstall_zabbix

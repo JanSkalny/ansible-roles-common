@@ -1,4 +1,0 @@
-dependencies:
- - { role: linux-virtual, when: host_type == 'virtual' }
- - { role: linux-physical, when: host_type == 'physical' }
-

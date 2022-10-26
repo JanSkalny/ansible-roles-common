@@ -18,7 +18,7 @@
   tags: configure
 
 - name: change hostname
-  include_role:
+  import_role:
     name: common/linux-hostname
   tags: configure
 
