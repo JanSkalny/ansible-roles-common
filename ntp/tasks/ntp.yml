@@ -30,6 +30,7 @@
     shell: "ntpdate -q {{ ntp_servers[0] | quote}} | tail -n1 | sed 's/.* offset \\(.*\\) sec/\\1/'"
     ignore_errors: true
     check_mode: no
+    changed_when: false
     register: ntpdate_offset
     tags:
     - ntpdate

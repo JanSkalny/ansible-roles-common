@@ -1,6 +1,7 @@
 - name: refresh the list of packages
   apt:
     update_cache: true
+  changed_when: false
 
 - name: install useful tools
   package: 

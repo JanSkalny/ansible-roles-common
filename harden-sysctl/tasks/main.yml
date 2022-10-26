@@ -3,7 +3,7 @@
      dest: "/etc/sysctl.conf"
      owner: root
      group: root
-     mode: 0644
+     mode: 0600
 
 - name: sysctl.d permissions
   file:
@@ -11,7 +11,8 @@
      recurse: yes
      owner: root
      group: root
-     mode: "go-w"
+     mode: u=rwX,go=
+  changed_when: false 
 
 - name: sysctl hardening 
   sysctl:
