@@ -75,7 +75,6 @@
     owner: www-data
     mode: 0400
 
-
 #TODO: disable phpXXX-fpm.conf files
 
 - name: enable apache2 configs
@@ -84,7 +83,7 @@
   - php-fpm
   notify: restart apache2
 
-- name: disable mod_php and autoindex
+- name: disable mod_php 
   apache2_module:
     name: "{{ item }}"
     force: true
@@ -96,7 +95,15 @@
   - php7.2
   - php7.3
   - php7.4
-  - autoindex
+  - php8.0
   notify: restart apache2
   ignore_errors: yes
+
+- name: disable autoindex 
+  apache2_module:
+    name: audoindex
+    force: true
+    state: absent
+  when: www_disable_autoindex
+  notify: restart apache2
 

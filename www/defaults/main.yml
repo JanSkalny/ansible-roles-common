@@ -1,4 +1,5 @@
 www_use_ondrej: true
+www_disable_autoindex: true
 
 php_versions:
  - 8.0
