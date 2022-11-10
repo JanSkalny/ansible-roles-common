@@ -1,0 +1,3 @@
+cluster_token: 3000
+cluster_retransmits: 10
+cluster_last_man_standing_window: 10000
