@@ -86,7 +86,7 @@
       <listen type='address'/>
     </graphics>
     <video>
-      <model type='vmvga' vram='16384' heads='1' primary='yes'/>
+      <model type='virtio' vram='16384' heads='1' primary='yes'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>
     </video>
     <memballoon model='virtio'>
