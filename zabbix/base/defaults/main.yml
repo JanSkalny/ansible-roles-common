@@ -1,1 +1,14 @@
-zabbix_version: "5.2"
+zabbix_version: "6.0"
+
+zabbix_version_patch:
+  "5.2": 1
+  "5.4": 1
+  "6.0": 4
+  "6.2": 2
+
+zabbix_distribution_package_name:
+  Debian: "zabbix-release_{{ zabbix_version }}-{{ zabbix_version_patch[zabbix_version] }}+{{ ansible_distribution_release }}_all.deb"
+  Ubuntu: "zabbix-release_{{ zabbix_version }}-{{ zabbix_version_patch[zabbix_version] }}+{{ ansible_distribution | lower }}{{ ansible_distribution_version }}_all.deb"
+
+zabbix_release_url: "https://repo.zabbix.com/zabbix/{{ zabbix_version }}/{{ ansible_distribution | lower }}/pool/main/z/zabbix-release/{{ zabbix_distribution_package_name[ansible_distribution]}} "
+

@@ -22,10 +22,24 @@
       autoremove: yes
   when: reinstall_zabbix
 
-- name: download and install zabbix-release for Ubuntu
-  include_tasks: ubuntu_install.yml
-  when: ansible_distribution == 'Ubuntu' and reinstall_zabbix
+- name: remove old zabbix-release file
+  file:
+    path: /tmp/zabbix-release.deb
+    state: absent
+  when: reinstall_zabbix
 
-- name: download and install zabbix-release for Debian
-  include_tasks: debian_install.yml
-  when: ansible_distribution == 'Debian' and reinstall_zabbix
+- name: download zabbix-release package
+  get_url:
+    url: "{{ zabbix_release_url }}"
+    dest: "/tmp/zabbix-release.deb"
+  when: reinstall_zabbix
+
+- name: install zabbix-release.deb
+  apt:
+    deb: "/tmp/zabbix-release.deb"
+  when: reinstall_zabbix
+
+- name: apt-get update
+  apt:
+    update_cache: yes
+  when: reinstall_zabbix
