@@ -7,6 +7,7 @@
 - name: add influxdata key
   apt_key:
       url: "https://repos.influxdata.com/influxdb.key"
+      keyring: /etc/apt/trusted.gpg.d/influx.gpg
       state: present
 
 - name: add influxdata repo

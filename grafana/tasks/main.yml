@@ -8,6 +8,7 @@
 - name: add grafana key
   apt_key:
       url: "https://packages.grafana.com/gpg.key"
+      keyring: /etc/apt/trusted.gpg.d/grafana.gpg
       state: present
   tags: install
 

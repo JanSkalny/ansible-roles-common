@@ -11,6 +11,7 @@
   apt_key:
     url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
     id: D27D666CD88E42B4
+    keyring: /etc/apt/trusted.gpg.d/elastic.gpg
     state: present
   tags: install
 

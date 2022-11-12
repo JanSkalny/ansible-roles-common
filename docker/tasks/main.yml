@@ -9,6 +9,7 @@
 - name: add docker key
   apt_key:
     url: "https://download.docker.com/linux/ubuntu/gpg"
+    keyring: /etc/apt/trusted.gpg.d/docker.gpg
     state: present
   tags: install
 
