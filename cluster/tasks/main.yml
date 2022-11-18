@@ -4,6 +4,7 @@
     - pacemaker 
     - corosync 
     - crmsh
+    - pcs
     - fence-agents
     - drbd-utils
     - ocfs2-tools
