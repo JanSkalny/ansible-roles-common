@@ -1,7 +1,6 @@
 - name: install zabbix-server and dependecies
   package:
     name:
-    - python-mysqldb
     - python3-mysqldb
     - php{{ php_version }}-bcmath
     - php{{ php_version }}-xml
