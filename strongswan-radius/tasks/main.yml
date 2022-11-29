@@ -1,0 +1,23 @@
+- name: install strongswan
+  package:
+    name: 
+    - strongswan
+  notify: 
+  - enable strongswan
+  - restart strongswan
+
+- name: configure strongswan ike
+  template:
+    src: ipsec.conf
+    dest: /etc/ipsec.conf
+    owner: root
+    mode: 0644
+  notify: restart strongswan
+
+- name: configure strongswan radius
+  template:
+    src: eap-radius.conf
+    dest: /etc/strongswan.d/charon/eap-radius.conf
+    owner: root
+    mode: 0600
+  notify: restart strongswan

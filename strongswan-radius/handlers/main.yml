@@ -1,0 +1,9 @@
+- name: enable strongswan
+  service:
+    name: strongswan
+    state: enabled
+
+- name: restart strongswan
+  service:
+    name: strongswan
+    state: restarted
