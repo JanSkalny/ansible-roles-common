@@ -1,3 +1,5 @@
+---
+
 - name: prepare debconf
   debconf:
     name: slapd
@@ -53,7 +55,7 @@
   tags: install
 
 - name: run handlers
-  meta: flush_handlers 
+  meta: flush_handlers
 
 - name: enable memberof module
   ldap_entry:
@@ -80,15 +82,15 @@
 
 - name: create technical and user sub-trees
   ldap_entry:
-   dn: '{{ item }}'
-   objectClass: organizationalUnit
-   state: present
-   bind_dn: "{{ ldap_root_dn }}"
-   bind_pw: "{{ ldap_root_pw }}"
+    dn: '{{ item }}'
+    objectClass: organizationalUnit
+    state: present
+    bind_dn: "{{ ldap_root_dn }}"
+    bind_pw: "{{ ldap_root_pw }}"
   with_items:
-   - "ou=tech,{{ ldap_base_dn }}"
-   - "ou=users,{{ ldap_base_dn }}"
-   - "ou=groups,{{ ldap_base_dn }}"
+    - "ou=tech,{{ ldap_base_dn }}"
+    - "ou=users,{{ ldap_base_dn }}"
+    - "ou=groups,{{ ldap_base_dn }}"
   tags: install
 
 - name: add technical users
@@ -100,11 +102,10 @@
       - simplesecurityobject
     attributes:
       description: "{{ item.key }} tech user"
-      userPassword: "{{ item.value|to_ssha }}"
+      userPassword: "{% if '{SSHA}' in item.value %}{{ item.value }}{% else %}{{ item.value | to_ssha }}{% endif %}"
     bind_dn: "{{ ldap_root_dn }}"
     bind_pw: "{{ ldap_root_pw }}"
-  with_dict:
-   "{{ ldap_tech_users }}"
+  with_dict: "{{ ldap_tech_users }}"
   tags: configure
 
 - name: add ldap users
@@ -119,8 +120,7 @@
       userPassword: "{{ item.password }}"
     bind_dn: "{{ ldap_root_dn }}"
     bind_pw: "{{ ldap_root_pw }}"
-  with_items:
-   "{{ ldap_users }}"
+  with_items: "{{ ldap_users }}"
   tags: configure
 
 - name: remove ldap users
@@ -144,8 +144,7 @@
     state: exact
     bind_dn: "{{ ldap_root_dn }}"
     bind_pw: "{{ ldap_root_pw }}"
-  with_items:
-   "{{ ldap_users }}"
+  with_items: "{{ ldap_users }}"
   tags: configure
 
 - name: create groups
