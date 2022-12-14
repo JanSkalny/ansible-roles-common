@@ -8,6 +8,8 @@
   become: yes
   tags: never # this is not needed
 
+#TODO: make sure iptables, conntrack and nftables are installed
+
 - name: Save old fw.sh to root HOME
   copy:
     src: /etc/init.d/fw.sh
