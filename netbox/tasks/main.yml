@@ -26,9 +26,10 @@
              - /opt/nginx-proxy-ssl/:/etc/nginx/certs:ro
          netbox-worker:
            restart: unless-stopped
+         netbox-housekeeping:
+           restart: unless-stopped
          netbox:
            restart: unless-stopped
-           image: netboxcommunity/netbox:${VERSION-latest-ldap}
            environment:
              REMOTE_AUTH_ENABLED: "true"
              REMOTE_AUTH_BACKEND: "netbox.authentication.LDAPBackend"
