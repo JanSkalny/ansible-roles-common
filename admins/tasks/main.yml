@@ -1,17 +1,19 @@
+---
+
 - name: remove invalid users
   user:
     name: "{{ item }}"
     state: absent
-  with_items : "{{ users_remove }}"
+  with_items: "{{ users_remove }}"
 
 - name: install dependencies (sudo)
-  package: 
-    name: sudo 
+  package:
+    name: sudo
     state: present
 
 - name: add sudo group
-  group: 
-    name: sudo 
+  group:
+    name: sudo
     state: present
 
 - name: create sudoers.d
@@ -22,12 +24,20 @@
     owner: root
 
 - name: passwordless sudoers
-  copy: 
-    src: sudoers 
-    dest: /etc/sudoers.d/system 
-    owner: root 
-    group: root 
+  copy:
+    src: sudoers
+    dest: /etc/sudoers.d/system
+    owner: root
+    group: root
     mode: 0440
+
+- name: create jump user
+  user:
+    name: "{{ item }}"
+    shell: "/bin/true"
+    state: present
+    createhome: true
+  with_items: "{{ jump_users }}"
 
 - name: create user
   user:
@@ -35,25 +45,24 @@
     shell: "{{ default_user_shell }}"
     state: present
     groups: sudo
-    createhome: yes
-  with_items : "{{ users }}"
+    createhome: true
+  with_items: "{{ users }}"
 
 - name: add authorized_keys
   authorized_key:
     user: "{{ item }}"
     state: present
-    exclusive: yes
+    exclusive: true
     key: "{{ lookup('file', root_dir+'/files/ssh-keys/'+item) }}"
-  with_items: "{{ users }}"
+  with_items: "{{ users + jump_users }}"
   when: not ansible_check_mode
 
 - name: "fancy .profile for user {{ item }}"
-  copy: 
+  copy:
     src: dotprofile
     dest: "{{ '~' + item | expanduser }}/.profile"
     owner: "{{ item }}"
     group: "{{ item }}"
     mode: 0640
-  with_items : "{{ users }}"
+  with_items: "{{ users }}"
   tags: configure
-
