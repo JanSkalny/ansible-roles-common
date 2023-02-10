@@ -1,9 +1,15 @@
 - name: enable strongswan
   service:
-    name: strongswan
-    state: enabled
+    name: ipsec
+    enabled: yes
+    state: restarted
 
 - name: restart strongswan
   service:
-    name: strongswan
+    name: ipsec
+    state: restarted
+
+- name: restart freeradius
+  service:
+    name: freeradius
     state: restarted

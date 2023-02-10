@@ -1,0 +1,5 @@
+{% for u in strongswan_radius_users %}
+{{ u.login }} Cleartext-Password := "{{ u.password }}"
+	Class = "{{ u.group }}"
+
+{% endfor %}
