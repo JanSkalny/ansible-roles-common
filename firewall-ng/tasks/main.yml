@@ -1,3 +1,16 @@
+- name: ensure iptables command is present
+  when: ansible_distribution == 'Debian'
+  block:
+    - name: check iptables presence
+      shell: which iptables
+      changed_when: false
+      register: iptables_presence
+
+    - name: ensure iptables is installed
+      when:  iptables_presence.rc != 0
+      apt:
+        name: iptables
+
 - name: Save current state of the iptables to root HOME
   shell: iptables-save > ~/iptables.v4-{{ '%Y-%m-%d-%H-%M-%S' | strftime(ansible_date_time.epoch) }}
   become: yes
