@@ -8,6 +8,7 @@
     - fence-agents
     - drbd-utils
     - ocfs2-tools
+    - dlm-controld
   tags: install
 
 - name: install additional cluster sw (jammy)

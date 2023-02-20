@@ -26,3 +26,12 @@
     src: "logrotate"
     dest: "/etc/logrotate.d/syslog-ng"
   tags: configure
+
+- name: ensure /var/log/news dir exists
+  file:
+    state: directory
+    path: /var/log/news
+    owner: root
+    group: root
+    mode: '0755'
+  tags: configure
