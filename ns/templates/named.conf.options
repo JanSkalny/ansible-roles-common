@@ -1,6 +1,10 @@
 options {
   directory "/var/cache/bind";
 
+{% if ns_forward_only | default(true) %}
+  forward only;
+{% endif %}
+
   forwarders {
     {% for upstream in ns_upstream %}
     {{ upstream }};
