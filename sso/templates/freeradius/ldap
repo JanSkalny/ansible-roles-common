@@ -115,7 +115,7 @@ ldap {
 		probes = 3
 		interval = 3
 		#ldap_debug = 0x0028
-		ldap_debug = 0xffff
+		#ldap_debug = 0xffff
 	}
 
 	tls {
