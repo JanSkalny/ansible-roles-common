@@ -9,4 +9,4 @@
     src: squid.conf
     dest: /etc/squid/squid.conf
   tags: configure
-  notify: restart squid
+  notify: reload squid
