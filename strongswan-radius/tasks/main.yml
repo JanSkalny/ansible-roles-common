@@ -2,6 +2,7 @@
   package:
     name: 
     - strongswan
+    - strongswan-swanctl
     - libstrongswan-extra-plugins
     - libcharon-extra-plugins
     - freeradius
