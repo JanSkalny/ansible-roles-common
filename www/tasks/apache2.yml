@@ -8,6 +8,7 @@
 - name: add repo key
   apt_key:
     url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x4F4EA0AAE5267A6C"
+    keyring: /etc/apt/trusted.gpg.d/ondrej.gpg
     state: present
   when: www_use_ondrej
 

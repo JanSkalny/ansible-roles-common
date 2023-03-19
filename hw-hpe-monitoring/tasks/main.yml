@@ -1,10 +1,13 @@
 - name: add hpe apt key
   apt_key:
-    url: "{{item}}"
+    url: "{{ item.url }}"
+    keyring: "/etc/apt/trusted.gpg.d/{{ item.name }}.gpg"
     state: present
   with_items:
-  - "https://downloads.linux.hpe.com/SDR/repo/mcp/GPG-KEY-mcp"
-  - "https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub"
+    - name: hpe-mcp:
+      url: "https://downloads.linux.hpe.com/SDR/repo/mcp/GPG-KEY-mcp"
+    - name: hpe-public
+      url: "https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub"
 
 - name: add hpe respositories
   apt_repository:

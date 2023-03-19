@@ -23,3 +23,5 @@ zabbix_proxy_tls_mode: unencrypted                       # Accepts 'unencrypted'
 #zabbix_proxy_psk_identity:                              # UNIQUE identity of proxy. Transmitted over network unencrypted!
 #zabbix_proxy_psk:                                       # Content of secret PSK
 ####
+
+zabbix_proxy_schema_file: "/usr/share/{% if zabbix_version|int >= 6 %}zabbix-sql-scripts/mysql/proxy.sql{% else %}doc/zabbix-proxy-mysql/schema.sql.gz{% endif %}"

@@ -6,14 +6,28 @@
     - git
   tags: install
 
-- name: add golang repository
+#- name: add golang repository
+#  apt_repository:
+#    repo: ppa:longsleep/golang-backports
+#    state: present
+#    update_cache: yes
+#  tags: install
+
+#XXX: https://github.com/ansible/ansible/issues/42534
+- name: add repo key
+  apt_key:
+    url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x52B59B1571A79DBC054901C0F6BC817356A3D45E"
+    keyring: /etc/apt/trusted.gpg.d/golang.gpg
+    state: present
+
+- name: add golang repo
   apt_repository:
-    repo: ppa:gophers/archive
+    repo: "deb http://ppa.launchpad.net/longsleep/golang-backports/ubuntu {{ ansible_distribution_release }} main"
+    filename: golang
     state: present
     update_cache: yes
-  tags: install
 
 - name: install golang
   package:
-    name: golang-1.11-go
+    name: golang-1.19
   tags: install

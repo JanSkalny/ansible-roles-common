@@ -9,6 +9,7 @@
 - name: add owncloud signing key
   apt_key:
     url: https://download.owncloud.org/download/repositories/production/Ubuntu_{{ ansible_distribution_version }}/Release.key
+    keyring: /etc/apt/trusted.gpg.d/owncloud.gpg
     state: present
   tags: install
 

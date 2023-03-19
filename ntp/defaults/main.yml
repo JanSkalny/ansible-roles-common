@@ -8,3 +8,5 @@ ntp_clients: []
 
 # debian/ubuntu
 ntp_service: ntp # or chrony Ubuntu >18
+
+ntp_pool_options: "burst iburst true"

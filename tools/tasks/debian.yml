@@ -13,7 +13,6 @@
     - screen
     - bc
     - debian-keyring
-    - ubuntu-keyring
     - tcptraceroute
     - nmap
     - patch
@@ -42,10 +41,19 @@
     state: present
   tags: install
 
+- name: install ubuntu only package
+  when: ansible_distribution == 'Ubuntu'
+  package:
+    name: ubuntu-keyring
+    state: present
+  tags: install
+
 - name: install usefull tools (non-bionic)
   package: 
     name:
     - openssl-blacklist
     state: present
-  when: ansible_distribution_version < '18.04'
+  when:
+    - ansible_distribution == "Ubuntu"
+    - ansible_distribution_version < '18.04'
   tags: install

@@ -8,6 +8,7 @@
   apt_key:
     id: "06E85760C0A52C50"
     url: "https://dl.ui.com/unifi/unifi-repo.gpg"
+    keyring: /etc/apt/trusted.gpg.d/unifi.gpg
     state: present
   tags: install
 

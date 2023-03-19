@@ -8,6 +8,7 @@
 - name: add bareos apt key
   apt_key:
     url: "https://download.bareos.org/bareos/release/{{ bareos_version }}/xUbuntu_{{ ansible_distribution_version }}/Release.key"
+    keyring: /etc/apt/trusted.gpg.d/bareos.gpg
     state: present
   tags: install
 

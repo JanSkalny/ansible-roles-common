@@ -8,7 +8,9 @@
 - name: add repo key
   apt_key:
     url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x4F4EA0AAE5267A6C"
+    keyring: /etc/apt/trusted.gpg.d/ondrej.gpg
     state: present
+
 - name: add php repo
   apt_repository:
     repo: "deb http://ppa.launchpad.net/ondrej/php/ubuntu {{ ansible_distribution_release }} main"

@@ -4,3 +4,4 @@ ns_upstream:
 
 ns_master_zones: []
 ns_recursion: []
+ns_forward_only: no

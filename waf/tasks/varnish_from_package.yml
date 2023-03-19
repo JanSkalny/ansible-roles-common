@@ -3,6 +3,7 @@
 - name: add varnish apt key
   apt_key:
     url: "https://packagecloud.io/varnishcache/varnish60lts/gpgkey"
+    keyring: /etc/apt/trusted.gpg.d/varnish.gpg
     state: present
   tags: install
 

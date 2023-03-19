@@ -8,3 +8,8 @@
   service:
     name: ipsec
     state: restarted
+
+- name: restart freeradius
+  service:
+    name: freeradius
+    state: restarted

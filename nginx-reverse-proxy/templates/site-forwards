@@ -11,12 +11,11 @@ server {
 {% for fwd in site_forwards %}
 
 server {
-	listen 443 default_server;
-	listen [::]:443 default_server;
+	listen 443 ssl;
+	listen [::]:443 ssl;
 
 	server_name {{ fwd.name }};
 
-	ssl on;
 	ssl_certificate {{ fwd.cert }};
 	ssl_certificate_key {{ fwd.key }};
 

@@ -1,0 +1,51 @@
+- name: install strongswan and freeradius
+  package:
+    name: 
+    - strongswan
+    - strongswan-swanctl
+    - libstrongswan-extra-plugins
+    - libcharon-extra-plugins
+    - freeradius
+  notify: 
+  - enable strongswan
+  - restart strongswan
+
+- name: configure freeradius clients
+  template:
+    src: clients.conf
+    dest: /etc/freeradius/3.0/clients.conf
+    owner: freerad
+    mode: 0600
+  notify: restart freeradius
+
+- name: generate radius users
+  template:
+    src: users
+    dest: /etc/freeradius/3.0/mods-config/files/authorize
+    owner: freerad
+    mode: 0600
+  notify: restart freeradius
+
+- name: configure strongswan ike
+  template:
+    src: ipsec.conf
+    dest: /etc/ipsec.conf
+    owner: root
+    mode: 0644
+  notify: restart strongswan
+
+- name: generate ipsec.secrets
+  template:
+    src: ipsec.secrets
+    dest: /etc/ipsec.secrets
+    owner: root
+    mode: 0600
+  notify: restart strongswan
+
+- name: configure strongswan radius
+  template:
+    src: eap-radius.conf
+    dest: /etc/strongswan.d/charon/eap-radius.conf
+    owner: root
+    mode: 0600
+  notify: restart strongswan

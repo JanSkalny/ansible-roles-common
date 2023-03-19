@@ -73,7 +73,7 @@
     --disk path="{{ virtual.disk_blk | default("/dev/mapper/"+virtual.name) }}",device=disk,bus=virtio,cache=none \
     --disk path="{{ virtual_dir }}/preseed/{{ virtual.name }}/seed.qcow2",device=cdrom \
     --graphics=vnc,port=-1 \
-    --video vmvga \
+    --video virtio \
     --noautoconsole \
     --debug \
     --noreboot

@@ -15,7 +15,7 @@ firewall_interfaces: "{{ networking }}"
 firewall6_interfaces: {}
 
 ## EXAMPLES:
-#firewall_interface:
+#firewall_interfaces:
 #   mngPhys:
 #     deny:
 #     - 10.0.0.128/26

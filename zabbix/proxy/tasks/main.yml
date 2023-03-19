@@ -9,11 +9,18 @@
   when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version <= "18"
 
 - name: install zabbix-proxy and python3-mysqldb
-  package:
+  apt:
     name:
     - python3-mysqldb
     - zabbix-proxy-mysql
     state: present
+
+- name: install additional packages
+  package:
+    name:
+    - zabbix-sql-scripts
+    state: present
+  when: zabbix_version|int >= 6.0
 
 - name: create zabbix database
   mysql_db:
@@ -36,7 +43,7 @@
   mysql_db:
     name: "{{ zabbix_proxy_db_name }}"
     state: import
-    target: /usr/share/doc/zabbix-proxy-mysql/schema.sql.gz
+    target: "{{ zabbix_proxy_schema_file }}"
   when: zabbix_proxy_db_present.changed == True
 
 - name: create zabbix server CA file

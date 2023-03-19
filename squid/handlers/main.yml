@@ -2,3 +2,8 @@
   service:
     name: squid
     state: restarted
+
+- name: reload squid
+  service:
+    name: squid
+    state: reloaded
