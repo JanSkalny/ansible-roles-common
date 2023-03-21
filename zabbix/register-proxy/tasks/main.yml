@@ -1,0 +1,19 @@
+- name: make sure zabbix proxy exists
+  vars:
+    ansible_network_os: community.zabbix.zabbix
+    ansible_connection: httpapi
+    ansible_httpapi_port: 443
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false
+    ansible_zabbix_auth_key: "{{ zabbix_token }}"
+    ansible_zabbix_url_path: ""
+  become: false
+  delegate_to: "{{ zabbix_server_hostname }}"
+  community.zabbix.zabbix_proxy:
+    status: active
+    state: present
+    proxy_name: "{{ soc_context_name }}"
+    description: "{{ inventory_hostname }}"
+    tls_accept: "PSK" # 2  # psk
+    tls_psk_identity: "{{ zabbix_proxy_psk_identity }}"
+    tls_psk: "{{ zabbix_proxy_psk }}"

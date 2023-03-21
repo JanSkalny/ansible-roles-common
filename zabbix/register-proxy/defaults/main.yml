@@ -1,0 +1,14 @@
+zabbix_admin_login: "admin"
+zabbix_groups: 
+  - "Linux servers"
+
+#XXX: defined inside tasks/main.yml through:
+# ```
+#   include_vars:
+#     hash_behaviour: merge
+#     name: zabbix_template_definitions
+#     file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
+#   with_items: "{{ zabbix_templates }}"
+# ```
+# leave default set to {}, so default can be merged...
+zabbix_template_definitions: {}
