@@ -95,9 +95,6 @@
     mode: u=rw,g=r,o=
   notify: restart zabbix-proxy
 
-- include_role: 
-    name: common/zabbix/register-proxy
-
 - name: enable and start zabbix proxy service
   systemd:
     name: zabbix-proxy

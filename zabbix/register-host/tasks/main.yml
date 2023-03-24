@@ -7,8 +7,16 @@
 - set_fact:
     zabbix_linked_templates:  "{{ zabbix_template_definitions | json_query('*.template') | unique }}"
 
+#XXX: kedze niektore macra obsahuju nested jinju, je potrebne urobit merge cez iterativny lookup namiesto
+#zabbix_macros: "{{ vars | select('match', '^zabbix_macros_add_') | map('extract', vars) | flatten }}"
+#zabbix_macros: "{{ vars | dict2items | selectattr('key','match','^zabbix_macros_add_') | map(attribute='value') | list | flatten }}"
+- set_fact:
+    zabbix_macros: "{{ zabbix_macros | default([]) + lookup('vars', item) }}"
+  loop: "{{ vars | select('match', '^zabbix_macros_add_') }}"
+
 - debug: msg="zabbix_template_definitions={{ zabbix_template_definitions }}", verbosity=1
 - debug: msg="zabbix_linked_templates={{ zabbix_linked_templates }}", verbosity=1
+- debug: msg="zabbix_macros={{ zabbix_macros | default([]) }}", verbosity=1
   
 - name: make sure host groups exits
   vars:
@@ -44,6 +52,7 @@
     link_templates: "{{ zabbix_linked_templates }}"
     status: enabled
     state: present
+    macros: "{{ zabbix_macros | default([]) }}"
     interfaces:
       - type: agent
         main: 1
@@ -58,22 +67,3 @@
     proxy: "{{ zabbix_proxy | default('') }}"
   tags: configure
   when: not ansible_check_mode
-
-- name: Create zabbix macros
-  vars:
-    ansible_network_os: community.zabbix.zabbix
-    ansible_connection: httpapi
-    ansible_httpapi_port: 443
-    ansible_httpapi_use_ssl: true
-    ansible_httpapi_validate_certs: false
-    ansible_zabbix_auth_key: "{{ zabbix_token }}"
-    ansible_zabbix_url_path: ""
-  become: false
-  delegate_to: "{{ zabbix_server_hostname }}"
-  community.zabbix.zabbix_hostmacro:
-    host_name: "{{ inventory_hostname }}"
-    macro_name: "{{ item['macro_name'] }}"
-    macro_value: "{{ item['macro_value'] }}"
-    state: present
-  with_items: "{{ zabbix_macros | default([]) }}"
-  tags: configure
