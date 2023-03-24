@@ -46,3 +46,11 @@
   notify: restart mysql
   tags: configure
 
+- name: create zabbix user, if password is defined
+  community.mysql.mysql_user:
+    name: "{{ zabbix_mysql_monitor_user }}"
+    password: "{{ zabbix_mysql_monitor_password }}"
+    priv: "*.*:REPLICATION CLIENT,PROCESS,SHOW DATABASES,SHOW VIEW"
+    state: present
+  when: "{{ zabbix_mysql_monitor_password | default('') != '' }}"
+
