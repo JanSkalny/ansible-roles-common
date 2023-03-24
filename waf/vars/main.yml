@@ -26,3 +26,14 @@ waf_debian_dependencies:
     - pkg-config
     - python3-docutils
     - python3-sphinx
+  jammy:
+    - make
+    - automake
+    - autotools-dev
+    - libedit-dev
+    - libjemalloc-dev
+    - libncurses-dev
+    - libtool
+    - pkg-config
+    - python3-docutils
+    - python3-sphinx
