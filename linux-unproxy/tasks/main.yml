@@ -1,0 +1,52 @@
+- name: unset https proxy for apt
+  file:
+    path: /etc/apt/apt.conf.d/99proxy
+    state: absent
+
+- name: do we have wget?
+  stat:
+    path: /etc/wgetrc
+  register: st
+
+- name: unset proxy for wget
+  lineinfile:
+    path: /etc/wgetrc
+    state: absent
+    regexp: "^{{ item }} *=.*$"
+  with_items:
+  - "http_proxy"
+  - "https_proxy"
+  - "ftp_proxy"
+  - "no_proxy"
+  - "HTTP_PROXY"
+  - "HTTPS_PROXY"
+  - "FTP_PROXY"
+  - "NO_PROXY"
+  when: st.stat.exists
+
+- name: do we have pip?
+  stat:
+   path: /etc/pip.conf
+  register: st
+
+- name: unset proxy for pip
+  ini_file:
+    path: /etc/pip.conf
+    section: global
+    option: proxy
+    state: absent
+
+- name: unset proxy for the shell
+  lineinfile:
+    path: /etc/environment
+    state: absent
+    regexp: "^{{ item }}=.*$"
+  with_items:
+  - "http_proxy"
+  - "https_proxy"
+  - "ftp_proxy"
+  - "no_proxy"
+  - "HTTP_PROXY"
+  - "HTTPS_PROXY"
+  - "FTP_PROXY"
+  - "NO_PROXY"
