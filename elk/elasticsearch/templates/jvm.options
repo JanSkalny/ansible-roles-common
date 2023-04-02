@@ -1,14 +1,14 @@
 # Xms represents the initial size of total heap space
 # Xmx represents the maximum size of total heap space
--Xms{{ elastic.heap_space }}
--Xmx{{ elastic.heap_space }}
+-Xms{{ elastic_heap_space }}
+-Xmx{{ elastic_heap_space }}
 
 # specify an alternative path for heap dumps; ensure the directory exists and
 # has sufficient space
--XX:HeapDumpPath={{ elastic.data_path }}
+-XX:HeapDumpPath={{ elastic_data_path }}
 
 # specify an alternative path for JVM fatal error logs
--XX:ErrorFile={{ elastic.log_path }}/hs_err_pid%p.log
+-XX:ErrorFile={{ elastic_log_path }}/hs_err_pid%p.log
 
 # JDK 9+ GC logging
-9-:-Xlog:gc*,gc+age=trace,safepoint:file={{ elastic.log_path }}/gc.log:utctime,pid,tags:filecount=32,filesize=64m
+-Xlog:gc*,gc+age=trace,safepoint:file={{ elastic_log_path }}/gc.log:utctime,level,pid,tags:filecount=32,filesize=64m

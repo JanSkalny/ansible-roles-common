@@ -27,3 +27,12 @@
      dest: "{{ dest_dir }}/{{ pem_name }}"
    when: pem_name is defined and pem_name != ""
 
+ # to make elastic happy :)
+ - name: generate fullchain cert
+   copy:
+     dest: "{{ dest_dir }}/{{ fullchain_name }}"
+     content: |
+       {{ lookup('ansible.builtin.file', '{{ ca_dir }}/{{ hostname }}{{src_name_suffix}}.crt') }}
+       {{ lookup('ansible.builtin.file', '{{ ca_dir }}/signing-ca{{ src_name_suffix }}.crt') }}
+       {{ lookup('ansible.builtin.file', '{{ ca_dir }}/root-ca{{ src_name_suffix }}.crt') }}
+   when: fullchain_name is defined and fullchain_name != ""
