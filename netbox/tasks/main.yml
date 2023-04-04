@@ -41,9 +41,9 @@
              LDAP_IGNORE_CERT_ERRORS: "true"
              #AUTH_LDAP_GROUP_SEARCH_BASEDN: "ou=groups,{{ netbox_ldap_base }}"
              #AUTH_LDAP_MIRROR_GROUPS: "true"
-             AUTH_LDAP_REQUIRE_GROUP_DN: "cn=IPAMUsers,ou=groups,{{ netbox_ldap_base }}"
-             AUTH_LDAP_IS_ADMIN_DN: "cn=IPAMAdmins,ou=groups,{{ netbox_ldap_base }}"
-             AUTH_LDAP_IS_SUPERUSER_DN: "cn=IPAMAdmins,ou=groups,{{ netbox_ldap_base }}"
+             AUTH_LDAP_REQUIRE_GROUP_DN: "cn=AppIpamUsers,ou=groups,{{ netbox_ldap_base }}"
+             AUTH_LDAP_IS_ADMIN_DN: "cn=AppIpamAdmins,ou=groups,{{ netbox_ldap_base }}"
+             AUTH_LDAP_IS_SUPERUSER_DN: "cn=AppIpamAdmins,ou=groups,{{ netbox_ldap_base }}"
              CHANGELOG_RETENTION: 1825
              VIRTUAL_HOST: "{{ inventory_hostname }}"
              VIRTUAL_PORT: 8080
