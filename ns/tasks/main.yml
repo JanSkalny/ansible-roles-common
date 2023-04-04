@@ -39,6 +39,6 @@
     group: bind 
     mode: 0640
   with_items: "{{ ns_master_zones }}"
-  notify: restart bind
+  notify: reload bind
   tags: configure
 

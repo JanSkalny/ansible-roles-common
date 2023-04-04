@@ -14,54 +14,13 @@
     state: present
   tags: install
 
-- name: configure jvm.options from pacakge source
-  block:
-    - set_fact:
-        __elastic_jvmoptions: "./etc/elasticsearch/jvm.options"
-      tags: configure
-
-    - name: fetch elasticsearch current version
-      package_facts:
-
-    - name: create temp dir
-      check_mode: false
-      file:
-        path: /tmp/elastic_pkg
-        state: directory
-
-    - name: retrieve elasticsearch deb package
-      check_mode: false
-      command: "apt-get download elasticsearch={{ ansible_facts.packages['elasticsearch'][0].version }}"
-      args:
-        chdir: /tmp/elastic_pkg
-      tags: configure
-
-    - name: extract jvm.options original file
-      check_mode: false
-      shell: "dpkg-deb --fsys-tarfile elasticsearch_*.deb | tar -x {{ __elastic_jvmoptions }}"
-      args:
-        chdir: /tmp/elastic_pkg
-      tags: configure
-
-    - name: backup current jvm.options config
-      copy:
-        remote_src: true
-        src: /etc/elasticsearch/jvm.options
-        dest: "/etc/elasticsearch/jvm.options.{{ ansible_date_time.epoch }}.{{ ansible_facts.packages['elasticsearch'][0].version }}.bak"
-      tags: configure
-
-    - name: ensure original jvm.options is present
-      copy:
-        remote_src: true
-        src: "/tmp/elastic_pkg/{{ __elastic_jvmoptions }}"
-        dest: "/etc/elasticsearch/jvm.options"
-      tags: configure
-
-    - name: cleanup
-      file:
-        state: absent
-        path: "/tmp/elastic_pkg/"
-      tags: configure
+- name: create data storage
+  file:
+    path: "{{ elastic_data_path }}"
+    state: directory
+    owner: elasticsearch
+  notify: restart elasticsearch
+  tags: configure
 
 - name: configure elastic
   template:
@@ -75,44 +34,20 @@
   notify: restart elasticsearch
   tags: configure
 
-- name: configure logging
-  when: log4j2 is defined
-  template:
-    src: log4j2.properties.j2
-    dest: "/etc/elasticsearch/log4j2.properties"
-  notify: restart elasticsearch
-  tags: configure
-
-- name: remove limitations on memory
-  template:
-    src: "limits.conf"
-    dest: "/etc/security/limits.d/elasticsearch.conf"
-  notify: restart elasticsearch
-  tags: configure
-
-- name: load limits on session login
-  lineinfile:
-    path: "/etc/pam.d/common-session"
-    line: "session required pam_limits.so"
-  notify: restart elasticsearch
-  tags: configure
-
-- name: create data storage
+- name: fix permissions
   file:
-    path: "{{ elastic.data_path }}"
-    state: directory
-    owner: elasticsearch
-  notify: restart elasticsearch
-  tags: configure
+    path: /etc/elasticsearch/certs
+    mode: 0750
+    group: elasticsearch
 
-# toto uz netreba
-- name: create tmp directory
+- name: fix permissions
   file:
-    path: "/var/lib/elasticsearch/tmp"
-    state: directory
-    owner: elasticsearch
-  notify: restart elasticsearch
-  tags: never
+    path: "{{ item }}"
+    mode: 0660
+    group: elasticsearch
+  with_items:
+    - /etc/elasticsearch/elasticsearch.yml
+    - /etc/elasticsearch/elasticsearch.keystore
 
 - name: prepare systemd override directory
   file:
@@ -126,13 +61,22 @@
     dest: "/etc/systemd/system/elasticsearch.service.d/override.conf"
   notify:
     - reload systemctl
-    - restart elasticsearch
+  tags: configure
+
+- name: remove limitations on memory
+  template:
+    src: "limits.conf"
+    dest: "/etc/security/limits.d/elasticsearch.conf"
+  tags: configure
+
+- name: load limits on session login
+  lineinfile:
+    path: "/etc/pam.d/common-session"
+    line: "session required pam_limits.so"
   tags: configure
 
 - name: flush handlers
   meta: flush_handlers
-
-#- name: change mem limits MAX_LOCKED_MEMORY=unlimited and LimitMEMLOCK=infinity
 
 - name: enable services
   service:

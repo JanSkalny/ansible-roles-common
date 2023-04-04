@@ -1,0 +1,21 @@
+- name: deploy route-mon.py
+  template:
+    src: route-mon.py
+    dest: /root/route-mon.py
+    mode: 0750
+
+- name: deploy supervisor job
+  copy:
+    content: |
+      [program:route-mon]
+      command=/root/route-mon.py
+      autostart=true
+      autorestart=true
+      startretries=10
+      user=root
+      numprocs=1
+      redirect_stderr=true
+      stdout_logfile=/var/log/route-mon.log
+    dest: "{{ supervisor_conf_d }}/route-mon.conf"
+  notify: restart supervisor
+

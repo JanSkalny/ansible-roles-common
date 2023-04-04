@@ -1,37 +1,40 @@
 cluster:
-  name: "{{ elastic.cluster_name }}"
-{% if elastic.version == 6 %}
-  remote.connect: {{ elastic.node_remote_cluster }}
+  name: "{{ elastic_cluster_name }}"
+{% if 'master' in elastic_node_roles %}
+  initial_master_nodes: {{ elastic_master_nodes | to_json }}
+{% if elastic_custom_cluster_settings | default(False) %}
+  {{ elastic_custom_cluster_settings | to_nice_yaml(indent=2) }}
 {% endif %}
-{% if elastic.version >= 7 and elastic.node_master %}
-  initial_master_nodes: {{ elastic.master_nodes | to_json }}
-{% endif %}
-{% if elastic_custom_cluster_settings is defined and elastic_custom_cluster_settings %}
-{% for key, value in elastic_custom_cluster_settings.items() %}
-  {{ key }}: {{ value }}
-{% endfor %}
+
 {% endif %}
 
 node:
-  name: "{{ elastic.node_name }}"
-  master: {{ elastic.node_master }}
-  data: {{ elastic.node_data }}
-  ingest: {{ elastic.node_ingest }}
+  name: "{{ elastic_node_name }}"
+  roles: {{ elastic_node_roles | to_json }}
 
-{% if elastic.version <= 6 %}
-discovery.zen:
-  ping.unicast.hosts: {{ elastic.hosts | to_json }}
-  minimum_master_nodes: {{ elastic.minimum_master_nodes }}
-{% endif %}
-{% if elastic.version >= 7 %}
-discovery.seed_hosts: {{ elastic.master_nodes | to_json }}
-{% endif %}
+discovery.seed_hosts: {{ elastic_master_nodes | to_json }}
 
 path:
-  logs: "{{ elastic.log_path }}"
-  data: "{{ elastic.data_path }}"
+  logs: "{{ elastic_log_path }}"
+  data: "{{ elastic_data_path }}"
 
 bootstrap.memory_lock: true
 
-network.host: "{{ elastic.bind }}"
-http.port: "{{ elastic.port }}"
+network.host: "{{ elastic_bind }}"
+http.port: "{{ elastic_port }}"
+
+xpack.security.enabled: true
+xpack.security.autoconfiguration.enabled: false
+xpack.security.enrollment.enabled: true
+xpack.security.http.ssl:
+  enabled: true
+  certificate: tls/fullchain.pem
+  key: tls/server.key
+  certificate_authorities: tls/ca.crt
+xpack.security.transport.ssl:
+  enabled: true
+  verification_mode: certificate
+  certificate: tls/fullchain.pem
+  key: tls/server.key
+  certificate_authorities: tls/ca.crt
+

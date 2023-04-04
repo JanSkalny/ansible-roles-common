@@ -1,30 +1,58 @@
-- set_fact:
-      zabbix_linked_templates:  "{{ zabbix_template_definitions | json_query('*.template') | unique }}"
+- include_vars:
+    hash_behaviour: merge
+    name: zabbix_template_definitions
+    file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
+  with_items: "{{ zabbix_templates }}"
 
-- debug: msg="zabbix_url={{ zabbix_url }}", verbosity=1
-- debug: msg="zabbix_admin_login={{ zabbix_admin_login }}", verbosity=1
-#- debug: msg="zabbix_linked_templates={{ zabbix_linked_templates }}", verbosity=1
+- set_fact:
+    zabbix_linked_templates:  "{{ zabbix_template_definitions | json_query('*.template') | unique }}"
+
+#XXX: kedze niektore macra obsahuju nested jinju, je potrebne urobit merge cez iterativny lookup namiesto
+#zabbix_macros: "{{ vars | select('match', '^zabbix_macros_add_') | map('extract', vars) | flatten }}"
+#zabbix_macros: "{{ vars | dict2items | selectattr('key','match','^zabbix_macros_add_') | map(attribute='value') | list | flatten }}"
+- set_fact:
+    zabbix_macros: "{{ zabbix_macros | default([]) + lookup('vars', item) }}"
+  loop: "{{ vars | select('match', '^zabbix_macros_add_') }}"
+
 - debug: msg="zabbix_template_definitions={{ zabbix_template_definitions }}", verbosity=1
 - debug: msg="zabbix_linked_templates={{ zabbix_linked_templates }}", verbosity=1
+- debug: msg="zabbix_macros={{ zabbix_macros | default([]) }}", verbosity=1
+  
+- name: make sure host groups exits
+  vars:
+    ansible_network_os: community.zabbix.zabbix
+    ansible_connection: httpapi
+    ansible_httpapi_port: 443
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false
+    ansible_zabbix_auth_key: "{{ zabbix_token }}"
+    ansible_zabbix_url_path: ""
+  become: false
+  delegate_to: "{{ zabbix_server_hostname }}"
+  community.zabbix.zabbix_group:
+    state: present
+    host_groups: "{{ zabbix_groups }}"
 
 - name: add host to zabbix server
+  vars:
+    ansible_network_os: community.zabbix.zabbix
+    ansible_connection: httpapi
+    ansible_httpapi_port: 443
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false
+    ansible_zabbix_auth_key: "{{ zabbix_token }}"
+    ansible_zabbix_url_path: ""
   become: false
-  environment:
-    # this is going from your own computer directly to server without proxy
-    http_proxy: ""
-    https_proxy: ""
-  local_action:
-    module: zabbix_host
+  delegate_to: "{{ zabbix_server_hostname }}"
+  community.zabbix.zabbix_host:
     force: yes
-    server_url: "{{ zabbix_url }}"
-    login_user: "{{ zabbix_admin_login }}"
-    login_password: "{{ zabbix_admin_password }}"
     host_name: "{{ inventory_hostname }}"
     visible_name: "{{ inventory_hostname }}"
     host_groups: "{{ zabbix_groups }}"
     link_templates: "{{ zabbix_linked_templates }}"
     status: enabled
     state: present
+    macros: "{{ zabbix_macros | default([]) }}"
     interfaces:
       - type: agent
         main: 1
@@ -37,21 +65,5 @@
     tls_psk_identity: "{{ inventory_hostname }}"
     tls_psk: "{{ zabbix_agent_psk | default('00000000000000000000000000000000')}}"
     proxy: "{{ zabbix_proxy | default('') }}"
-    validate_certs: false
   tags: configure
   when: not ansible_check_mode
-
-- name: Create zabbix macros
-  become: false
-  local_action:
-    module: zabbix_hostmacro
-    server_url: "{{ zabbix_url }}"
-    login_user: "{{ zabbix_admin_login }}"
-    login_password: "{{ zabbix_admin_password }}"
-    host_name: "{{ inventory_hostname }}"
-    macro_name: "{{ item['macro_name'] }}"
-    macro_value: "{{ item['macro_value'] }}"
-    state: present
-    validate_certs: false
-  with_items: "{{ zabbix_macros | default([]) }}"
-  tags: configure

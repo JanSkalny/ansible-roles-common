@@ -1,0 +1,7 @@
+zabbix_server_db_name: "zabbix"
+zabbix_server_db_user: "zabbix"
+#zabbix_server_db_password: "XXX"
+zabbix_server_cache_size: "64M"
+zabbix_server_trend_cache_size: "4M"
+zabbix_server_value_cache_size: "32M"
+zabbix_server_schema_file: "/usr/share/{% if zabbix_version|int >= 6 %}zabbix-sql-scripts/mysql/server.sql{% else %}doc/zabbix-server-mysql/create.sql.gz{% endif %}"
