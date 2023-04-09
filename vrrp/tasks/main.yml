@@ -1,0 +1,16 @@
+- package:
+    name: keepalived
+    state: present
+  tags: install
+
+- template:
+    src: keepalived.conf
+    dest: /etc/keepalived/keepalived.conf
+  tags: configure
+  notify: restart keepalived
+
+- service:
+    name: keepalived
+    enabled: yes
+    state: started
+  tags: configure
