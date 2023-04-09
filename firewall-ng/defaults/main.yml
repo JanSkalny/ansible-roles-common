@@ -1,18 +1,33 @@
+# default firewall is strict. modify these to "LOG_WILL_DROP" in group_vars/all/ first, then selectively enable fw
+firewall_default_rule_input: "LOG_DROP_DEFAULT"
+firewall_default_rule_output: "LOG_WILL_DROP"
+firewall_default_rule_forward: "LOG_DROP_DEFAULT"
+firewall_default_rule_checkif: "LOG_DROP_CHECKIF_POLICY"     # matched interface, unmatched subnet rule
+firewall_default_rule_checkif_global: "LOG_DROP_CHECKIF"           # unmatched interface rule
+
+# default template is host/gw firewall
+# use "docker" for docker hosts and set firewall_ip_forward: 1
 firewall_template: "fw.sh"
 
-firewall_default_rule_input: "LOG_DROP"
-firewall_default_rule_output: "LOG_WILL_DROP"
-firewall_default_rule_forward: "LOG_DROP"
-firewall_default_rule_checkif: "LOG_DROP"
-
-firewall_iptables: "$( which iptables )"
-firewall6_iptables: "$( which ip6tables )"
-
+#  IPv4/IPv6 packet forwarding
 firewall_ip_forward: 0
+firewall_ip6_forward: 0
+
+# logging martians is a good thing (on host fw)
 firewall_log_martians: 1
 
-firewall_interfaces: "{{ networking }}"
-firewall6_interfaces: {}
+# how many icmp pings and icmp6-pings are allowed (per second)
+firewall_ping_rate: 20
+
+# allow all ICMPv6 traffic (not recommended!)
+firewall6_allow_all_icmp: False
+
+# allow ICMP RA messages
+firewall6_allow_ra: True
+
+# some interfaces are whitelisted in input/output (forward in docker template)
+# generally avoid using these
+firewal_whitelisted_iface: ['lo']
 
 ## EXAMPLES:
 #firewall_interfaces:
@@ -21,6 +36,9 @@ firewall6_interfaces: {}
 #     - 10.0.0.128/26
 #     - 10.0.0.192/26
 #     default: allow
+#     masquerade:
+#     - 10.0.0.128/26
+#     - 10.0.0.192/26
 #   mngHw:
 #     allow: 10.0.0.64/26
 #     allow_dhcp: true
@@ -49,13 +67,39 @@ firewall6_interfaces: {}
 #      tcp: 9200, 9300
 #      udp: 100:110
 #    rule: LOG_ACCEPT
+firewall_interfaces: "{{ networking }}"
+firewall6_interfaces: {}
 
-firewall_input: "{{ vars | select('match', '^firewall_input_') | map('extract', vars) | flatten }}"
-firewall_output: "{{ vars | select('match', '^firewall_output_') | map('extract', vars) | flatten }}"
-firewall_forward: "{{ vars | select('match', '^firewall_forward_') | map('extract', vars) | flatten }}"
-firewall_objects: "{{ {} | combine(vars | select('match', '^firewall_objects_') | map('extract', vars) | list) }}"
 
+# NAT and other final firewall patches via firewall_final_patch. 
+# example:
+#firewall_final_patch: 
+# - "$IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.97.0/24 -j MASQUERADE"
+# - "$IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.98.0/24 -j MASQUERADE"
+# - "$IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.99.0/24 -j MASQUERADE"
+
+# either per host override, or merge all variables matching prefix "firewall_xxx_*"
+firewall_input:  "{{ vars | select('match', '^firewall_input_') | map('extract', vars) | flatten }}"
 firewall6_input: "{{ vars | select('match', '^firewall6_input_') | map('extract', vars) | flatten }}"
+firewall_output:  "{{ vars | select('match', '^firewall_output_') | map('extract', vars) | flatten }}"
 firewall6_output: "{{ vars | select('match', '^firewall6_output_') | map('extract', vars) | flatten }}"
+firewall_forward:  "{{ vars | select('match', '^firewall_forward_') | map('extract', vars) | flatten }}"
 firewall6_forward: "{{ vars | select('match', '^firewall6_forward_') | map('extract', vars) | flatten }}"
+firewall_objects:  "{{ {} | combine(vars | select('match', '^firewall_objects_') | map('extract', vars) | list) }}"
 firewall6_objects: "{{ {} | combine(vars | select('match', '^firewall6_objects_') | map('extract', vars) | list) }}"
+
+# no need to change these
+firewall_iptables: "$( which iptables )"
+firewall6_iptables: "$( which ip6tables )"
+
+# custom "log-drop" chains (don't remove default rules when overridig!)
+firewall_drop_rules:
+  - INVALID
+  - CHECKIF
+  - CHECKIF_DHCP
+  - CHECKIF_SPOOF
+  - CHECKIF_POLICY
+  - HONEYPOT
+  - DEFAULT
+  - HACK
+  - POLICY

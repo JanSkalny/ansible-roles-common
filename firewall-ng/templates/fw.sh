@@ -41,16 +41,11 @@
 {%- for dest_addr in dest_addrs -%}
 {% if 'proto' in rule %}
 {% for rule_proto, rule_ports in rule.proto.items() %}
-{% set rule_ports_norm = normalize_ports(rule, rule_proto).split(',') | default([]) | difference(['']) %}
-{% set rule_port_ranges = rule_ports_norm | select('match', '^[0-9]*-[0-9]*$') | list %}
-{% set rule_ports = rule_ports_norm | difference(rule_port_ranges) | list %}
-{% for port in rule_ports|default([]) %}
+{% set rule_ports = normalize_ports(rule, rule_proto).split(',') | default([]) | difference(['']) %}
+{% for port in rule_ports %}
 $IT{{ ip_ver }} -A {{ chain }} -p {{ rule_proto }} --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
 {% endfor %}
-{% for port_range in rule_port_ranges|default([]) %}
-$IT{{ ip_ver }} -A {{ chain }} -p {{ rule_proto }} -m multiport --dports {{ port_range | replace('-',':') }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
-{% endfor %}
-{% if not rule_ports_norm %}
+{% if not rule_ports %}
 $IT{{ ip_ver }} -A {{ chain }} -p {{ rule_proto }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
 {% endif %}
 {% endfor %}
@@ -66,7 +61,7 @@ $IT{{ ip_ver }} -A {{ chain }}{{ " -s "+src_addr if src_addr|length else "" }}{{
 {% set deny_nets = normalize_addrs(firewall_iface, 'deny', ip_ver).split(',') | difference(['']) %}
 {% set allow_dst = '-d '+firewall_iface.allow_dst if 'allow_dst' in firewall_iface else '' %}
 {% for deny_net in deny_nets %}
-  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP_CHECKIF_POLICY
 {% endfor %}
 {% for allow_net in allow_nets %}
   $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ allow_net }} {{ allow_dst }} -j RETURN
@@ -91,8 +86,8 @@ $IT{{ ip_ver }} -A {{ chain }}{{ " -s "+src_addr if src_addr|length else "" }}{{
 # Description:       firewall
 ### END INIT INFO
 
-IT4="{{ firewall_iptables }}"
-IT6="{{ firewall6_iptables }}"
+IT4="{{ firewall_iptables }} -w 5"
+IT6="{{ firewall6_iptables }} -w 5"
 
 # load additional modules
 for M in ip_conntrack ip_conntrack_ftp; do
@@ -154,6 +149,15 @@ for PROTO in 4 6; do
       --log-prefix "FW${PROTO}-WILL-DROP " --log-level info
     $IT -A LOG_WILL_DROP -j ACCEPT
 
+  # custom DROP actions with special log messages
+{% for rule in firewall_drop_rules %}
+  $IT -N LOG_DROP_{{ rule | upper }}
+    $IT -A LOG_DROP_{{ rule | upper }} -m limit --limit 10/sec --limit-burst 20 -j LOG \
+      --log-ip-options --log-tcp-options --log-uid \
+      --log-prefix "FW${PROTO}-DROP-{{ rule | upper }} " --log-level info
+    $IT -A LOG_DROP_{{ rule | upper }} -j DROP
+{% endfor %}
+
 done
 IT=""
 
@@ -164,21 +168,25 @@ IT=""
 $IT4 -N CHECK_IF
   # allow dhcp on specific interfaces
 {% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
-{% if firewall_iface.allow_dhcp | default(false) %}
+{% if firewall_iface.allow_dhcp | default(False) %}
   $IT4 -A CHECK_IF -i {{ firewall_iface_name }} -s 0.0.0.0 -j RETURN # DHCP
 {% endif %}
 {% endfor %}
 
-  # multicast shit...
-  $IT4 -A CHECK_IF -s 0.0.0.0/8 -d 224.0.0.1 -p 2 -j DROP #IGMP
+{% if not (firewall_iface.allow_igmp | default(True)) %}
+  # IGMP
+  $IT4 -A CHECK_IF -s 0.0.0.0/8 -d 224.0.0.1 -p 2 -j LOG_DROP_CHECKIF_IGMP
+{% endif %}
+
+  # don't accept APIPA addresses
+  $IT4 -A CHECK_IF -s 169.254.0.0/16 -j DROP
 
   # no-one can send from special address ranges!
-  $IT4 -A CHECK_IF -s 127.0.0.0/8 -j LOG_DROP     # loopback
-  $IT4 -A CHECK_IF -s 0.0.0.0/8 -j LOG_DROP       # DHCP
-  $IT4 -A CHECK_IF -s 169.254.0.0/16 -j DROP      # APIPA
-  $IT4 -A CHECK_IF -s 192.0.2.0/24 -j LOG_DROP    # RFC 3330
-  $IT4 -A CHECK_IF -s 204.152.64.0/23 -j LOG_DROP # RFC 3330
-  $IT4 -A CHECK_IF -s 224.0.0.0/3 -j DROP         # multicast
+  $IT4 -A CHECK_IF -s 127.0.0.0/8 -j LOG_DROP_CHECKIF_SPOOF      # loopback
+  $IT4 -A CHECK_IF -s 0.0.0.0/8 -j LOG_DROP_CHECKIF_DHCP         # DHCP
+  $IT4 -A CHECK_IF -s 192.0.2.0/24 -j LOG_DROP_CHECKIF_SPOOF     # RFC 3330
+  $IT4 -A CHECK_IF -s 204.152.64.0/23 -j LOG_DROP_CHECKIF_SPOOF  # RFC 3330
+  $IT4 -A CHECK_IF -s 224.0.0.0/3 -j LOG_DROP_CHECKIF_SPOOF      # multicast
 
   # interface specific configuration
 {% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
@@ -186,34 +194,35 @@ $IT4 -N CHECK_IF
 {% endfor %}
 
   # everything else is dropped!
-  $IT4 -A CHECK_IF -j {{ firewall_default_rule_checkif }}
+  $IT4 -A CHECK_IF -j {{ firewall_default_rule_checkif_global }}
 
 $IT6 -N CHECK_IF
   # disable IPv6 source routing (and ping-pong)
-  $IT6 -A CHECK_IF -m rt --rt-type 0 -j LOG_DROP
+  $IT6 -A CHECK_IF -m rt --rt-type 0 -j LOG_DROP_HACK
 
-  # ND stuff
-  #FIXME: either...
-  $IT6 -A CHECK_IF -p ipv6-icmp -s fe80::/64 -m hl --hl-eq 255 -j RETURN
-  $IT6 -A CHECK_IF -s fe80::/64 -j RETURN
+  # allow link-local addresses only with hl 255
+  $IT6 -A CHECK_IF -s fe80::/10 -m hl --hl-eq 255 -j RETURN
+  $IT6 -A CHECK_IF -s fe80::/10 -j LOG_DROP_HACK
 
-  # per interface filter
+  # per interface checkif rules
 {% for firewall_iface_name, firewall_iface in firewall6_interfaces.items() | default([]) %}
 {{ generate_interface_rules(firewall_iface_name, firewall_iface, 6) }}
 {% endfor %}
 
   # everything else is dropped!
-  $IT6 -A CHECK_IF -j {{ firewall_default_rule_checkif }}
+  $IT6 -A CHECK_IF -j {{ firewall_default_rule_checkif_global }}
 
 
 ############################################################
 ### allow loopbacks, check origin, and related/established
 
-# everything is allowed on loopback
-$IT4 -A INPUT -i lo -j ACCEPT
-$IT6 -A INPUT -i lo -j ACCEPT
-$IT4 -A OUTPUT -o lo -j ACCEPT
-$IT6 -A OUTPUT -o lo -j ACCEPT
+{% for iface in firewall_whitelisted_ifaces | default(['lo']) %}
+  # everything is allowed on {{ iface }}
+  $IT4 -A INPUT -i {{ iface }} -j ACCEPT
+  $IT6 -A INPUT -i {{ iface }} -j ACCEPT
+  $IT4 -A OUTPUT -o {{ iface }} -j ACCEPT
+  $IT6 -A OUTPUT -o {{ iface }} -j ACCEPT
+{% endfor %}
 
 # check for spoofed addresses
 for CHAIN in INPUT FORWARD; do
@@ -226,14 +235,14 @@ done
 # - invalid packets MUST be dropped!
 for CHAIN in INPUT FORWARD OUTPUT; do
   $IT4 -A $CHAIN -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-  $IT4 -A $CHAIN -m conntrack --ctstate INVALID -j LOG_DROP
+  $IT4 -A $CHAIN -m conntrack --ctstate INVALID -j LOG_DROP_INVALID
   $IT6 -A $CHAIN -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-  $IT6 -A $CHAIN -m conntrack --ctstate INVALID -j LOG_DROP
+  $IT6 -A $CHAIN -m conntrack --ctstate INVALID -j LOG_DROP_INVALID
 done
 
 
 ############################################################
-### INPUT ruleset 
+### INPUT ruleset
 
 {% for input_rule in firewall_input %}
 {{ generate_rule(input_rule, 'INPUT') }}
@@ -243,7 +252,7 @@ done
 $IT4 -A INPUT -m addrtype --dst-type BROADCAST -j DROP
 
 # IPv4 ICMP rate limit
-$IT4 -A INPUT -p icmp -m limit --limit 20/second -j ACCEPT
+$IT4 -A INPUT -p icmp -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
 $IT4 -A INPUT -p icmp -j LOG_DROP
 
 # ignore junk from windows servers (samba)
@@ -262,19 +271,33 @@ $IT4 -A INPUT -j {{ firewall_default_rule_input }}
 {{ generate_rule(input_rule, 'INPUT', 'LOG_ACCEPT', 6) }}
 {% endfor %}
 
-# IPv6 service ICMPs (router advertisements, etc)
-for TYPE in 133 134 135 136 137 ; do
-  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type $TYPE -j ACCEPT
-done
+{% if firewall6_allow_all_icmp | default(False) %}
+  $IT6 -A INPUT -p ipv6-icmp -j RETURN
+{% else %}
+  # IPv6 NDP only with hl 255 should be allowed (excpt RA on firewalls - they know how to route)
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type router-solicitation -m hl --hl-eq 255 -j LOG_ACCEPT
+  {% if firewall6_allow_ra %}
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type router-advertisement -m hl --hl-eq 255 -j LOG_ACCEPT
+  {% endif %}
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type neighbor-solicitation -m hl --hl-eq 255 -j LOG_ACCEPT
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type neighbor-advertisement -m hl --hl-eq 255 -j LOG_ACCEPT
 
-# IPv6 ICMP ping
-$IT6 -A INPUT -p ipv6-icmp --icmpv6-type 128 -m limit --limit 20/s -j ACCEPT
-$IT6 -A INPUT -p icmp -j LOG_DROP
+  # NDP with bigger HL is consider malicious
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type router-solicitation -j LOG_DROP_HACK
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type router-advertisement -j LOG_DROP_HACK
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type neighbor-solicitation -j LOG_DROP_HACK
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type neighbor-advertisement -j LOG_DROP_HACK
 
-# ignore IGMP stuff...
-#FIXME:
-$IT6 -A INPUT -p ipv6-icmp --icmpv6-type 130 -d ff02::1 -j DROP
-$IT6 -A INPUT -p ipv6-icmp --icmpv6-type 143 -d ff02::16 -j DROP
+  # IPv6 MLD
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type 130 -j LOG_ACCEPT
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type 131 -j LOG_ACCEPT
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type 132 -j LOG_ACCEPT
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type 143 -j LOG_ACCEPT
+
+  # IPv6 ICMP PING (rate limited)
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type echo-request -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP
+{% endif %}
 
 # default rule is
 $IT6 -A INPUT -j {{ firewall_default_rule_input }}
@@ -282,6 +305,9 @@ $IT6 -A INPUT -j {{ firewall_default_rule_input }}
 
 ############################################################
 ### OUTPUT ruleset
+
+$IT4 -A OUTPUT -o lo -j ACCEPT
+$IT6 -A OUTPUT -o lo -j ACCEPT
 
 {% for output_rule in firewall_output %}
 {{ generate_rule(output_rule, 'OUTPUT') }}
@@ -298,12 +324,25 @@ $IT4 -A OUTPUT -j {{ firewall_default_rule_output }}
 {{ generate_rule(output_rule, 'OUTPUT', 'LOG_ACCEPT', 6) }}
 {% endfor %}
 
-# IPv6 ND
-for TYPE in 133 134 135 136 137 ; do
-  #FIXME: either...
-  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type $TYPE -j ACCEPT
-  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type $TYPE -m hl --hl-eq 255 -j ACCEPT
-done
+{% if firewall6_allow_all_icmp | default(False) %}
+  $IT6 -A OUTPUT -p ipv6-icmp -j RETURN
+{% else %}
+  # IPv6 NDP only with hl 255 should be allowed
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type router-solicitation -m hl --hl-eq 255 -j LOG_ACCEPT
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type router-advertisement -m hl --hl-eq 255 -j LOG_ACCEPT
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type neighbor-solicitation -m hl --hl-eq 255 -j LOG_ACCEPT
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type neighbor-advertisement -m hl --hl-eq 255 -j LOG_ACCEPT
+
+  # IPv6 MLD
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type 130 -j LOG_ACCEPT
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type 131 -j LOG_ACCEPT
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type 132 -j LOG_ACCEPT
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type 143 -j LOG_ACCEPT
+
+  # IPv6 ICMP PING (rate limited)
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type echo-request -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP
+{% endif %}
 
 # default to drop
 $IT6 -A OUTPUT -j {{ firewall_default_rule_output }}
@@ -327,6 +366,26 @@ $IT4 -A FORWARD -j {{ firewall_default_rule_forward }}
 {{ generate_rule(forward_rule, 'FORWARD', 'LOG_ACCEPT', 6) }}
 {% endfor %}
 
+{% if firewall6_allow_all_icmp | default(False) %}
+  $IT6 -A FORWARD -p ipv6-icmp -j RETURN
+{% else %}
+  # IPv6 NDP should not be allowed
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type router-solicitation -j LOG_DROP_HACK
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type router-advertisement -j LOG_DROP_HACK
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type neighbor-solicitation -j LOG_DROP_HACK
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type neighbor-advertisement -j LOG_DROP_HACK
+
+  # IPv6 MLD is not allowed (we don't need internet-wide multicast)
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 130 -j LOG_DROP
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 131 -j LOG_DROP
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 132 -j LOG_DROP
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 142 -j LOG_DROP
+
+  # IPv6 ICMP PING (rate limited)
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type echo-request -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP
+{% endif %}
+
 # default rule
 $IT6 -A FORWARD -j {{ firewall_default_rule_forward }}
 
@@ -334,14 +393,18 @@ $IT6 -A FORWARD -j {{ firewall_default_rule_forward }}
 ############################################################
 ### NAT ruleset
 
-# TBD:
+{% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
+{% for net in firewall_iface.masquerade | default([]) %}
+$IT4 -t nat -A POSTROUTING -o {{ firewall_iface_name }} -s {{ net }} -j MASQUERADE
+{% endfor %}
+{% endfor %}
 
 ############################################################
 ### custom firewall patches
 
 {% if firewall_final_patch is defined %}
 {% for rule in firewall_final_patch %}
-{{rule}}
+{{ rule }}
 {% endfor %}
 {% endif %}
 
@@ -351,3 +414,4 @@ $IT6 -A FORWARD -j {{ firewall_default_rule_forward }}
 ### fail2ban integration
 [ -f /etc/init.d/fail2ban ] && /etc/init.d/fail2ban restart
 
+exit 0
