@@ -103,3 +103,4 @@ firewall_drop_rules:
   - DEFAULT
   - HACK
   - POLICY
+  - ROGUE
