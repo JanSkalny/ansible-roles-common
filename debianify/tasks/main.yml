@@ -1,0 +1,20 @@
+- name: Purge unwanted packages
+  apt:
+    name: 
+      - snapd
+      - lxd
+      - lxc-common
+      - lxd-client
+      - lxcfs
+      - ubuntu-advantage-tools
+      - juju
+      - landscape-common
+    state: absent
+    purge: yes
+
+- name: But make sure to keep some stuff
+  apt:
+    name:
+      - ubuntu-release-upgrader-core
+    state: present
+
