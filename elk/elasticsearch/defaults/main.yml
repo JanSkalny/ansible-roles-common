@@ -23,6 +23,6 @@ elastic_ldap: False
 elastic_ldap_url: "ldaps://{{ ldap_server }}:636"
 elastic_ldap_bind_user: "elastic"
 elastic_ldap_bind_dn: "cn={{ elastic_ldap_bind_user }},ou=tech,{{ ldap_base_dn }}"
-elastic_ldap_bind_password: "{{ ldap_tech_users[elastic_ldap_bind_user] }}"
+elastic_ldap_bind_password: "{{ ldap_tech_users[elastic_ldap_bind_user] | default(\"\") }}"
 elastic_ldap_users_dn: "ou=users,{{ ldap_base_dn }}"
 elastic_ldap_groups_dn: "ou=groups,{{ ldap_base_dn }}"
