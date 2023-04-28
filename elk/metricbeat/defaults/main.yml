@@ -1,0 +1,27 @@
+metricbeat_config:
+  output.elasticsearch:
+    hosts: ["https://{{ inventory_hostname }}:9200"]
+    ssl.certificate_authorities: "/etc/elasticsearch/tls/ca.crt"
+    username: "remote_monitoring_user"
+    password: "{{ metricbeat_remote_monitoring_password }}"
+  metricbeat.config.modules:
+    path: ${path.config}/modules.d/*.yml
+  processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+
+metricbeat_modules:
+  - name: elasticsearch-xpack
+    config:
+      - module: elasticsearch
+        xpack.enabled: true
+        period: 10s
+        hosts: ["https://{{ inventory_hostname }}:9200"]
+        ssl.certificate_authorities: "/etc/elasticsearch/tls/ca.crt"
+        username: "remote_monitoring_user"
+        password: "{{ metricbeat_remote_monitoring_password }}"
+
+
+
