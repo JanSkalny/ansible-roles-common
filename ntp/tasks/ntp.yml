@@ -35,6 +35,12 @@
     - ntpdate
     - configure
 
+  - debug: 
+      msg: "ntp offset {{ ntpdate_offset.stdout }}"
+    tags:
+    - ntpdate
+    - configure
+
   - name: stop ntp
     service:
       name: "{{ ntp_service }}"
