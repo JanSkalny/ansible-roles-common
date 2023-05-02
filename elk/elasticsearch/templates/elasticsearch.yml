@@ -37,6 +37,7 @@ xpack.security.transport.ssl:
   certificate: tls/fullchain.pem
   key: tls/server.key
   certificate_authorities: tls/ca.crt
+{% if elastic_ldap %}
 xpack.security.authc.realms.ldap.ldap1:
   order: 0
   url: "{{ elastic_ldap_url }}"
@@ -52,3 +53,4 @@ xpack.security.authc.realms.ldap.ldap1:
   files:
     role_mapping: "role_mapping.yml"
   unmapped_groups_as_roles: false
+{% endif %}
