@@ -35,8 +35,10 @@
     state: present
   tags: install
 
-- name: install docker python bindings
+- name: install docker & docke-compose python bindings
   pip:
-    name: docker
+    name:
+    - docker
+    - docker-compose
   tags: install
 
