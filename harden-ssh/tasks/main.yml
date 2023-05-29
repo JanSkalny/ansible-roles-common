@@ -14,7 +14,7 @@
   tags: configure
 
 - name: harden ssh(d)
-  copy:
+  template:
     src: "{{ item }}"
     dest: "/etc/ssh/{{ item }}"
   with_items:

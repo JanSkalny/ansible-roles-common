@@ -18,3 +18,9 @@
       - ubuntu-release-upgrader-core
     state: present
 
+- name: disable motd-news
+  lineinfile:
+    path: /etc/default/motd-news
+    regexp: '^ENABLED='
+    line: ENABLED=0
+

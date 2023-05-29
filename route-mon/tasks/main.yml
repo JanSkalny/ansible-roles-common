@@ -3,6 +3,7 @@
     src: route-mon.py
     dest: /root/route-mon.py
     mode: 0750
+  notify: restart supervisor
 
 - name: deploy supervisor job
   copy:
