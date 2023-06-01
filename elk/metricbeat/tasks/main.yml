@@ -1,0 +1,35 @@
+- name: install metricbeat
+  package:
+    name: metricbeat
+    state: present
+  notify: restart metricbeat
+  tags: install
+
+- name: configure metricbeat
+  copy:
+    content: "{{ metricbeat_config | to_nice_yaml}}"
+    dest: "/etc/metricbeat/metricbeat.yml"
+  notify: restart metricbeat
+  tags: configure
+
+- name: enable metricbeat modules
+  command: "metricbeat modules enable {{ item.name }}"
+  with_items: "{{ metricbeat_modules }}"
+  tags: install
+
+- name: configure metricbeat modules
+  copy:
+    content: "{{ item.config | to_nice_yaml }}"
+    dest: "/etc/metricbeat/modules.d/{{ item.name }}.yml"
+  with_items: "{{ metricbeat_modules }}"
+  when: item.config | default(False)
+  notify: restart metricbeat
+  tags: configure
+
+- name: enable metricbeat service
+  systemd:
+    name: metricbeat
+    enabled: yes
+    state: started
+  tags: install
+

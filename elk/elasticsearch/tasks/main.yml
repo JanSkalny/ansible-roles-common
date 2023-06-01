@@ -75,6 +75,19 @@
     line: "session required pam_limits.so"
   tags: configure
 
+- name: generate elastic ldap role mapping
+  copy:
+    content: |
+      monitoring: 
+        - "cn=AppElasticAdmin,{{ elastic_ldap_groups_dn }}"
+      user:
+        - "cn=AppElasticAdmin,{{ elastic_ldap_groups_dn }}"
+        - "cn=AppElasticUser,{{ elastic_ldap_groups_dn }}"
+    dest: /etc/elasticsearch/role_mapping.yml
+  tags: configure
+  when: elastic_ldap
+  notify: restart elasticsearch
+
 - name: flush handlers
   meta: flush_handlers
 

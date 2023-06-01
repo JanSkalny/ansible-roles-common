@@ -24,7 +24,7 @@ KerberosAuthentication no
 GSSAPIAuthentication no
 PermitEmptyPasswords no
 
-UsePAM yes
+UsePAM no
 PubkeyAuthentication yes
 PermitRootLogin without-password
 AuthorizedKeysFile	%h/.ssh/authorized_keys
@@ -39,6 +39,8 @@ UseDNS no
 ClientAliveInterval 300
 
 #MaxStartups 10:30:60
+MaxSessions {{ sshd_max_sessions | default(20) }}
+ 
 Banner /etc/issue.net
 
 # Allow client to pass locale environment variables

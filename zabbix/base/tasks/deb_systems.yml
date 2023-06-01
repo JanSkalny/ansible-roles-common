@@ -1,3 +1,8 @@
+
+- package:
+   name: apt-transport-https
+   state: present
+
 - name: check if zabbix-release is available
   command: apt list --installed zabbix-release
   register: res

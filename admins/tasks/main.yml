@@ -43,6 +43,7 @@
   user:
     name: "{{ item }}"
     shell: "{{ default_user_shell }}"
+    password: '*'
     state: present
     groups: sudo
     createhome: true

@@ -37,4 +37,20 @@ xpack.security.transport.ssl:
   certificate: tls/fullchain.pem
   key: tls/server.key
   certificate_authorities: tls/ca.crt
-
+{% if elastic_ldap %}
+xpack.security.authc.realms.ldap.ldap1:
+  order: 0
+  url: "{{ elastic_ldap_url }}"
+  ssl:
+    certificate_authorities: tls/ca.crt
+  bind_dn: "{{ elastic_ldap_bind_dn }}"
+  bind_password: "{{ elastic_ldap_bind_password }}"
+  user_search:
+    base_dn: "{{ elastic_ldap_users_dn }}"
+    filter: "(uid={0})"
+  group_search:
+    base_dn: "{{ elastic_ldap_groups_dn }}"
+  files:
+    role_mapping: "role_mapping.yml"
+  unmapped_groups_as_roles: false
+{% endif %}

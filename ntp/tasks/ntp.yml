@@ -19,11 +19,10 @@
 
   - name: install ntp
     package:
-      name: "{{item}}"
+      name: 
+      - ntp
+      - ntpdate
       state: present
-    with_items:
-    - ntp
-    - ntpdate
     tags: install
 
   - name: check time difference
@@ -32,6 +31,12 @@
     check_mode: no
     changed_when: false
     register: ntpdate_offset
+    tags:
+    - ntpdate
+    - configure
+
+  - debug: 
+      msg: "ntp offset {{ ntpdate_offset.stdout }}"
     tags:
     - ntpdate
     - configure

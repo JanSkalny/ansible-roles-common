@@ -1,7 +1,10 @@
 - name: unset https proxy for apt
   file:
-    path: /etc/apt/apt.conf.d/99proxy
+    path: "{{ item }}"
     state: absent
+  with_items:
+    - /etc/apt/apt.conf.d/99proxy
+    - /etc/apt/apt.conf.d/90curtin-aptproxy
 
 - name: do we have wget?
   stat:

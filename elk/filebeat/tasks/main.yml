@@ -1,8 +1,30 @@
 - name: install filebeat
   package:
     name: filebeat
+    state: present
   notify: restart filebeat
   tags: install
+
+- name: configure filebeat
+  copy:
+    content: "{{ filebeat_config | to_nice_yaml}}"
+    dest: "/etc/filebeat/filebeat.yml"
+  notify: restart filebeat
+  tags: configure
+
+- name: enable filebeat modules
+  command: "filebeat modules enable {{ item.name }}"
+  with_items: "{{ filebeat_modules }}"
+  tags: install
+
+- name: configure filebeat modules
+  copy:
+    content: "{{ item.config | to_nice_yaml }}"
+    dest: "/etc/filebeat/modules.d/{{ item.name }}.yml"
+  with_items: "{{ filebeat_modules }}"
+  when: item.config | default(False)
+  notify: restart filebeat
+  tags: configure
 
 - name: enable filebeat service
   systemd:

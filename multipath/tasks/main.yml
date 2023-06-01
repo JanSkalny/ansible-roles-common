@@ -15,6 +15,7 @@
   with_items:
     - multipath-refresh.sh
     - multipath-delete.sh
+    - multipath-resize.sh
   tags: install
 
 - name: configure multipath.conf
