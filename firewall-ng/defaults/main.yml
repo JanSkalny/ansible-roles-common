@@ -119,7 +119,6 @@ firewall_will_drop_rules:
   - CHECKIF
   - CHECKIF_POLICY
   - CHECKIF_DENY
-  - DEFAULT
   - POLICY
   - INVALID
   - BLACKLIST
