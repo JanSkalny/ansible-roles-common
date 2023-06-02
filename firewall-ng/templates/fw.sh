@@ -34,23 +34,26 @@
 {%- endmacro -%}
 
 {%- macro generate_rule(rule, chain, default_action='LOG_ACCEPT', ip_ver=4) -%}
+# {{ rule | to_json }}
 {% set src_addrs = normalize_addrs(rule, 'src', ip_ver).split(',') %}
 {% set dest_addrs = normalize_addrs(rule, 'dest', ip_ver).split(',') %}
-# {{ rule | to_json }}
+{% set src_list = " -m set --match-set "+rule.src_list+" src " if rule.src_list|default(False) else "" %}
 {% for src_addr in src_addrs -%}
 {%- for dest_addr in dest_addrs -%}
 {% if 'proto' in rule %}
 {% for rule_proto, rule_ports in rule.proto.items() %}
 {% set rule_ports = normalize_ports(rule, rule_proto).split(',') | default([]) | difference(['']) %}
+{% set src = " -s "+src_addr if src_addr|length else "" %}
+{% set dest = " -d "+dest_addr if dest_addr|length else "" %}
 {% for port in rule_ports %}
-$IT{{ ip_ver }} -A {{ chain }} -p {{ rule_proto }} --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
+$IT{{ ip_ver }} -A {{ chain }} -p {{ rule_proto }} --dport {{ port }}{{ src_list }}{{ src }}{{ dest }} -j {{ rule.rule | default(default_action) }}
 {% endfor %}
 {% if not rule_ports %}
-$IT{{ ip_ver }} -A {{ chain }} -p {{ rule_proto }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
+$IT{{ ip_ver }} -A {{ chain }} -p {{ rule_proto }}{{src_list}}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
 {% endif %}
 {% endfor %}
 {% else %}
-$IT{{ ip_ver }} -A {{ chain }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
+$IT{{ ip_ver }} -A {{ chain }}{{ src_list }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
 {% endif %}
 {% endfor %}
 {% endfor %}
@@ -61,7 +64,7 @@ $IT{{ ip_ver }} -A {{ chain }}{{ " -s "+src_addr if src_addr|length else "" }}{{
 {% set deny_nets = normalize_addrs(firewall_iface, 'deny', ip_ver).split(',') | difference(['']) %}
 {% set allow_dst = '-d '+firewall_iface.allow_dst if 'allow_dst' in firewall_iface else '' %}
 {% for deny_net in deny_nets %}
-  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP_CHECKIF_POLICY
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j {{ firewall_default_rule_checkif_deny }}
 {% endfor %}
 {% for allow_net in allow_nets %}
   $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ allow_net }} {{ allow_dst }} -j RETURN
@@ -86,23 +89,32 @@ $IT{{ ip_ver }} -A {{ chain }}{{ " -s "+src_addr if src_addr|length else "" }}{{
 # Description:       firewall
 ### END INIT INFO
 
-IT4="{{ firewall_iptables }} -w 5"
-IT6="{{ firewall6_iptables }} -w 5"
+IT4="{{ firewall_iptables }}"
+IT6="{{ firewall6_iptables }}"
+
+# flush nftables for fun and profit
+nft flush ruleset
 
 # load additional modules
-for M in ip_conntrack ip_conntrack_ftp; do
+for M in ip_conntrack ip_conntrack_ftp ip_conntrack_sip; do
   modprobe $M 2>/dev/null
 done
 
+# create lists
+{% for firewall_list in firewall_lists|default([]) %}
+ipset create {{ firewall_list.name }} hash:ip {{ 'timeout '+(firewall_list.ttl|string) if firewall_list.ttl | default(False) else '' }}
+{% endfor %}
+
 echo {{ firewall_ip_forward | default(0) | int }} > /proc/sys/net/ipv4/ip_forward
-echo {{ firewall_ip6_forward | default(0) | int }} > /proc/sys/net/ipv6/conf/all/forwarding
+echo {{ firewall6_ip_forward | default(0) | int }} > /proc/sys/net/ipv6/conf/all/forwarding
 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
-echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
+echo {{ firewall_rp_filter | default(1) | int }} > /proc/sys/net/ipv4/conf/all/rp_filter
 echo {{ firewall_log_martians | default(1) | int }} > /proc/sys/net/ipv4/conf/all/log_martians
 echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
 echo 1 > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
 echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects
 echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route
+echo 0 > /proc/sys/net/ipv6/conf/all/accept_source_route
 
 for PROTO in 4 6; do
   IT=$( eval echo \$IT$PROTO )
@@ -149,8 +161,26 @@ for PROTO in 4 6; do
       --log-prefix "FW${PROTO}-WILL-DROP " --log-level info
     $IT -A LOG_WILL_DROP -j ACCEPT
 
+  # custom ACCEPT actions with special log messages
+{% for rule in firewall_accept_rules|default([]) %}
+  $IT -N LOG_ACCEPT_{{ rule | upper }}
+    $IT -A LOG_ACCEPT_{{ rule | upper }} -m limit --limit 50/sec --limit-burst 100 -j LOG \
+      --log-ip-options --log-tcp-options --log-uid \
+      --log-prefix "FW${PROTO}-ACCEPT-{{ rule | upper }} " --log-level info
+    $IT -A LOG_ACCEPT_{{ rule | upper }} -j ACCEPT
+{% endfor %}
+
+  # custom WILL-DROP actions with special log messages
+{% for rule in firewall_will_drop_rules|default([]) %}
+  $IT -N LOG_WILL_DROP_{{ rule | upper }}
+    $IT -A LOG_WILL_DROP_{{ rule | upper }} -m limit --limit 50/sec --limit-burst 100 -j LOG \
+      --log-ip-options --log-tcp-options --log-uid \
+      --log-prefix "FW${PROTO}-WILL-DROP-{{ rule | upper }} " --log-level info
+    $IT -A LOG_WILL_DROP_{{ rule | upper }} -j ACCEPT
+{% endfor %}
+
   # custom DROP actions with special log messages
-{% for rule in firewall_drop_rules %}
+{% for rule in firewall_drop_rules|default([]) %}
   $IT -N LOG_DROP_{{ rule | upper }}
     $IT -A LOG_DROP_{{ rule | upper }} -m limit --limit 10/sec --limit-burst 20 -j LOG \
       --log-ip-options --log-tcp-options --log-uid \
@@ -202,7 +232,9 @@ $IT6 -N CHECK_IF
 
   # allow link-local addresses only with hl 255
   $IT6 -A CHECK_IF -s fe80::/10 -m hl --hl-eq 255 -j RETURN
-  $IT6 -A CHECK_IF -s fe80::/10 -j LOG_DROP_HACK
+  #TODO: replace following rule with DROP_HACK
+  $IT6 -A CHECK_IF -s fe80::/10 -j RETURN
+  #$IT6 -A CHECK_IF -s fe80::/10 -j LOG_DROP_HACK
 
   # per interface checkif rules
 {% for firewall_iface_name, firewall_iface in firewall6_interfaces.items() | default([]) %}
@@ -235,16 +267,16 @@ done
 # - invalid packets MUST be dropped!
 for CHAIN in INPUT FORWARD OUTPUT; do
   $IT4 -A $CHAIN -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-  $IT4 -A $CHAIN -m conntrack --ctstate INVALID -j LOG_DROP_INVALID
+  $IT4 -A $CHAIN -m conntrack --ctstate INVALID -j {{ firewall_default_rule_invalid }}
   $IT6 -A $CHAIN -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-  $IT6 -A $CHAIN -m conntrack --ctstate INVALID -j LOG_DROP_INVALID
+  $IT6 -A $CHAIN -m conntrack --ctstate INVALID -j {{ firewall_default_rule_invalid }}
 done
 
 
 ############################################################
 ### INPUT ruleset
 
-{% for input_rule in firewall_input %}
+{% for input_rule in firewall_input|default([]) %}
 {{ generate_rule(input_rule, 'INPUT') }}
 {% endfor %}
 
@@ -253,7 +285,7 @@ $IT4 -A INPUT -m addrtype --dst-type BROADCAST -j DROP
 
 # IPv4 ICMP rate limit
 $IT4 -A INPUT -p icmp -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
-$IT4 -A INPUT -p icmp -j LOG_DROP
+$IT4 -A INPUT -p icmp -j LOG_DROP_RATELIMIT
 
 # ignore junk from windows servers (samba)
 for PORT in 137 138; do
@@ -267,7 +299,7 @@ $IT4 -A INPUT -j {{ firewall_default_rule_input }}
 ############################################################
 ### INPUT ruleset (IPv6)
 
-{% for input_rule in firewall6_input %}
+{% for input_rule in firewall6_input|default([]) %}
 {{ generate_rule(input_rule, 'INPUT', 'LOG_ACCEPT', 6) }}
 {% endfor %}
 
@@ -296,7 +328,7 @@ $IT4 -A INPUT -j {{ firewall_default_rule_input }}
 
   # IPv6 ICMP PING (rate limited)
   $IT6 -A INPUT -p ipv6-icmp --icmpv6-type echo-request -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
-  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP
+  $IT6 -A INPUT -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP_RATELIMIT
 {% endif %}
 
 # default rule is
@@ -309,7 +341,7 @@ $IT6 -A INPUT -j {{ firewall_default_rule_input }}
 $IT4 -A OUTPUT -o lo -j ACCEPT
 $IT6 -A OUTPUT -o lo -j ACCEPT
 
-{% for output_rule in firewall_output %}
+{% for output_rule in firewall_output|default([]) %}
 {{ generate_rule(output_rule, 'OUTPUT') }}
 {% endfor %}
 
@@ -320,7 +352,7 @@ $IT4 -A OUTPUT -j {{ firewall_default_rule_output }}
 ############################################################
 ### OUTPUT ruleset (IPv6)
 
-{% for output_rule in firewall6_output %}
+{% for output_rule in firewall6_output|default([]) %}
 {{ generate_rule(output_rule, 'OUTPUT', 'LOG_ACCEPT', 6) }}
 {% endfor %}
 
@@ -341,7 +373,7 @@ $IT4 -A OUTPUT -j {{ firewall_default_rule_output }}
 
   # IPv6 ICMP PING (rate limited)
   $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type echo-request -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
-  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP
+  $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP_RATELIMIT
 {% endif %}
 
 # default to drop
@@ -351,9 +383,14 @@ $IT6 -A OUTPUT -j {{ firewall_default_rule_output }}
 ############################################################
 ### FORWARD ruleset
 
-{% for forward_rule in firewall_forward %}
+{% for forward_rule in firewall_forward|default([]) %}
 {{ generate_rule(forward_rule, 'FORWARD') }}
 {% endfor %}
+
+#TODO: odstranit z produkcie
+# IPv4 ICMP rate limit
+#$IT4 -A FORWARD -p icmp -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
+#$IT4 -A FORWARD -p icmp -j LOG_DROP_RATELIMIT
 
 # default rule
 $IT4 -A FORWARD -j {{ firewall_default_rule_forward }}
@@ -362,7 +399,7 @@ $IT4 -A FORWARD -j {{ firewall_default_rule_forward }}
 ############################################################
 ### FORWARD ruleset (IPv6)
 
-{% for forward_rule in firewall6_forward %}
+{% for forward_rule in firewall6_forward|default([]) %}
 {{ generate_rule(forward_rule, 'FORWARD', 'LOG_ACCEPT', 6) }}
 {% endfor %}
 
@@ -376,18 +413,18 @@ $IT4 -A FORWARD -j {{ firewall_default_rule_forward }}
   $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type neighbor-advertisement -j LOG_DROP_HACK
 
   # IPv6 MLD is not allowed (we don't need internet-wide multicast)
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 130 -j LOG_DROP
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 131 -j LOG_DROP
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 132 -j LOG_DROP
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 142 -j LOG_DROP
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 130 -j LOG_DROP_IPV6
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 131 -j LOG_DROP_IPV6
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 132 -j LOG_DROP_IPV6
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 142 -j LOG_DROP_IPV6
 
   # IPv6 ICMP PING (rate limited)
   $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type echo-request -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP
+  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP_RATELIMIT
 {% endif %}
 
 # default rule
-$IT6 -A FORWARD -j {{ firewall_default_rule_forward }}
+$IT6 -A FORWARD -j {{ firewall_default_rule_forward6 | default(firewall_default_rule_forward) }}
 
 
 ############################################################
