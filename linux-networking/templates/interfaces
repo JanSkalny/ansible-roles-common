@@ -92,7 +92,7 @@ auto {{ iface_name }}
 iface {{ iface_name }} inet static
 	address {{ item.address | ansible.utils.ipaddr('address') }}
 	netmask {{ item.address | ansible.utils.ipaddr('netmask') }}
-{% if 'gateway' in item %}
+{% if item.gateway | default(False) %}
 	gateway {{ item.gateway }}
 {% endif %}
 {{ configure_interface(item, iface_name) }}
