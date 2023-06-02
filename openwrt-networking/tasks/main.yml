@@ -1,0 +1,10 @@
+- name: generate config files
+  template:
+    src: "{{ item }}"
+    dest: "/etc/config/{{ item }}"
+  with_items:
+    - dhcp
+    - network
+    - system
+  tags: configure
+
