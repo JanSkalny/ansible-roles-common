@@ -7,10 +7,10 @@
   template:
     src: "wg.conf"
     dest: "/etc/wireguard/{{ wg_name }}.conf"
-  notify: restart {{ wg_name }} service
+  notify: restart wireguard service
   tags: configure
 
-- name: enable {{ wg_name }} service
+- name: enable wireguard service
   systemd:
     name: wg-quick@{{ wg_name }}
     enabled: true
