@@ -7,6 +7,7 @@
   template:
     src: "wg.conf"
     dest: "/etc/wireguard/{{ wg_name }}.conf"
+    mode: "600"
   notify: restart wireguard service
   tags: configure
 
