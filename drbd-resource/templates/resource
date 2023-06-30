@@ -16,16 +16,26 @@ resource {{drbd_res_name}} {
     shared-secret "{{ drbd_psk }}";
 {% endif %}
     max-epoch-size 4K;
-    max-buffers 4K;
-    sndbuf-size 128K;
+    max-buffers 128K;
+    sndbuf-size 2M;
     rcvbuf-size 4M;
     unplug-watermark 16;
     #no-tcp-cork; ## spomaluje
+{% if drbd_dual_primary | default(False) %}
+    allow-two-primaries yes;
+    after-sb-0pri discard-zero-changes;
+    after-sb-1pri discard-secondary;
+    after-sb-2pri disconnect;
+{% endif %}
   }
 
   disk {
     on-io-error detach;
+{% if drbd_fence_node | default(False) %}
+    fencing resource-and-stonith;
+{% else %}
     fencing resource-only; 
+{% endif %}
     no-disk-flushes;
     no-md-flushes;
     no-disk-barrier;
@@ -37,9 +47,9 @@ resource {{drbd_res_name}} {
   }
 
   handlers {
-    # see: http://www.drbd.org/users-guide-8.4/s-pacemaker-fencing.html
-    fence-peer "/usr/lib/drbd/crm-fence-peer.sh";
-    after-resync-target "/usr/lib/drbd/crm-unfence-peer.sh";
+    # see: https://linbit.com/drbd-user-guide/drbd-guide-9_0-en/#s-pacemaker-fencing
+    fence-peer "/usr/lib/drbd/crm-fence-peer.9.sh";
+    after-resync-target "/usr/lib/drbd/crm-unfence-peer.9.sh";
   }
 
   syncer {
