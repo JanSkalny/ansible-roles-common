@@ -1,4 +1,4 @@
-ca_dir: "{{ inventory_dir }}/storage/ansible-simple-pki/{{ default_ca_host }}"
+ca_dir: "{{ simplepki_storage_base }}"
 type: "servers"
 dest_name: "server"
 ca_name: "ca.crt"
