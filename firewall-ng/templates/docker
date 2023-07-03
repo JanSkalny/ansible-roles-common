@@ -61,7 +61,7 @@ $IT{{ ip_ver }} -A {{ chain }}{{ " -s "+src_addr if src_addr|length else "" }}{{
 {% set deny_nets = normalize_addrs(firewall_iface, 'deny', ip_ver).split(',') | difference(['']) %}
 {% set allow_dst = '-d '+firewall_iface.allow_dst if 'allow_dst' in firewall_iface else '' %}
 {% for deny_net in deny_nets %}
-  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP_CHECKIF_DENIED
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP_CHECKIF_DENY
 {% endfor %}
 {% for allow_net in allow_nets %}
   $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ allow_net }} {{ allow_dst }} -j RETURN
@@ -90,7 +90,8 @@ IT4="{{ firewall_iptables }}"
 IT6="{{ firewall6_iptables }}"
 
 # flush nftables for fun and profit
-nft flush ruleset
+#XXX: not for docker hosts!!
+#nft flush ruleset
 
 # load additional modules
 for M in ip_conntrack ip_conntrack_ftp ip_conntrack_sip; do
@@ -245,6 +246,7 @@ $IT4 -N CHECK_IF
   # docker containers and bridges can spoof (relay on rp-filter)
   $IT4 -A CHECK_IF -i veth+ -j RETURN
   $IT4 -A CHECK_IF -i br-+ -j RETURN
+  $IT4 -A CHECK_IF -i docker0 -j RETURN
 
   # everything else is dropped!
   $IT4 -A CHECK_IF -j {{ firewall_default_rule_checkif_global }}
@@ -262,6 +264,7 @@ $IT6 -N CHECK_IF
   # docker containers and bridges can spoof (relay on rp-filter)
   $IT6 -A CHECK_IF -i veth+ -j RETURN
   $IT6 -A CHECK_IF -i br-+ -j RETURN
+  $IT6 -A CHECK_IF -i docker0 -j RETURN
 
   # per interface checkif rules
 {% for firewall_iface_name, firewall_iface in firewall6_interfaces.items() | default([]) %}
@@ -474,6 +477,33 @@ $IT4 -A DOCKER-USER -i {{ firewall_iface_name }} -p udp -m conntrack --ctstate N
 {% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
 $IT4 -A DOCKER-USER -i {{ firewall_iface_name }} -j  {{ firewall_default_rule_forward }}
 {% endfor %}
+
+# allow output from docker containers
+###{% for output_rule in firewall_output %}
+###{% with %}
+###  {% set dest_addrs = normalize_addrs(output_rule, 'dest').split(',') %}
+###  {% set tcp_ports = normalize_ports(output_rule, 'tcp').split(',') | difference(['']) %}
+###  {% set udp_ports = normalize_ports(output_rule, 'udp').split(',') | difference(['']) %}
+###  {% set firewall_tmp_target = {"LOG_ACCEPT": "LOG_DOCKER_ACCEPT", "LOG_WILL_DROP": "LOCK_DOCKER_WILL_DROP", "ACCEPT": "RETURN" }[output_rule.rule | default("LOG_ACCEPT")] | default(output_rule.rule) %}
+###
+#### {{ output_rule | to_json }}
+#### dockerized target: {{ firewall_tmp_target }}
+###{% for dest_addr in dest_addrs -%}
+###{% for port in tcp_ports | list %}
+###$IT4 -A DOCKER-USER -p tcp -m conntrack --ctstate NEW --ctorigdstport {{ port }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ firewall_tmp_target }}
+###{% if firewall_tmp_target == "LOG_DOCKER_ACCEPT" or firewall_tmp_target == "LOG_DOCKER_WILL_DROP" %}
+###$IT4 -A DOCKER-USER -p tcp -m conntrack --ctstate NEW --ctorigdstport {{ port }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j RETURN
+###{% endif %}
+###{% endfor %}
+###{% for port in udp_ports | list %}
+###$IT4 -A DOCKER-USER -p udp -m conntrack --ctstate NEW --ctorigdstport {{ port }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ firewall_tmp_target }}
+###{% if firewall_tmp_target == "LOG_DOCKER_ACCEPT" or firewall_tmp_target == "LOG_DOCKER_WILL_DROP" %}
+###$IT4 -A DOCKER-USER -p udp -m conntrack --ctstate NEW --ctorigdstport {{ port }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j RETURN
+###{% endif %}
+###{% endfor %}
+###{%- endfor -%}
+###{% endwith %}
+###{% endfor %}
 
 # let docker handle the rest...
 $IT4 -A DOCKER-USER -j RETURN
