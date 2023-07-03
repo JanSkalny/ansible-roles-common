@@ -24,6 +24,7 @@
     dest: /etc/freeradius/3.0/mods-config/files/authorize
     owner: freerad
     mode: 0600
+  tags: configure
   notify: restart freeradius
 
 - name: configure strongswan ike
