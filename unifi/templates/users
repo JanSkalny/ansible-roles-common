@@ -1,0 +1,7 @@
+{% for u in unifi_radius_users %}
+{{ u.login }} Cleartext-Password := "{{ u.password }}"
+  Tunnel-Type = VLAN,
+  Tunnel-Medium-Type = 6,
+  Tunnel-Private-Group-Id = 8
+
+{% endfor %}
