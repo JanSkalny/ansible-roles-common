@@ -24,3 +24,26 @@
     name: unifi
     state: present
   tags: install
+
+- name: install freeradius
+  apt:
+    name: freeradius
+    state: present
+  tags: install
+  when: unifi_radius 
+
+- name: configure freeradius
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: freerad
+  with_items:
+    - src: users
+      dest: /etc/freeradius/3.0/mods-config/files/authorize
+    - src: clients.conf
+      dest: /etc/freeradius/3.0/clients.conf
+    - src: eap
+      dest: /etc/freeradius/3.0/mods-enabled/eap
+  tags: configure
+  notify: restart freeradius
+  when: unifi_radius 
