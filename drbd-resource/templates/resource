@@ -48,8 +48,8 @@ resource {{drbd_res_name}} {
 
   handlers {
     # see: https://linbit.com/drbd-user-guide/drbd-guide-9_0-en/#s-pacemaker-fencing
-    fence-peer "/usr/lib/drbd/crm-fence-peer.9.sh";
-    after-resync-target "/usr/lib/drbd/crm-unfence-peer.9.sh";
+    fence-peer "/usr/lib/drbd/crm-fence-peer.sh";
+    after-resync-target "/usr/lib/drbd/crm-unfence-peer.sh";
   }
 
   syncer {
