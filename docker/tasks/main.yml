@@ -42,3 +42,7 @@
     - docker-compose
   tags: install
 
+- name: expose docker daemon
+  include_tasks: expose-daemon.yml
+  when: 'docker_expose_daemon | default(false)'
+
