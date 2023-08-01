@@ -2,7 +2,11 @@ resource {{drbd_res_name}} {
   protocol C;
 
   device minor {{drbd_res_id}};
+{% if drbd_separate_meta and meta_lv_status.stat.exists | default(False) %}
+  meta-disk /dev/{{ drbd_meta_vg }}/{{ drbd_res_name }}{{ drbd_meta_suffix }};
+{% else %}
   meta-disk internal;
+{% endif %}
 
   startup {
     wfc-timeout 30;

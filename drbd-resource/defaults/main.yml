@@ -3,3 +3,13 @@ drbd_base_port: 7700
 drbd_rate: 100
 #drbd_psk: "$( openssl rand -hex 16 )"
 drbd_dual_primary: false
+drbd_separate_meta: false
+drbd_meta_vg: "{{ drbd_vg }}"
+drbd_meta_suffix: "_meta"
+
+#XXX: does not work, because lvm needs to be rounded up to physical extent
+# accept that internal drbd volume is smaller or consider moving metadata to separate volume (_meta):/
+#drbd_sector_size: 512
+#drbd_size_sec: "{{ (drbd_size_gb | default(0) * 1024 * 1024 * 1024 / drbd_sector_size) | int }}"
+#drbd_meta_sec: "{{ (((drbd_size_sec | int / 262144) | round(0, 'ceil'))*8 + 72) | int }}"
+#drbd_size: "{{ (drbd_size_sec|int+drbd_meta_sec|int) | int }}S"
