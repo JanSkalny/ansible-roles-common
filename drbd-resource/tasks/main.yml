@@ -33,7 +33,7 @@
 
 - name: write drbd metadata
   shell:
-    drbdadm create-md {{ drbd_res_name }}
+    echo yes | drbdadm create-md {{ drbd_res_name }}
   when: not lv_status.stat.exists
 
 - name: make resource primary
