@@ -1,0 +1,21 @@
+---
+
+- name: disable plugin
+  community.docker.docker_plugin:
+    plugin_name: "{{ item.alias | default(item.name) }}"
+    state: disable
+  loop: "{{ docker_plugins }}"
+  ignore_errors: true
+
+- name: install plugins
+  community.docker.docker_plugin:
+    plugin_name: "{{ item.name }}"
+    alias: "{{ item.alias | default(omit) }}"
+    plugin_options: "{{ item.options | default(omit) }}"
+  loop: "{{ docker_plugins }}"
+
+- name: enable plugin
+  community.docker.docker_plugin:
+    plugin_name: "{{ item.alias | default(item.name) }}"
+    state: enable
+  loop: "{{ docker_plugins }}"

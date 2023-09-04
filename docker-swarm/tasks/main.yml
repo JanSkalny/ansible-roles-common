@@ -1,0 +1,20 @@
+---
+
+- name: init swarm cluster
+  delegate_to: "{{ docker_swarm_manager }}"
+  run_once: true
+  community.docker.docker_swarm:
+    advertise_addr: "{{ docker_swarm_advertise_addr }}"
+    listen_addr: "{{ docker_swarm_listen_addr }}:{{ docker_swarm_listen_port }}"
+    state: present
+  register: __swarm
+
+- name: join swarm
+  delegate_to: "{{ item }}"
+  run_once: true
+  community.docker.docker_swarm:
+    state: join
+    join_token: "{{ __swarm.swarm_facts.JoinTokens.Worker }}"
+    remote_addrs:
+      - "{{ docker_swarm_advertise_addr }}:{{ docker_swarm_listen_port }}"
+  loop: "{{ docker_swarm_workers }}"

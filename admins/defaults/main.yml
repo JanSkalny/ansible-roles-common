@@ -4,3 +4,6 @@ default_user_shell: "/bin/bash"
 users: []
 users_remove: []
 jump_users: []
+
+#user_passwords: 
+#  xxx: "{{ 'foo' | password_hash('sha512') }}"

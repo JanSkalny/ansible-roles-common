@@ -2,7 +2,11 @@ resource {{drbd_res_name}} {
   protocol C;
 
   device minor {{drbd_res_id}};
+{% if drbd_separate_meta and meta_lv_status.stat.exists | default(False) %}
+  meta-disk /dev/{{ drbd_meta_vg }}/{{ drbd_res_name }}{{ drbd_meta_suffix }};
+{% else %}
   meta-disk internal;
+{% endif %}
 
   startup {
     wfc-timeout 30;
@@ -48,8 +52,8 @@ resource {{drbd_res_name}} {
 
   handlers {
     # see: https://linbit.com/drbd-user-guide/drbd-guide-9_0-en/#s-pacemaker-fencing
-    fence-peer "/usr/lib/drbd/crm-fence-peer.9.sh";
-    after-resync-target "/usr/lib/drbd/crm-unfence-peer.9.sh";
+    fence-peer "/usr/lib/drbd/crm-fence-peer.sh";
+    after-resync-target "/usr/lib/drbd/crm-unfence-peer.sh";
   }
 
   syncer {

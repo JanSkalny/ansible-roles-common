@@ -2,9 +2,9 @@
   file:
     path: "{{ virtual.disk_blk | default('/dev/mapper/'+virtual.name) }}"
 
-- name: "lock preseeding mutex for this vm"
-  shell: "tempfile -n \"{{ virtual_dir }}/preseed/{{ virtual.name }}.lock\""
-  ignore_errors: yes
+- name: "check if lock_file is present"
+  stat:
+    path: "{{ virtual_dir }}/preseed/{{ virtual.name }}.lock"
   register: virtual_preseed_lock
 
 - name: "check if configuration file is present"
@@ -21,7 +21,7 @@
 
 - debug:
     msg: "[LOCK FAIL] virtual_preseed_lock={{ virtual_preseed_lock }}"
-  when: "virtual_preseed_lock.rc|default(0) != 0"
+  when: "virtual_preseed_lock.stat.exists"
 
 - debug:
     msg: "[CONF ALREADY EXISTS] virtual_existing_conf={{ virtual_existing_conf }}"
@@ -33,7 +33,14 @@
 
 - name: "run only when we got exclusive lock and no conf file is present"
   meta: end_host
-  when: virtual_preseed_lock.rc|default(0) != 0 or virtual_existing_conf.stat.exists == True or 'status' in virtual_existing_vm 
+  when: virtual_preseed_lock.stat.exists or virtual_existing_conf.stat.exists == True or 'status' in virtual_existing_vm 
+
+- name: "lock preseeding mutex for this vm"
+  file:
+    path: "{{ virtual_dir }}/preseed/{{ virtual.name }}.lock"
+    state: touch
+    mode: 0644
+  when: not virtual_preseed_lock.stat.exists 
 
 - name: prepare preseed dir for this host
   file:

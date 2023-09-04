@@ -1,0 +1,58 @@
+
+config interface 'loopback'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config globals 'globals'
+	option ula_prefix 'fd39:c664:88be::/48'
+
+{% for iface_name,iface in networking.items() %}
+
+config interface '{{ iface_name }}'
+{% if 'address' in iface and iface.address != 'dhcp' %}
+	option proto 'static'
+{% endif %}
+{% if 'openwrt_ifname' in iface %}
+	option ifname '{{ iface.openwrt_ifname }}'
+{% else %}
+	option ifname '{{ iface_name }}'
+{% endif %}
+{% if 'address' in iface and iface.address != 'dhcp' %}
+	option ipaddr '{{ iface.address | ansible.utils.ipaddr('address') }}'
+	option netmask '{{ iface.address | ansible.utils.ipaddr('netmask') }}'
+{% endif %}
+{% if 'gateway' in iface %}
+	option gateway {{ iface.gateway }}
+{% endif %}
+{% if 'address6' in iface and iface.address6 != 'dhcp' %}
+	option ip6addr '{{ iface.address6 }}'
+{% endif %}
+{% if 'address6' in iface %} 
+	option dns '{{ dns_servers | default(['1.1.1.1']) | join(" ")}}'
+{% else %}
+	option dns '{{ dns_servers | default(['1.1.1.1']) | reject('search',':') | join(" ")}}'
+{%endif %}
+
+{% if iface.address_alt|default(False) %}
+{% for addr in iface.address_alt|default([]) %}
+config interface '{{ iface_name }}alt{{ loop.index }}'
+	option proto 'static'
+	option ifname '@{{ iface_name }}'
+	option ipaddr '{{ addr | ansible.utils.ipaddr('address') }}'
+	option netmask '{{ addr | ansible.utils.ipaddr('netmask') }}'
+{% endfor %}
+{% endif %}
+
+{% if iface.address6_alt|default(False) %}
+{% for addr in iface.address6_alt|default([]) %}
+config interface '{{ iface_name }}alt{{ loop.index }}ip6'
+	option proto 'static'
+	option ifname '@{{ iface_name }}'
+	option ip6addr '{{ addr }}'
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+{{ networking_patch | default("") }}

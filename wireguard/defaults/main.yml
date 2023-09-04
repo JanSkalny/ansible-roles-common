@@ -15,4 +15,5 @@ wg_peers: {}
 #  allowed_ips: "172.16.0.2/32"
 #  psk: "xxx" (optional)
 #  endpoint: "a.b.c.d:1501" (mandatory for clients)
+#  keepalive: 25 (optional)
 

@@ -1,0 +1,1 @@
+vrrp_global_secret: "change_me"

@@ -3,13 +3,10 @@
     src: "{{ item }}"
     dest: "/etc/config/{{ item }}"
   with_items:
-    - dhcp
     - dropbear
-    - network
-    - system
   tags: configure
 
-- name: generate config files
+- name: remove invalid files
   file:
     path: "/etc/config/{{ item }}"
     state: absent
@@ -20,4 +17,3 @@
    - ucitrack
    - uhttpd
   tags: configure
-

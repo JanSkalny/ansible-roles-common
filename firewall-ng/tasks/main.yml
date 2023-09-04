@@ -45,6 +45,7 @@
     owner: root 
     group: root 
     mode: 0750
+  tags: configure
   notify: reload firewall
   when: firewall_template is defined and firewall_interfaces|length
 

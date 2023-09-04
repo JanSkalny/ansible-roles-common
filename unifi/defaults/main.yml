@@ -1,0 +1,7 @@
+unifi_radius: False
+# unifi_radius_clients: 
+# - addr: x.x.x.x/x
+#   secret: "randString1"
+# unifi_radius_users:
+# - login: "user1"
+#   password: "password1"
