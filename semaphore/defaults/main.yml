@@ -1,0 +1,6 @@
+# generate using `head -c32 /dev/urandom | base64`
+#semaphore_encryption_key: ""
+#semaphore_admin_email: "admin@foo.bar"
+#semaphore_admin_password: "fooBarBaz"
+
+semaphore_mysql_password: "{{ ( 'randomz' + semaphore_encryption_key ) | hash('sha1') }}"
