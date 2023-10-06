@@ -1,3 +1,6 @@
 squid_port: 3128
 
 squid_custom: ""
+
+squid_logrotate_count: 10
+squid_logrotate_maxsize: "100M"

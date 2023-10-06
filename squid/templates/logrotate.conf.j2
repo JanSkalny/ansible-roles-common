@@ -1,0 +1,16 @@
+/var/log/squid/*.log {
+	daily
+	compress
+	delaycompress
+	rotate {{ squid_logrotate_count }}
+	maxsize {{ squid_logrotate_maxsize }}
+	missingok
+	nocreate
+	sharedscripts
+	prerotate
+		test ! -x /usr/sbin/sarg-reports || /usr/sbin/sarg-reports daily
+	endscript
+	postrotate
+		test ! -e /run/squid.pid || test ! -x /usr/sbin/squid || /usr/sbin/squid -k rotate
+	endscript
+}
