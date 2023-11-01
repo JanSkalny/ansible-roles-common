@@ -1,2 +1,2 @@
 linux:
-  template: "Template OS Linux by Zabbix agent"
+  template: "Linux by Zabbix agent"
