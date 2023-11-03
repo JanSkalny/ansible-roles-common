@@ -13,6 +13,7 @@
       \dx
       CREATE EXTENSION IF NOT EXISTS timescaledb;
       \dx
+      # add `timescaledb.telemetry_level=off` to postgre config and restart
       apt-get install zabbix-server-pgsql zabbix-sql-scripts
       sudo -u postgres createuser --pwprompt zabbix
       # openssl rand -base64 15 and remember pw
@@ -20,5 +21,6 @@
       zcat /usr/share/zabbix-sql-scripts/postgresql/server.sql.gz | sudo -u zabbix psql zabbix
       echo "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;" | sudo -u postgres psql zabbix
       cat /usr/share/zabbix-sql-scripts/postgresql/timescaledb.sql | sudo -u zabbix psql zabbix
-      apt-get install zabbix-frontend-phpphp8.1-pgsql zabbix-apache-conf
+      apt-get install zabbix-frontend-php php8.1-pgsql zabbix-apache-conf
       # store pw into /etc/zabbix/zabbix_server.conf
+      /etc/init.d/zabbix-server restart
