@@ -1,6 +1,8 @@
 - name: install nginx
   package:
-    name: nginx
+    name: 
+      - nginx
+      - nginx-extras
     state: present
   notify: restart nginx
 
@@ -13,6 +15,12 @@
   template:
     src: site-forwards
     dest: "/etc/nginx/sites-available/site-forwards"
+  notify: restart nginx
+
+- name: harden nginx
+  template:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
   notify: restart nginx
 
 - name: enable nginx forwarding rules
