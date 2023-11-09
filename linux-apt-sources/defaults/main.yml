@@ -1,0 +1,2 @@
+apt_sources_ubuntu_security: "security.ubuntu.com"
+apt_sources_ubuntu_archive: "archive.ubuntu.com"
