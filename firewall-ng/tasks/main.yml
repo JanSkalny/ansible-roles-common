@@ -1,42 +1,10 @@
-- name: ensure iptables command is present
-  when: ansible_distribution == 'Debian'
-  block:
-    - name: check iptables presence
-      shell: which iptables
-      changed_when: false
-      register: iptables_presence
-
-    - name: ensure iptables is installed
-      when:  iptables_presence.rc != 0
-      apt:
-        name: iptables
-
-- name: Save current state of the iptables to root HOME
-  shell: iptables-save > ~/iptables.v4-{{ '%Y-%m-%d-%H-%M-%S' | strftime(ansible_date_time.epoch) }}
-  become: yes
-  tags: never # this is not needed
-
-- name: Save current state of the ip6tables to root HOME
-  shell: ip6tables-save > ~/iptables.v6-{{ '%Y-%m-%d-%H-%M-%S' | strftime(ansible_date_time.epoch) }}
-  become: yes
-  tags: never # this is not needed
-
 #TODO: make sure iptables, conntrack and nftables are installed
-
-- name: Save old fw.sh to root HOME
-  copy:
-    src: /etc/init.d/fw.sh
-    remote_src: true
-    dest: ~/fw-{{ '%Y-%m-%d-%H-%M-%S' | strftime(ansible_date_time.epoch) }}.sh
-    owner: root
-    group: root
-    mode: 0750
-    backup: yes
-    force: no
-  become: yes
-  failed_when: false # if file does not exist
-  when: firewall_template is defined and firewall_interfaces|length
-  tags: never # this is not needed
+- name: ensure iptables command is present
+  package:
+    name: 
+      - iptables
+    state: present
+  when: ansible_distribution_file_variety == 'Debian'
 
 - name: generate fw.sh
   template: 

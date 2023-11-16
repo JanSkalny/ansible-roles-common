@@ -22,4 +22,5 @@ multipath > /dev/null
 
 #dmsetup remove_all
 
-/etc/init.d/multipath-tools reload
+systemctl reload multipath-tools
+#/etc/init.d/multipath-tools reload
