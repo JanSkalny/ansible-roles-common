@@ -1,1 +1,2 @@
-minio_version: "RELEASE.2023-08-31T15-31-16Z"
+#XXX: override to use specific version
+minio_version: "latest"
