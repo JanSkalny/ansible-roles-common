@@ -1,4 +1,4 @@
 suricata:
-  template: "Template App Suricata by Zabbix agent"
+  template: "Suricata by Zabbix agent"
   params: "zabbix-suricata/suricata.conf"
   crond: "zabbix-suricata/zabbix-suricata-cron"

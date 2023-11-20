@@ -1,2 +1,2 @@
 elasticsearch:
-  template: "Template App Elasticsearch Cluster by HTTP"
+  template: "Elasticsearch Cluster by HTTP"

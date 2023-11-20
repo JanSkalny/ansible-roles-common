@@ -2,7 +2,7 @@
 user = {{ www_user }}
 group = {{ www_user }}
 
-listen = /var/run/php-fpm-{{ www_user }}.sock
+listen = /run/php/php-fpm-{{ www_user }}.sock
 
 listen.owner = www-data
 listen.group = www-data

@@ -1,0 +1,22 @@
+- name: install tools
+  package:
+    name: 
+    - lsscsi
+    state: present
+  tags: install
+
+- name: configure initiatorname.iscsi
+  template:
+    src: initiatorname.iscsi
+    dest: /etc/iscsi/initiatorname.iscsi
+    mode: 0600
+  notify: restart iscsid
+  tags: configure
+
+- name: configure iscsid.conf
+  template:
+    src: iscsid.conf
+    dest: /etc/iscsi/iscsid.conf
+    mode: 0644
+  notify: restart iscsid
+  tags: configure

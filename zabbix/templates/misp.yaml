@@ -1,5 +1,5 @@
 misp:
-  template: "Template App MISP by Zabbix agent"
+  template: "MISP by Zabbix agent"
   sudoers: "zabbix-misp/sudoers"
   params: "zabbix-misp/misp.conf"
   scripts:

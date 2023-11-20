@@ -1,0 +1,80 @@
+- name: create directories
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /opt/semaphore-docker
+
+- name: generate docker-compose.yml
+  copy:
+    content: |
+      version: '3.4'
+      services:
+        nginx-proxy:
+          image: jwilder/nginx-proxy
+          restart: unless-stopped
+          ports:
+            - "80:80"
+            - "443:443"
+          volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+            - certs:/etc/nginx/certs
+            - vhost:/etc/nginx/vhost.d
+            - conf:/etc/nginx/conf.d
+            - html:/usr/share/nginx/html
+        nginx-letsencrypt:
+          image: jrcs/letsencrypt-nginx-proxy-companion
+          container_name: nginx-letsencrypt
+          restart: always
+          volumes_from:
+            - nginx-proxy
+          volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+          environment:
+            - DEFAULT_EMAIL=admin@netvor.sk
+        mysql:
+          restart: unless-stopped
+          image: mysql:8.0
+          hostname: mysql
+          volumes:
+            - mysql:/var/lib/mysql
+          environment:
+            MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+            MYSQL_DATABASE: semaphore
+            MYSQL_USER: semaphore
+            MYSQL_PASSWORD: "{{ semaphore_mysql_password }}"
+        semaphore:
+          restart: unless-stopped
+          image: semaphoreui/semaphore:latest
+          environment:
+            LETSENCRYPT_HOST: "{{ inventory_hostname }}"
+            VIRTUAL_HOST: "{{ inventory_hostname }}"
+            VIRTUAL_PORT: 3000
+            SEMAPHORE_ACCESS_KEY_ENCRYPTION: "{{ semaphore_encryption_key }}"
+            SEMAPHORE_ADMIN_NAME: admin
+            SEMAPHORE_ADMIN: admin
+            SEMAPHORE_ADMIN_EMAIL: "{{ semaphore_admin_email }}"
+            SEMAPHORE_ADMIN_PASSWORD: "{{ semaphore_admin_password }}"
+            SEMAPHORE_DB_USER: semaphore
+            SEMAPHORE_DB_PASS: "{{ semaphore_mysql_password }}"
+            SEMAPHORE_DB_HOST: mysql
+            SEMAPHORE_DB_PORT: 3306
+            SEMAPHORE_DB_DIALECT: mysql
+            SEMAPHORE_DB: semaphore
+          depends_on:
+            - mysql
+      volumes:
+        mysql:
+        certs:
+        vhost:
+        conf:
+        html:
+        acme:
+    dest: /opt/semaphore-docker/docker-compose.yml
+
+- name: run docker-compose
+  shell: 
+    echo "docker-compose up -d && sleep 10"
+  args:
+    chdir: /opt/semaphore-docker/
+
