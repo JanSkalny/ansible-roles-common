@@ -1,0 +1,18 @@
+---
+
+- name: mkdir systemd/docker
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    owner: root
+
+- name: create expose.conf
+  template:
+    src: expose.conf.j2
+    dest: /etc/systemd/system/docker.service.d/expose.conf
+  notify:
+    - reload systemd
+    - restart docker
+
+- meta: flush_handlers
+

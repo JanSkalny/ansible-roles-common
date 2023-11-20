@@ -10,3 +10,9 @@
     dest: /etc/squid/squid.conf
   tags: configure
   notify: reload squid
+
+- name: configure logrotate
+  template:
+    src: logrotate.conf.j2
+    dest: /etc/logrotate.d/squid
+  tags: configure

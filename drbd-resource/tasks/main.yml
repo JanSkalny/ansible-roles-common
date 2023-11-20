@@ -12,6 +12,19 @@
     size: "{{ drbd_size }}"
   when: not lv_status.stat.exists
 
+- name: prepare meta lv only for newly created resource
+  lvol:
+    lv: "{{ drbd_res_name }}{{ drbd_meta_suffix }}"
+    vg: "{{ drbd_meta_vg }}"
+    size: "100m"
+  when: not lv_status.stat.exists and drbd_separate_meta
+
+- name: check if drbd uses separate meta lv
+  stat:
+    path: /dev/{{ drbd_meta_vg }}/{{ drbd_res_name }}{{ drbd_meta_suffix }}
+  check_mode: no
+  register: meta_lv_status
+
 - name: create resource config
   template:
     src: "resource"
@@ -20,7 +33,7 @@
 
 - name: write drbd metadata
   shell:
-    drbdadm create-md {{ drbd_res_name }}
+    echo yes | drbdadm create-md {{ drbd_res_name }}
   when: not lv_status.stat.exists
 
 - name: make resource primary

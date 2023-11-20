@@ -1,0 +1,9 @@
+---
+
+# only name attribute is mandatory
+docker_plugins: []
+#   - name: PLUGIN_NAME
+#     alias: ALIAS_NAME
+#     options:
+#       SERVERS: node1,node2
+#       VOLNAME: my-vol

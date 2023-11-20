@@ -1,0 +1,2 @@
+#XXX: override to use specific version
+minio_version: "latest"
