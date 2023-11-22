@@ -1,2 +1,3 @@
 apt:
+  template: "Linux apt updates by Zabbix agent"
   params: "zabbix-apt/apt.conf"

@@ -1,0 +1,9 @@
+## generate using `head -c32 /dev/urandom | base64`
+#semaphore_encryption_key: ""
+
+## delete admin user via gui after succesful installation
+#semaphore_admin_email: "admin@foo.bar"
+#semaphore_admin_password: "fooBarBaz"
+
+semaphore_mysql_password: "{{ ( 'randomz' + semaphore_encryption_key ) | hash('sha1') }}"
+semaphore_use_letsencrypt: False

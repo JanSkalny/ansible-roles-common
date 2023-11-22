@@ -35,3 +35,9 @@
   notify: reboot host to apply networking changes
   tags: configure
 
+- name: disable systemd-networkd service
+  systemd:
+    name: systemd-networkd
+    state: stopped
+    enabled: no
+

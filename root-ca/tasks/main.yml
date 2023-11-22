@@ -1,0 +1,18 @@
+- package:
+    name: 
+      - ca-certificates
+    state: present
+
+- name: deplay crt 
+  copy:
+    src: "{{ item }}"
+    dest: "/usr/local/share/ca-certificates/"
+    owner: root
+    group: root
+    mode: 0644
+  with_items: '{{ ca_files | default([]) }}'
+  register: new_ca_certificates
+
+- name: run update-ca-certificates
+  command: "/usr/sbin/update-ca-certificates"
+  when: new_ca_certificates.changed

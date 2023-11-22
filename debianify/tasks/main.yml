@@ -23,4 +23,5 @@
     path: /etc/default/motd-news
     regexp: '^ENABLED='
     line: ENABLED=0
+  failed_when: False
 
