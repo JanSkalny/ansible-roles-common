@@ -4,7 +4,7 @@
 127.0.0.1 localhost {{ inventory_hostname }}
 {% else %}
 127.0.0.1 localhost 
-{% if not linux_networking_group is defined %}
+{% if inventory_hostname not in etc_hosts.keys() %}
 {{ ansible_default_ipv4.address }} {{ inventory_hostname }}
 {% endif %}
 {% endif %}
@@ -13,13 +13,6 @@
 # generated from "hosts" var
 {% for h,ip in etc_hosts.items() %}
 {{ ip }} {{ h }}
-{% endfor %}
-{% endif %}
-
-{% if linux_networking_group is defined %}
-# generated from "linux_networking_group"
-{% for host in groups[ linux_networking_group ] %}
-{{ hostvars[host]['networking']['eth0']['address'].split('/')[0] }} {{ hostvars[host]['inventory_hostname'] }} {{ hostvars[host]['inventory_hostname_short'] }}
 {% endfor %}
 {% endif %}
 
