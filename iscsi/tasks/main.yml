@@ -1,7 +1,8 @@
 - name: install tools
   package:
-    name: 
+    name:
     - lsscsi
+    - open-iscsi
     state: present
   tags: install
 
@@ -10,7 +11,10 @@
     src: initiatorname.iscsi
     dest: /etc/iscsi/initiatorname.iscsi
     mode: 0600
-  notify: restart iscsid
+  register: res_initiatorname
+  notify:
+    - restart iscsid
+    - iscsiadm discovery
   tags: configure
 
 - name: configure iscsid.conf
