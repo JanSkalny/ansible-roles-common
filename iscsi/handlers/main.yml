@@ -2,3 +2,9 @@
   service:
     name: iscsid
     state: restarted
+
+- name: iscsiadm discovery
+  shell: |
+    iscsiadm -m node
+    iscsiadm -m discovery -t st -p "{{ iscsi_portal }}"
+    iscsiadm -m node --login
