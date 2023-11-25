@@ -93,4 +93,7 @@
       <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
     </memballoon>
   </devices>
+  <metadata>
+    <fqdn>{{ virtual.fqdn }}</fqdn>
+  </metadata>
 </domain>
