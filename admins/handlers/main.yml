@@ -1,0 +1,2 @@
+- name: rebuild initramfs
+  ansible.builtin.shell: update-initramfs -ck all
