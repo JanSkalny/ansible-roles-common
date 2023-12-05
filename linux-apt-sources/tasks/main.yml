@@ -1,4 +1,0 @@
-- template:
-    src: "{{ ansible_distribution }}.list"
-    dest: "/etc/apt/sources.list"
-  when: ansible_distribution in ['Ubuntu']
