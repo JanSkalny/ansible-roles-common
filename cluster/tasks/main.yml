@@ -71,6 +71,12 @@
   - libvirt-guests
   ignore_errors: yes
 
+- name: deploy cluster maintenance scripts
+  copy:
+    src: cluster-drain-node.sh
+    dest: /usr/local/bin/cluster-drain-node.sh
+    mode: 0700
+  tags: install
 
 # TODO:
 # configure drbd / ocfs

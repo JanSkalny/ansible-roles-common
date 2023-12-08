@@ -1,0 +1,15 @@
+- template:
+    src: "{{ ansible_distribution }}.list"
+    dest: "/etc/apt/sources.list"
+  when: ansible_distribution in ['Ubuntu']
+
+- template:
+    src: "10periodic"
+    dest: "/etc/apt/apt.conf.d/10periodic"
+  when: ansible_distribution in ['Ubuntu']
+- file:
+    path: "/etc/apt/apt.conf.d/{{ item }}"
+    state: absent
+  with_items:
+    - 20auto-upgrades
+  when: ansible_distribution in ['Ubuntu']

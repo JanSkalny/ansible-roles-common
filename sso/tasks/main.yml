@@ -1,5 +1,12 @@
 ---
 
+- name: install dependencies
+  package:
+    name:
+      - debconf
+      - debconf-utils
+  tags: install
+
 - name: prepare debconf
   debconf:
     name: slapd
@@ -7,21 +14,27 @@
     value: "{{ item.value }}"
     vtype: "{{ item.vtype | default('string') }}"
   with_items:
-    - question: "slapd/no_configuration"
+    - name: "slapd"
+      question: "slapd/no_configuration"
       value: "false"
       vtype: "boolean"
-    - question: "slapd/move_old_database"
+    - name: "slapd"
+      question: "slapd/move_old_database"
       value: "true"
       vtype: "boolean"
-    - question: "slapd/purge_database"
+    - name: "slapd"
+      question: "slapd/purge_database"
       value: "true"
       vtype: "boolean"
-    - question: "slapd/backend"
+    - name: "slapd"
+      question: "slapd/backend"
       value: "MDB"
       vtype: "select"
-    - question: "slapd/domain"
+    - name: "slapd"
+      question: "slapd/domain"
       value: "{{ ldap_domain }}"
-    - question: "shared/organization"
+    - name: "shared"
+      question: "shared/organization"
       value: "{{ ldap_org }}"
   notify: dpkg reconfigure slapd
   tags: install
@@ -45,10 +58,12 @@
     value: "{{ item.value }}"
     vtype: "{{ item.vtype | default('string') }}"
   with_items:
-    - question: "slapd/password1"
+    - name: "slapd"
+      question: "slapd/password1"
       value: "{{ ldap_root_pw }}"
       vtype: password
-    - question: "slapd/password2"
+    - name: "slapd"
+      question: "slapd/password2"
       value: "{{ ldap_root_pw }}"
       vtype: password
   notify: dpkg reconfigure slapd

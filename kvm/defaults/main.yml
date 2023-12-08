@@ -1,5 +1,6 @@
 virtual_dir: "/var/lib/virtual"
 lvm_pvs:
+  - "^/dev/nvme0n[0-9].*"
   - "^/dev/sda[0-9]*$"
   - "^/dev/sdb[0-9]*$"
   - "^/dev/md[0-9]*$"

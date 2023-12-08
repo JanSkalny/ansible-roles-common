@@ -1,2 +1,6 @@
 apt_sources_ubuntu_security: "security.ubuntu.com"
 apt_sources_ubuntu_archive: "archive.ubuntu.com"
+
+apt_periodic_update: Yes
+apt_periodic_upgrade: No
+
