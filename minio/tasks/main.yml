@@ -10,7 +10,7 @@
        services:
          minio:
            image: quay.io/minio/minio:{{ minio_version }}
-           command: server --console-address ":9001" /minio/data
+           command: server --console-address ":9001" /data
            ports:
              - "8443:9000"
              - "443:9001"

@@ -5,12 +5,10 @@
   register: virtual_start
 
 - name: wait for vm to start
-  wait_for:
-    host: "{{ virtual.fqdn | default(virtual.name) }}"
-    port: 22
-    search_regex: OpenSSH
-    connect_timeout: 20
-    sleep: 10
+  wait_for_connection:
+    connect_timeout: 5
+    sleep: 5
     delay: 10
     timeout: 300
+  delegate_to: "{{ virtual.fqdn | default(virtual.name) }}"
   when: virtual_start is changed

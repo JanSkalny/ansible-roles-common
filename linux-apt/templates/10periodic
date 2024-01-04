@@ -1,0 +1,5 @@
+APT::Periodic::Enable "{{ (apt_periodic_update or apt_periodic_upgrade ) | int }}";
+APT::Periodic::Update-Package-Lists "{{ apt_periodic_update | int }}";
+APT::Periodic::Download-Upgradeable-Packages "{{ apt_periodic_upgrade | int }}";
+APT::Periodic::Unattended-Upgrade "{{ apt_periodic_upgrade | int }}";
+APT::Periodic::AutocleanInterval "0";

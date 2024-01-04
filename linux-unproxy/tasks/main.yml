@@ -3,6 +3,9 @@
     path: "{{ item }}"
     state: absent
   with_items:
+    - /etc/apt/apt.conf.d/00proxy
+    - /etc/apt/apt.conf.d/01proxy
+    - /etc/apt/apt.conf.d/50proxy
     - /etc/apt/apt.conf.d/99proxy
     - /etc/apt/apt.conf.d/90curtin-aptproxy
     - /etc/apt/apt.conf.d/proxy.conf
