@@ -24,11 +24,21 @@
     group: tcpdump
     state: directory
 
-- name: deploy capture.sh
+- name: deploy scripts
   template:
-    src: 'capture.sh'
-    dest: '{{ hole_dir }}/capture.sh'
+    src: '{{ item }}'
+    dest: '{{ hole_dir }}/{{ item }}'
     mode: 0755
+  with_items:
+    - capture.sh
+    - purge.sh
+
+- name: run purge via cron
+  copy:
+    content: |
+      10 * * * * root /opt/hole/purge.sh
+    dest: /etc/cron.d/telescope-hole
+    mode: 0644
 
 - name: deploy supervisor config
   template:
@@ -36,3 +46,4 @@
     dest: "{{ supervisor_conf_d }}/hole{{ supervisor_conf_suffix }}"
     # <3 supervisor :)
   notify: restart supervisor
+
