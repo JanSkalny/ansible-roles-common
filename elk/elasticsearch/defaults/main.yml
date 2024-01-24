@@ -19,6 +19,10 @@ elastic_port: "9200"
 elastic_log_path: "/var/log/elasticsearch"
 elastic_data_path: "/var/lib/elasticsearch"
 
+# tls and authentication via xpack.security
+elastic_secure: True
+
+# ldap integration
 elastic_ldap: False
 elastic_ldap_url: "ldaps://{{ ldap_server }}:636"
 elastic_ldap_bind_user: "elastic"

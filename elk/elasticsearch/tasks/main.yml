@@ -22,6 +22,14 @@
   notify: restart elasticsearch
   tags: configure
 
+- name: make sure subdirs exist
+  file:
+    path: "/etc/elasticsearch/{{ item }}"
+    state: directory
+  with_items:
+    - jvm.options.d
+    - certs
+
 - name: configure elastic
   template:
     src: "{{ item.src }}"
