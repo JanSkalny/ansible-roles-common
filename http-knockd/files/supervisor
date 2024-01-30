@@ -1,0 +1,9 @@
+[program:knockd]
+command=/opt/http-knockd/knockd.sh
+user=root
+autostart=true
+autorestart=true
+startsecs=10
+startretries=1000000
+redirect_stderr=true
+stdout_logfile=/var/log/knockd.log
