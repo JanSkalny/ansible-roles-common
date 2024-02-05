@@ -35,9 +35,12 @@
   notify: reboot host to apply networking changes
   tags: configure
 
-- name: disable systemd-networkd service
+- name: disable systemd services
   systemd:
-    name: systemd-networkd
+    name: "{{ item }}"
     state: stopped
     enabled: no
+  with_items:
+    - systemd-networkd
+    - systemd-resolved
 

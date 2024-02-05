@@ -94,6 +94,6 @@
     </memballoon>
   </devices>
   <metadata>
-    <fqdn>{{ virtual.fqdn }}</fqdn>
+    <fqdn>{{ virtual.fqdn | default(virtual.name) }}</fqdn>
   </metadata>
 </domain>
