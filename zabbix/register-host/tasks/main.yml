@@ -22,9 +22,9 @@
   vars:
     ansible_network_os: community.zabbix.zabbix
     ansible_connection: httpapi
-    ansible_httpapi_port: 443
-    ansible_httpapi_use_ssl: true
-    ansible_httpapi_validate_certs: false
+    ansible_httpapi_port: "{{ zabbix_port | default(443) }}"
+    ansible_httpapi_use_ssl: "{{ zabbix_use_tls | default(true) }}"
+    ansible_httpapi_validate_certs: "{{ zabbix_validate_certs | default(false) }}"
     ansible_zabbix_auth_key: "{{ zabbix_token }}"
     ansible_zabbix_url_path: ""
   become: false
@@ -37,9 +37,9 @@
   vars:
     ansible_network_os: community.zabbix.zabbix
     ansible_connection: httpapi
-    ansible_httpapi_port: 443
-    ansible_httpapi_use_ssl: true
-    ansible_httpapi_validate_certs: false
+    ansible_httpapi_port: "{{ zabbix_port | default(443) }}"
+    ansible_httpapi_use_ssl: "{{ zabbix_use_tls | default(true) }}"
+    ansible_httpapi_validate_certs: "{{ zabbix_validate_certs | default(false) }}"
     ansible_zabbix_auth_key: "{{ zabbix_token }}"
     ansible_zabbix_url_path: ""
   become: false

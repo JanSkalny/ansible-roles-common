@@ -389,8 +389,8 @@ $IT6 -A OUTPUT -j {{ firewall_default_rule_output }}
 
 #TODO: odstranit z produkcie
 # IPv4 ICMP rate limit
-#$IT4 -A FORWARD -p icmp -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
-#$IT4 -A FORWARD -p icmp -j LOG_DROP_RATELIMIT
+$IT4 -A FORWARD -p icmp -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
+$IT4 -A FORWARD -p icmp -j LOG_DROP_RATELIMIT
 
 # default rule
 $IT4 -A FORWARD -j {{ firewall_default_rule_forward }}

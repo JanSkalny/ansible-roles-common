@@ -1,0 +1,99 @@
+- name: pull docker-compose 
+  git:
+    repo: https://github.com/zabbix/zabbix-docker.git
+    dest: /opt/zabbix-docker
+    version: "{{ zabbix_version | default('6.4') }}"
+
+- name: generate docker-compose override
+  copy:
+    content: |
+      version: '3.8'
+      services:
+       zabbix-server:
+        extends:
+         file: compose_zabbix_components.yaml
+         service: server-pgsql
+        image: "${ZABBIX_SERVER_PGSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+        volumes:
+         - /etc/timezone:/etc/timezone:ro
+        depends_on:
+         - postgres-server
+        labels:
+         com.zabbix.os: "${ALPINE_OS_TAG}"
+
+       zabbix-web-nginx-pgsql:
+        extends:
+         file: compose_zabbix_components.yaml
+         service: web-nginx-pgsql
+        image: "${ZABBIX_WEB_NGINX_PGSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+        volumes:
+         - /etc/timezone:/etc/timezone:ro
+        depends_on:
+         - postgres-server
+        labels:
+         com.zabbix.os: "${ALPINE_OS_TAG}"
+
+       zabbix-agent:
+        extends:
+         file: compose_zabbix_components.yaml
+         service: agent
+        image: "${ZABBIX_AGENT_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+        volumes:
+         - /etc/timezone:/etc/timezone:ro
+        labels:
+         com.zabbix.os: "${ALPINE_OS_TAG}"
+
+       postgres-server:
+        extends:
+         file: compose_databases.yaml
+         service: postgres-server
+
+       db-data-pgsql:
+        extends:
+         file: compose_databases.yaml
+         service: db-data-pgsql
+
+      networks:
+        zbx_net_frontend:
+          driver: bridge
+          driver_opts:
+            com.docker.network.enable_ipv6: "${FRONTEND_ENABLE_IPV6}"
+          ipam:
+            driver: "${FRONTEND_NETWORK_DRIVER}"
+            config:
+            - subnet: "${FRONTEND_SUBNET}"
+        zbx_net_backend:
+          driver: bridge
+          driver_opts:
+            com.docker.network.enable_ipv6: "${BACKEND_ENABLE_IPV6}"
+          internal: true
+          ipam:
+            driver: "${BACKEND_NETWORK_DRIVER}"
+            config:
+            - subnet: "${BACKEND_SUBNET}"
+        zbx_net_database:
+          driver: bridge
+          driver_opts:
+            com.docker.network.enable_ipv6: "${DATABASE_NETWORK_ENABLE_IPV6}"
+          internal: true
+          ipam:
+            driver: "${DATABASE_NETWORK_DRIVER}"
+
+      volumes:
+        snmptraps:
+      #  dbsocket:
+
+      secrets:
+        POSTGRES_USER:
+          file: ${ENV_VARS_DIRECTORY}/.POSTGRES_USER
+        POSTGRES_PASSWORD:
+          file: ${ENV_VARS_DIRECTORY}/.POSTGRES_PASSWORD
+    dest: /opt/zabbix-docker/docker-compose.yml
+
+
+- name: run docker-compose
+  shell: 
+    docker-compose --profile all up -d && sleep 1
+  args:
+    chdir: /opt/zabbix-docker/
+
