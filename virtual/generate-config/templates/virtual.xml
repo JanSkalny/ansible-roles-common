@@ -61,12 +61,21 @@
     </controller>
 {% for iface_name,iface in hostvars[virtual.fqdn | default(virtual.name)].networking.items() %}
 {% if 'virtual_host_iface' in iface %}
+{% if iface.virtual_host_iface_mode | default('bridge') == 'bridge' %}
     <interface type='bridge'>
       <mac address='{{ iface.ether }}'/>
       <source bridge='{{ iface.virtual_host_iface }}'/>
       <model type='virtio'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='{{ '0x%02x' | format(loop.index + 5) }}' function='0x0'/>
     </interface>
+{% elif iface.virtual_host_iface_mode | default('bridge') == 'direct' %}
+    <interface type='direct'>
+      <mac address='{{ iface.ether }}'/>
+      <source dev='{{ iface.virtual_host_iface }}' mode='passthrough'/>
+      <model type='virtio'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='{{ '0x%02x' | format(loop.index + 5) }}' function='0x0'/>
+    </interface>
+{% endif %}
 {% endif %}
 {% endfor %}
     <serial type='pty'>

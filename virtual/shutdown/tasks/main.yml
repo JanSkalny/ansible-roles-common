@@ -7,6 +7,6 @@
   virt:
     command: info
   register: virtual_install
-  until: virtual_install[virtual.name].state == "shutdown"
+  until: virtual_install[virtual.name].state | default('shutdown') == "shutdown"
   retries: 120
   delay: 5
