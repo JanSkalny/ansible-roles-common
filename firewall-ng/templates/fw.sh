@@ -436,6 +436,12 @@ $IT4 -t nat -A POSTROUTING -o {{ firewall_iface_name }} -s {{ net }} -j MASQUERA
 {% endfor %}
 {% endfor %}
 
+{% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
+{% for dnat in firewall_iface.dnat | default([]) %}
+$IT4 -t nat -A PREROUTING -i {{ firewall_iface_name }} -d {{ dnat.orig_to }} -j DNAT --to-destination {{ dnat.to }}
+{% endfor %}
+{% endfor %}
+
 ############################################################
 ### custom firewall patches
 
