@@ -1,3 +1,6 @@
+# version string, either "8" or "8.x.x" format
+kibana_version: "8"
+
 kibana:
   server:
     host: "0.0.0.0"
