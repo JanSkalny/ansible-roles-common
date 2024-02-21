@@ -389,8 +389,8 @@ $IT6 -A OUTPUT -j {{ firewall_default_rule_output }}
 
 #TODO: odstranit z produkcie
 # IPv4 ICMP rate limit
-#$IT4 -A FORWARD -p icmp -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
-#$IT4 -A FORWARD -p icmp -j LOG_DROP_RATELIMIT
+$IT4 -A FORWARD -p icmp -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
+$IT4 -A FORWARD -p icmp -j LOG_DROP_RATELIMIT
 
 # default rule
 $IT4 -A FORWARD -j {{ firewall_default_rule_forward }}
@@ -433,6 +433,12 @@ $IT6 -A FORWARD -j {{ firewall_default_rule_forward6 | default(firewall_default_
 {% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
 {% for net in firewall_iface.masquerade | default([]) %}
 $IT4 -t nat -A POSTROUTING -o {{ firewall_iface_name }} -s {{ net }} -j MASQUERADE
+{% endfor %}
+{% endfor %}
+
+{% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
+{% for dnat in firewall_iface.dnat | default([]) %}
+$IT4 -t nat -A PREROUTING -i {{ firewall_iface_name }} -d {{ dnat.orig_to }} -j DNAT --to-destination {{ dnat.to }}
 {% endfor %}
 {% endfor %}
 

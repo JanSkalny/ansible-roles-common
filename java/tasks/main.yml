@@ -1,5 +1,5 @@
 - include_tasks: oracle.yml
-  when: java.use_oracle
+  when: java.use_oracle | default(False)
 
 - include_tasks: openjdk.yml
-  when: not java.use_oracle
+  when: not java.use_oracle | default(False)

@@ -1,0 +1,83 @@
+zabbix_export:
+  version: '6.4'
+  template_groups:
+    - uuid: 57b7ae836ca64446ba2c296389c009b7
+      name: Templates/Modules
+  templates:
+    - uuid: b28c13fdd0194ddcb5f6b18723a575ae
+      template: 'NTP by Zabbix agent'
+      name: 'NTP by Zabbix agent'
+      description: 'Template module for monitoring NTP service'
+      groups:
+        - name: Templates/Modules
+      items:
+        - uuid: e6101cf9015e436e82d9203f638f1840
+          name: 'NTP service is running'
+          type: SIMPLE
+          key: 'net.udp.service[ntp]'
+          history: 1w
+          tags:
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 6c7f4d7e2719401d8fd8f99ae8fc2d34
+              expression: 'max(/NTP by Zabbix agent/net.udp.service[ntp],#3)=0'
+              name: 'NTP service is down on {HOST.NAME}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+        - uuid: b893bc96f5614637be26565dc69215dc
+          name: 'NTP Drift'
+          key: ntp.drift
+          delay: 30m
+          value_type: FLOAT
+          units: sec/day
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.0864'
+          tags:
+            - tag: component
+              value: ntp
+          triggers:
+            - uuid: 1e6fc9ca087042fba368e10e053b0660
+              expression: |
+                last(/NTP by Zabbix agent/ntp.drift)>{$MAXTIMEDRIFT}
+                or
+                last(/NTP by Zabbix agent/ntp.drift)<-{$MAXTIMEDRIFT}
+              name: 'Time: Drift  over  {$MAXTIMEDRIFT} sec/day on {HOST.NAME}'
+              priority: WARNING
+        - uuid: 227db1fe2e464797b8cec197ba10d8a9
+          name: 'NTP Offset'
+          key: ntp.offset
+          delay: 30m
+          value_type: FLOAT
+          units: sec
+          description: |
+            server 199.165.76.11, stratum 1, offset 0.018816, delay 0.02599
+            31 Aug 12:23:53 ntpdate[16741]: adjust time server 199.165.76.11 offset 0.018816 sec
+          tags:
+            - tag: component
+              value: ntp
+          triggers:
+            - uuid: 28de74e7dceb4bd9802820ecf66463b0
+              expression: |
+                last(/NTP by Zabbix agent/ntp.offset)>{$MAXTIMEOFFSET}
+                or
+                last(/NTP by Zabbix agent/ntp.offset)<-{$MAXTIMEOFFSET}
+              name: 'Time: Offset over {$MAXTIMEOFFSET} second on {HOST.NAME}'
+              priority: WARNING
+      macros:
+        - macro: '{$MAXTIMEDRIFT}'
+          value: '5'
+        - macro: '{$MAXTIMEOFFSET}'
+          value: '10'
+      valuemaps:
+        - uuid: 1fb344806bc84930a4c45b84fd375cc8
+          name: 'Service state'
+          mappings:
+            - value: '0'
+              newvalue: Down
+            - value: '1'
+              newvalue: Up

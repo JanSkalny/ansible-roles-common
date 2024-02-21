@@ -1,0 +1,37 @@
+- name: install dependencies
+  package:
+    name:
+      - redis-tools
+      - ipset
+    state: present
+
+- name: pull http-knockd repo
+  git:
+    repo: https://github.com/JanSkalny/http-knockd.git
+    dest: /opt/http-knockd
+
+- name: generate env file
+  copy:
+    content: |
+      ADMIN_EMAIL: "{{ admin_email }}"
+      HOSTNAME: "{{ inventory_hostname }}"
+      TIMEOUT: 1800
+    dest: /opt/http-knockd/.env
+
+- name: deploy users.json
+  copy:
+    content: "{{ http_knockd_users }}"
+    dest: /opt/http-knockd/db/users.json
+    mode: '0700'
+
+- name: fix permissions
+  file:
+    path: "/opt/http-knockd/knockd.sh"
+    mode: 0755
+
+- name: deploy supervisor job
+  copy:
+    src: supervisor
+    dest: "/etc/supervisor/conf.d/knockd.conf"
+  notify: restart supervisor
+

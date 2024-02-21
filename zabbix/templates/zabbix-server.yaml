@@ -1,0 +1,3 @@
+zabbix-server:
+  template: "Zabbix server health"
+

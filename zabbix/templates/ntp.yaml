@@ -1,3 +1,4 @@
 ntp:
-  template: "NTP Service"
+  template: "NTP by Zabbix agent"
+  params: "zabbix-ntp/ntp.conf"
 
