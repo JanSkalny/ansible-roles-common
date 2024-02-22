@@ -12,6 +12,7 @@
   with_items: "{{ php_remove_versions }}"
 
 - import_tasks: composer.yml 
+  when: default_php_version
 
 # install and secure apache
 - import_tasks: apache2.yml
