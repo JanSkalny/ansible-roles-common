@@ -1,4 +1,4 @@
-metricbeat_es_user: "remote_monitoring_user"
+metricbeat_es_user: "metricbeat"
 
 metricbeat_config:
   output.elasticsearch:
