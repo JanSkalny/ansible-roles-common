@@ -1,0 +1,24 @@
+---
+
+- name: install initram ssh server
+  package:
+    name: dropbear-initramfs
+    state: present
+
+- name: configure initram ssh server
+  ansible.builtin.lineinfile:
+    path: /etc/dropbear/initramfs/dropbear.conf
+    regexp: "^DROPBEAR_OPTIONS="
+    line: 'DROPBEAR_OPTIONS="-I 180 -j -k -s -p {{ initram_ssh_port }}"'
+  notify: rebuild initramfs
+
+- name: add authorized_keys to initramfs
+  authorized_key:
+    path: /etc/dropbear/initramfs/authorized_keys
+    user: "{{ item }}"
+    state: present
+    exclusive: true
+    key: "{{ lookup('file', root_dir+'/files/ssh-keys/'+item) }}"
+  with_items: "{{ users }}"
+  notify: rebuild initramfs
+  when: not ansible_check_mode

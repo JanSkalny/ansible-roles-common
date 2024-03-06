@@ -88,6 +88,7 @@ suricata_classification: |
   config classification: successful-user,Successful User Privilege Gain,1
   config classification: attempted-admin,Attempted Administrator Privilege Gain,1
   config classification: successful-admin,Successful Administrator Privilege Gain,1
+
   # NEW CLASSIFICATIONS
   config classification: rpc-portmap-decode,Decode of an RPC Query,2
   config classification: shellcode-detect,Executable code was detected,1
@@ -107,9 +108,10 @@ suricata_classification: |
   config classification: misc-activity,Misc activity,3
   config classification: misc-attack,Misc Attack,2
   config classification: icmp-event,Generic ICMP event,3
-  config classification: kickass-porn,SCORE! Get the lotion!,1
+  config classification: inappropriate-content,Inappropriate Content was Detected,1
   config classification: policy-violation,Potential Corporate Privacy Violation,1
   config classification: default-login-attempt,Attempt to login by a default username and password,2
+
   # Update
   config classification: targeted-activity,Targeted Malicious Activity was Detected,1
   config classification: exploit-kit,Exploit Kit Activity Detected,1

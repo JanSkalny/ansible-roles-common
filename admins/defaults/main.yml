@@ -7,3 +7,6 @@ jump_users: []
 
 #user_passwords: 
 #  xxx: "{{ 'foo' | password_hash('sha512') }}"
+
+initram_ssh_enable: No
+initram_ssh_port: 2222

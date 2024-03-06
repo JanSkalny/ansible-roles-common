@@ -1,0 +1,5 @@
+# dict of user names and sha256 hased passwords
+#http_knockd_users:
+#  foo: "d79ec367632c8aad86fc105958e87ad67302fd0833413cd360e3a8c2d6125672"
+
+# pw=$(openssl rand -base64 16 | tr -d '+-/='); echo "pw: $pw"; echo -n $pw | sha256sum

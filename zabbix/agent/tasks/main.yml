@@ -111,7 +111,7 @@
   when: zabbix_template_definitions[item].crond | default(false)
 
 - name: deploy zabbix user parameters
-  copy:
+  template:
     src: "{{ zabbix_templates_dir }}/{{ zabbix_template_definitions[item].params }}"
     dest: "/etc/zabbix/{{ zabbix_agent_name }}.d/{{ item }}.conf"
     owner: "zabbix"

@@ -1,3 +1,6 @@
-java:
-  use_oracle: false
-  version: 11
+#java:
+#  use_oracle: false
+#  version: 11
+#java_package: "openjdk-{{ java.version }}-jre-headless"
+
+java_package: "default-jdk-headless"
