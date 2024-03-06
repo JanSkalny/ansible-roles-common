@@ -16,3 +16,9 @@
     src: logrotate.conf.j2
     dest: /etc/logrotate.d/squid
   tags: configure
+
+- name: ensure service is started and enabled
+  service:
+    name: squid
+    enabled: true
+    state: started
