@@ -1,0 +1,13 @@
+- name: check if image is already present
+  ansible.builtin.stat:
+    path: "{{ virtual.disk_blk | default(virtual_default_disk_blk) }}"
+  check_mode: no
+  register: qcow2_image
+
+- fail:
+    msg: image already exists, not overwriting
+  when: qcow2_image.stat.exists
+
+- name: create qcow2 image
+  command: qemu-img create -f qcow2 "{{ virtual.disk_blk | default(virtual_default_disk_blk) }}" "{{ virtual.disk_size }}"
+  when: not qcow2_image.stat.exists

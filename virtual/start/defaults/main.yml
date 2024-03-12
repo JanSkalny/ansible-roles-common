@@ -1,2 +1,1 @@
-virtual: 
-  name: "{{ inventory_hostname }}"
+# see ../base/defaults/main.yml
