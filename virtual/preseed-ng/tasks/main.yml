@@ -1,15 +1,18 @@
 - name: make sure block device exists
   file:
     path: "{{ virtual.disk_blk | default(virtual_default_disk_blk) }}"
+  check_mode: no
 
 - name: "check if lock_file is present"
   stat:
     path: "{{ virtual_dir }}/preseed/{{ virtual.name }}.lock"
+  check_mode: no
   register: virtual_preseed_lock
 
 - name: "check if configuration file is present"
   stat:
     path: "{{ virtual_dir }}/conf/{{ virtual.name }}.xml"
+  check_mode: no
   register: virtual_existing_conf
 
 - name: "check if libvirt knows this vm"
@@ -35,7 +38,7 @@
   meta: end_host
   when: virtual_preseed_lock.stat.exists or virtual_existing_conf.stat.exists == True or 'status' in virtual_existing_vm 
 
-- name: "lock preseeding mutex for this vm"
+- name: make sure vm has a lock file
   file:
     path: "{{ virtual_dir }}/preseed/{{ virtual.name }}.lock"
     state: touch

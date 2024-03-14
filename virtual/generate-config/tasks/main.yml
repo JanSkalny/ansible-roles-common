@@ -4,9 +4,17 @@
     dest: "{{ virtual_dir }}/conf/{{ virtual.name }}.xml"
   register: virtual_generate_config
 
-- name: "make sure vm has a lock file"
+- name: check if lock_file is present
+  stat:
+    path: "{{ virtual_dir }}/preseed/{{ virtual.name }}.lock"
+  check_mode: no
+  register: virtual_preseed_lock
+
+- name: make sure vm has a lock file
   file: 
     path: "{{ virtual_dir }}/preseed/{{ virtual.name }}.lock"
     state: touch
+    mode: 0644
+  when: not virtual_preseed_lock.stat.exists 
 
 
