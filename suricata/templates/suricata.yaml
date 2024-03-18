@@ -94,10 +94,14 @@ outputs:
       #filename: neweve-%Y-%m-%d-%H:%M.json
       identity: "suricata-json"
       facility: local5
+      pcap-file: true
       level: Info ## possible levels: Emergency, Alert, Critical, Error, Warning, Notice, Info, Debug
       types:
          - alert:
-           tagged-packets: yes
+             payload: yes             # enable dumping payload in Base64
+             packet: yes              # enable dumping of packet (without stream segments)
+             tagged-packets: yes
+
 
   # Extensible Event Format (nicknamed EVE) event log in JSON format
   - eve-log:
@@ -135,7 +139,7 @@ outputs:
       #metadata: no
 
       # include the name of the input pcap file in pcap file processing mode
-      pcap-file: false
+      pcap-file: true
 
       # Community Flow ID
       # Adds a 'community_id' field to EVE records. These are meant to give
@@ -170,10 +174,10 @@ outputs:
 
       types:
         - alert:
-            # payload: yes             # enable dumping payload in Base64
+            payload: yes               # enable dumping payload in Base64
             # payload-buffer-size: 4kb # max size of payload buffer to output in eve-log
             # payload-printable: yes   # enable dumping payload in printable (lossy) format
-            # packet: yes              # enable dumping of packet (without stream segments)
+            packet: yes                # enable dumping of packet (without stream segments)
             # metadata: no             # enable inclusion of app layer metadata with alert. Default yes
             # http-body: yes           # Requires metadata; enable dumping of HTTP body in Base64
             # http-body-printable: yes # Requires metadata; enable dumping of HTTP body in printable format
@@ -238,7 +242,7 @@ outputs:
 
             # As of Suricata 5.0, version 2 of the eve dns output
             # format is the default.
-            #version: 2
+            version: 2
 
             # Enable/disable this logger. Default: enabled.
             #enabled: yes
@@ -404,12 +408,12 @@ outputs:
   # - encrypted streams after the key exchange
   #
   - pcap-log:
-      enabled: no
+      enabled: yes
       filename: log.pcap
 
       # File size limit.  Can be specified in kb, mb, gb.  Just a number
       # is parsed as bytes.
-      limit: 1000mb
+      limit: 100mb
 
       # If set to a value, ring buffer mode is enabled. Will keep maximum of
       # "max-files" of size "limit"
@@ -427,7 +431,7 @@ outputs:
       #lz4-level: 0
 
       mode: normal # normal, multi or sguil.
-
+      conditional: alerts
       # Directory to place pcap files. If not provided the default log
       # directory will be used. Required for "sguil" mode.
       #dir: /nsm_data/
