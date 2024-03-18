@@ -97,10 +97,10 @@ outputs:
       pcap-file: true
       level: Info ## possible levels: Emergency, Alert, Critical, Error, Warning, Notice, Info, Debug
       types:
-         - alert:
-             payload: yes             # enable dumping payload in Base64
-             packet: yes              # enable dumping of packet (without stream segments)
-             tagged-packets: yes
+        - alert:
+            payload: yes             # enable dumping payload in Base64
+            packet: yes              # enable dumping of packet (without stream segments)
+            tagged-packets: yes
 
 
   # Extensible Event Format (nicknamed EVE) event log in JSON format
