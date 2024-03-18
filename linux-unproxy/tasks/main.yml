@@ -9,6 +9,7 @@
     - /etc/apt/apt.conf.d/99proxy
     - /etc/apt/apt.conf.d/90curtin-aptproxy
     - /etc/apt/apt.conf.d/proxy.conf
+    - /usr/lib/environment.d/99-environment.conf
 
 - name: do we have wget?
   stat:
