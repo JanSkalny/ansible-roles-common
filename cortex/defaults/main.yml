@@ -1,6 +1,16 @@
-cortex:
-  # secret_key: $( openssl rand -hex 20 )
-  analyzers_dir: "/opt/cortex-analyzers"
-  elasticsearch:
-    uri: "http://127.0.0.1:9200/"
-    index: "cortex"
+#XXX: generate via $( openssl rand -hex 20 )
+#cortex_secret_key: "FIXME"
+  
+cortex_elasticsearch_uri: "http://127.0.0.1:9200"
+cortex_elasticsearch_index: "cortex"
+
+# custom analyzers and cortex-tools reside in
+cortex_analyzers_dir: "/opt/cortex-analyzers"
+
+# use analyzers from internet (with auto-updates)
+cortex_analyzers_json: "https://download.thehive-project.org/analyzers.json"
+cortex_analyzer_autoupdate: true
+
+## use local analyzers definition (without auto-updates)
+#cortex_analyzers_json: "{{ cortex_analyzers_dir }}/analyzers.json"
+#cortex_analyzer_autoupdate: false
