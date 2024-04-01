@@ -50,4 +50,8 @@ sysctl_config:
 
     vm.swappiness: 0
     vm.panic_on_oom: 1
+
+    # elastic docker in production
+    # https://www.elastic.co/guide/en/elasticsearch/reference/7.5/docker.html
+    vm.max_map_count: 262144
     
