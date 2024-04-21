@@ -5,6 +5,7 @@
   virt:
     name: "{{ virtual.name }}"
     command: undefine
+  ignore_errors: true
 
 - name: define new vm
   virt:
