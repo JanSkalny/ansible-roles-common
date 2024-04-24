@@ -129,6 +129,10 @@
     mode: 0755
   with_items: "{{ zabbix_template_definitions | json_query('* | [?scripts] .scripts') | flatten }}"
 
+- name: deploy zabbix script projects (python)
+  include_tasks: python_project.yml
+  with_items: "{{ zabbix_template_definitions | json_query('* | [?python_projects] .python_projects') | flatten }}"
+
 - name: configure zabbix-agent
   template:
     src: "zabbix_agent.conf"
