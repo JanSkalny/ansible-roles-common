@@ -4,3 +4,10 @@ squid_custom: ""
 
 squid_logrotate_count: 10
 squid_logrotate_maxsize: "100M"
+
+squid_shutdown_lifetime: 10
+
+# to enable snmp server, set community using
+#squid_snmp_comunity: "foobar"
+#squid_snmp_hosts: ['10.20.30.3']
+#squid_snmp_port: 3401

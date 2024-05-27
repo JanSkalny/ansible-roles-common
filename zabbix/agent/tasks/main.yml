@@ -38,6 +38,7 @@
     - jq
     - zabbix-sender
     - zabbix-get
+    - snmp
     state: latest
 
 - debug: msg="zabbix_agent_service={{ zabbix_agent_service }}", verbosity=1
