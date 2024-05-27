@@ -4,6 +4,7 @@ squid_custom: ""
 
 squid_logrotate_count: 10
 squid_logrotate_maxsize: "100M"
+squid_log_to_syslog: False
 
 squid_shutdown_lifetime: 10
 
