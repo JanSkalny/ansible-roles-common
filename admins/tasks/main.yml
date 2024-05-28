@@ -35,6 +35,7 @@
   user:
     name: "{{ item }}"
     shell: "/bin/true"
+    password: '{{ user_passwords[item] | default("*") }}'
     state: present
     createhome: true
   with_items: "{{ jump_users }}"
