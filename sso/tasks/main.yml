@@ -128,11 +128,15 @@
     dn: 'uid={{ item.login }},ou=users,{{ ldap_base_dn }}'
     state: present
     objectClass:
-      - account
+      #- account
+      - inetOrgPerson
       - simplesecurityobject
     attributes:
       description: "{{ item.name }}"
+      cn: "{{ item.name }}"
+      sn: "{{ item.name.split()[-1] }}"
       userPassword: "{{ item.password }}"
+      mail: "{{ item.name | lower | regex_replace('[^a-zA-Z0-9 ]', '') | replace(' ', '.') }}@{{ sso_email_domain | default(ldap_domain) }}"
     bind_dn: "{{ ldap_root_dn }}"
     bind_pw: "{{ ldap_root_pw }}"
   with_items: "{{ ldap_users }}"

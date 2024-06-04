@@ -1,3 +1,1 @@
-virtual_images:
-- name: "jammy-server-cloudimg-amd64.img"
-  url: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+# see ../base/defaults/main.yml

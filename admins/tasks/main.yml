@@ -35,6 +35,7 @@
   user:
     name: "{{ item }}"
     shell: "/bin/true"
+    password: '{{ user_passwords[item] | default("*") }}'
     state: present
     createhome: true
   with_items: "{{ jump_users }}"
@@ -55,8 +56,8 @@
     state: present
     exclusive: true
     key: "{{ lookup('file', root_dir+'/files/ssh-keys/'+item) }}"
+    path: "/home/{{ item }}/.ssh/authorized_keys"
   with_items: "{{ users + jump_users }}"
-  when: not ansible_check_mode
 
 - name: "fancy .profile for user {{ item }}"
   copy:

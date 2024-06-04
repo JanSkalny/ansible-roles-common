@@ -1,1 +1,1 @@
-virtual_xml_dir: "/var/lib/virtual/"
+# see ../base/defaults/main.yml

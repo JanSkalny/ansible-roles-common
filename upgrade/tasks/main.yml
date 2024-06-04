@@ -1,9 +1,6 @@
-- name: apt-get update
+- name: apt-get update and upgrade
   apt:
     update_cache: true
-
-- name: apt-get upgrade
-  apt:
     upgrade: safe
     autoremove: true
 

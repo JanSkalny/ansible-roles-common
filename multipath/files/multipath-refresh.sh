@@ -18,9 +18,17 @@ done
 #	echo "1" > /sys/class/fc_host/host${I}/issue_lip
 #done
 
+echo "we like race conditions..."
+sleep 30
+
 multipath > /dev/null
 
+echo "really..."
+sleep 30
+
 #dmsetup remove_all
+
+echo "still alive..."
 
 systemctl reload multipath-tools
 #/etc/init.d/multipath-tools reload

@@ -1,15 +1,18 @@
 - name: make sure block device exists
   file:
-    path: "{{ virtual.disk_blk | default('/dev/mapper/'+virtual.name) }}"
+    path: "{{ virtual.disk_blk | default(virtual_default_disk_blk) }}"
+  check_mode: no
 
 - name: "check if lock_file is present"
   stat:
     path: "{{ virtual_dir }}/preseed/{{ virtual.name }}.lock"
+  check_mode: no
   register: virtual_preseed_lock
 
 - name: "check if configuration file is present"
   stat:
     path: "{{ virtual_dir }}/conf/{{ virtual.name }}.xml"
+  check_mode: no
   register: virtual_existing_conf
 
 - name: "check if libvirt knows this vm"
@@ -35,7 +38,7 @@
   meta: end_host
   when: virtual_preseed_lock.stat.exists or virtual_existing_conf.stat.exists == True or 'status' in virtual_existing_vm 
 
-- name: "lock preseeding mutex for this vm"
+- name: make sure vm has a lock file
   file:
     path: "{{ virtual_dir }}/preseed/{{ virtual.name }}.lock"
     state: touch
@@ -61,7 +64,7 @@
     chdir: "{{ virtual_dir }}/preseed/{{ virtual.name }}"
 
 - name: prepare base disk
-  shell: qemu-img dd if={{ virtual_image }} of={{ virtual.disk_blk | default('/dev/mapper/'+virtual.name) }} bs=1M
+  shell: qemu-img dd if={{ virtual_image }} of={{ virtual.disk_blk | default(virtual_default_disk_blk) }} bs=1M
 
 - name: create vm using virt-install
   shell: virt-install \
@@ -77,7 +80,7 @@
     --connect=qemu:///system \
     --network=bridge:"{{ networking[virtual.default_interface | default('eth0')].virtual_host_iface }}",model=virtio,mac={{ networking[virtual.default_interface | default('eth0')].ether }} \
     --boot hd \
-    --disk path="{{ virtual.disk_blk | default("/dev/mapper/"+virtual.name) }}",device=disk,bus=virtio,cache=none \
+    --disk path="{{ virtual.disk_blk | default(virtual_default_disk_blk) }}",device=disk,bus=virtio,cache=none \
     --disk path="{{ virtual_dir }}/preseed/{{ virtual.name }}/seed.qcow2",device=cdrom \
     --graphics=vnc,port=-1 \
     --video virtio \

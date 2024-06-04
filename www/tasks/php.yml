@@ -29,6 +29,8 @@
     - "php{{php_version}}-zip"
     - "php{{php_version}}-mysql"
     - "php{{php_version}}-pgsql"
+    - "php{{php_version}}-xml"
+    - "php{{php_version}}-ldap"
 #    - php-gettext
     - php-imagick
     - imagemagick
