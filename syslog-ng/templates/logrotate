@@ -15,13 +15,15 @@
 {
 	rotate 60
 	daily
+	maxsize 1000M
 	dateext
+	dateformat -%Y%m%d%H%M%S
 	missingok
 	notifempty
 	compress
 	delaycompress
 	sharedscripts
 	postrotate
-		invoke-rc.d syslog-ng reload > /dev/null
+	invoke-rc.d syslog-ng reload > /dev/null
 	endscript
 }

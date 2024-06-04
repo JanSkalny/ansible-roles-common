@@ -1,0 +1,5 @@
+squid:
+  template: "Squid by Zabbix agent 2"
+  params: "zabbix-squid/squid.conf"
+  scripts:
+    - "zabbix-squid/zabbix-squid.sh"
