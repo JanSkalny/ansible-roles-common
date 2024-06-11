@@ -1,0 +1,31 @@
+name: wazuh
+services:
+  wazuh.manager:
+    container_name: "wazuh.manager"
+    volumes:
+      - /data/logs:/logs:ro
+{% if wazuh_expose_syslog == False %}
+    ports: !override
+      - "1514:1514"
+      - "1515:1515"
+      - "55000:55000"
+{% endif %}
+    environment:
+      INDEXER_USERNAME: "admin"
+      INDEXER_PASSWORD: "{{ wazuh_admin_password }}"
+      API_USERNAME: "wazuh-wui"
+      API_PASSWORD: "{{ wazuh_api_password }}"
+  wazuh.indexer:
+    container_name: "wazuh.indexer"
+    environment:
+      OPENSEARCH_JAVA_OPTS: "-Xms{{ wazuh_indexer_ram }} -Xmx{{ wazuh_indexer_ram }}"
+  wazuh.dashboard:
+    container_name: "wazuh.dashboard"
+    environment:
+      INDEXER_USERNAME: "admin"
+      INDEXER_PASSWORD: "{{ wazuh_admin_password }}"
+      DASHBOARD_USERNAME: "kibanaserver"
+      DASHBOARD_PASSWORD: "{{ wazuh_kibanaserver_password }}"
+      API_USERNAME: "wazuh-wui"
+      API_PASSWORD: "{{ wazuh_api_password }}"
+

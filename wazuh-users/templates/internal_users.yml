@@ -1,0 +1,25 @@
+_meta:
+  type: "internalusers"
+  config_version: 2
+
+admin:
+  hash: "{{ wazuh_admin_password | bcrypt }}"
+  reserved: true
+  backend_roles:
+  - "admin"
+  description: "wazuh indexer user"
+
+kibanaserver:
+  hash: "{{ wazuh_kibanaserver_password | bcrypt }}"
+  reserved: true
+  description: "wazuh dashboard user"
+
+{% for wazuh_user in wazuh_users %}
+{{ wazuh_user.login }}:
+  hash: "{{ wazuh_user.hash | default(wazuh_user.password | bcrypt) }}"
+  description: "{{ wazuh_user.name | default('User '+wazuh_user.login) }}"
+  backend_roles:
+  - "kibanauser"
+  - "readall"
+
+{% endfor %}
