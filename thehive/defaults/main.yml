@@ -1,12 +1,8 @@
-hive:
-  #secret_key: "FIXME"
-  elasticsearch:
-    index: "the_hive"
-    uri: "http://127.0.0.1:9200/"
+hive_secret_key: "FIXME"
 
-  cortex: 
-    instances: []
+hive_default_user_domain: "{{ ldap_domain | default(net_domain) }}"
 
-  misp:
-    interval: 1h
-    instances: []
+#hive_ldap_server_uri: "{{ ldap_server }}:389"
+#hive_ldap_bind_dn: "uid=hive,ou=tech,{{ ldap_base_dn }}"
+#hive_ldap_bind_password: "{{ ldap_tech_users['hive'] }}"
+#hive_ldap_base: "{{ ldap_base_dn }}"

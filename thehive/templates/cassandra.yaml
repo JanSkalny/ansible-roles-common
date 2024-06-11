@@ -1,0 +1,13 @@
+cluster_name: 'thp'
+listen_address: '127.0.0.1'
+rpc_address: '127.0.0.1'
+seed_provider:
+    - class_name: org.apache.cassandra.locator.SimpleSeedProvider
+      parameters:
+          - seeds: '127.0.0.1'
+data_file_directories:
+  - '/var/lib/cassandra/data'
+commitlog_directory: '/var/lib/cassandra/commitlog'
+saved_caches_directory: '/var/lib/cassandra/saved_caches'
+hints_directory: 
+  - '/var/lib/cassandra/hints'
