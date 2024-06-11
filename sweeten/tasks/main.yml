@@ -33,7 +33,7 @@
   tags: configure
 
 - name: fancy .profile for root
-  copy: 
+  template:
     src: dotprofile
     dest: "/root/.profile"
     owner: "root"

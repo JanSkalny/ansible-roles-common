@@ -60,7 +60,7 @@
   with_items: "{{ users + jump_users }}"
 
 - name: "fancy .profile for user {{ item }}"
-  copy:
+  template:
     src: dotprofile
     dest: "{{ '~' + item | expanduser }}/.profile"
     owner: "{{ item }}"
