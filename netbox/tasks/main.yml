@@ -1,4 +1,4 @@
- - name: pull docker-compose 
+ - name: pull netbox-docker 
    git:
      repo: https://github.com/netbox-community/netbox-docker.git
      dest: /opt/netbox-docker
@@ -49,9 +49,9 @@
              VIRTUAL_PORT: 8080
      dest: /opt/netbox-docker/docker-compose.override.yml
 
- - name: run docker-compose
+ - name: run docker compose
    shell: 
-     docker-compose up -d && sleep 120
+     docker compose up -d && sleep 120
    args:
      chdir: /opt/netbox-docker/
 

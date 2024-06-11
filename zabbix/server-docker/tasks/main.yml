@@ -1,4 +1,4 @@
-- name: pull docker-compose 
+- name: pull zabbix-docker 
   git:
     repo: https://github.com/zabbix/zabbix-docker.git
     dest: /opt/zabbix-docker
@@ -91,9 +91,9 @@
     dest: /opt/zabbix-docker/docker-compose.yml
 
 
-- name: run docker-compose
+- name: run docker compose
   shell: 
-    docker-compose --profile all up -d && sleep 1
+    docker compose --profile all up -d && sleep 1
   args:
     chdir: /opt/zabbix-docker/
 

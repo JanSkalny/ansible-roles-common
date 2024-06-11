@@ -1,4 +1,4 @@
- - name: pull docker-compose 
+ - name: pull minio-docker 
    file:
      path: /opt/minio-docker
      state: directory
@@ -32,9 +32,9 @@
          data:
      dest: /opt/minio-docker/docker-compose.yml
 
- - name: run docker-compose
+ - name: run docker compose
    shell: 
-     docker-compose up -d && sleep 30
+     docker compose up -d && sleep 30
    args:
      chdir: /opt/minio-docker/
 

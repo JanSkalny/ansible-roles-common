@@ -10,9 +10,9 @@
     src: docker-compose.yml
     dest: /opt/semaphore-docker/docker-compose.yml
 
-- name: run docker-compose
+- name: run docker compose
   shell: 
-    echo "docker-compose up -d && sleep 10"
+    echo "docker compose up -d && sleep 10"
   args:
     chdir: /opt/semaphore-docker/
 
