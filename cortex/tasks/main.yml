@@ -1,19 +1,21 @@
 - name: install dependencies
   package:
-    name: apt-transport-https
+    name: 
+      - apt-transport-https
+      - git
     state: present
   tags: install
 
 - name: add thehive-project key
   apt_key:
-    url: "https://raw.githubusercontent.com/TheHive-Project/TheHive/master/PGP-PUBLIC-KEY"
+    url: "https://raw.githubusercontent.com/TheHive-Project/Cortex/master/PGP-PUBLIC-KEY"
     keyring: /etc/apt/trusted.gpg.d/thehive.gpg
     state: present
   tags: install
 
 - name: add thehive-project repo
   apt_repository:
-    repo: "deb https://dl.bintray.com/thehive-project/debian-stable any main"
+    repo: "deb [arch=all] https://deb.thehive-project.org release main"
     update_cache: yes
   tags: install
 
@@ -25,15 +27,19 @@
 
 - name: prepare cortex-analyzers dir
   file:
-    path: "{{ cortex.analyzers_dir }}"
+    path: "{{ cortex_analyzers_dir }}"
     state: directory
   tags: install
 
-- name: checkout cortex analyzers
-  git:
-    repo: "https://github.com/TheHive-Project/Cortex-Analyzers.git"
-    dest: "{{ cortex.analyzers_dir }}"
-  notify: restart cortex
+- name: deploy cortex-tools
+  copy:
+    src: "{{ item }}"
+    dest: "{{ cortex_analyzers_dir }}/{{ item }}"
+  with_items:
+    - env.example
+    - compare-versions.sh
+    - export-analyers.sh
+    - pull-analyzers.sh
 
 - name: enable cortex service
   service:

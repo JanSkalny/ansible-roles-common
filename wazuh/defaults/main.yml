@@ -1,0 +1,15 @@
+#XXX: define in group_vars/all/wazuh.yml
+#wazuh_secret: "FIXME"
+
+# override per-host
+wazuh_version: "v4.7.5"
+wazuh_expose_syslog: True
+wazuh_indexer_ram: "4096m"
+
+# default technical accounts have passwords based on wazuh_secret
+# feel free to override wazuh_admin_password
+wazuh_admin_password: "{{ ( 'indexer' + wazuh_secret + inventory_hostname ) | hash('sha1') }}"
+wazuh_kibanaserver_password: "{{ ( 'dashboard' + wazuh_secret + inventory_hostname ) | hash('sha1') }}"
+wazuh_api_password: "FOO@@@{{ ( 'api' + wazuh_secret + inventory_hostname ) | hash('sha1') }}"
+
+#XXX: changing admin or kibanaserver passwords require docker-compose down / docker-compose up -d on wazuh-docker/single-node

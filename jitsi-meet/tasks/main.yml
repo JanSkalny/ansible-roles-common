@@ -1,4 +1,4 @@
- - name: pull docker-compose 
+ - name: pull docker-jitsi-meet
    git:
      repo: https://github.com/jitsi/docker-jitsi-meet.git
      dest: /opt/docker-jitsi-meet
@@ -28,9 +28,9 @@
      - jigasi
      - jibri
 
-# - name: run docker-compose
+# - name: run docker compose
 #   shell: 
-#     docker-compose up -d && sleep 120
+#     docker compose up -d && sleep 120
 #   args:
 #     chdir: /opt/docker-jitsi-meet/
 

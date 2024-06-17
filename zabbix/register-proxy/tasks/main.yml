@@ -12,7 +12,7 @@
   community.zabbix.zabbix_proxy:
     status: active
     state: present
-    proxy_name: "{{ soc_context_name }}"
+    proxy_name: "{{ zabbix_proxy | default(soc_context_name) }}"
     description: "{{ inventory_hostname }}"
     tls_accept: "PSK" # 2  # psk
     tls_psk_identity: "{{ zabbix_proxy_psk_identity }}"

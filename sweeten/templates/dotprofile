@@ -3,4 +3,8 @@ export HISTSIZE=2000
 export HISTFILESIZE=2000
 alias ll='ls -l'
 alias la='ls -lA'
+{% if custom_ps1_hostname %}
+PS1='\[\e[1;17m\]\u@{{ custom_ps1_hostname }}\[\e[0m\] \W \$ '
+{% else %}
 PS1='\[\e[1;17m\]\u@\h\[\e[0m\] \W \$ '
+{% endif %}

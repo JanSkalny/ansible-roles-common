@@ -1,0 +1,84 @@
+- name: check state of wazuh-docker repo
+  command: git describe --tags
+  args:
+    chdir: /opt/wazuh-docker
+  register: git_repo
+  check_mode: no
+  ignore_errors: yes
+  changed_when: false
+
+- name: pull wazuh-docker from git (if missing or version mismatch)
+  git:
+    repo: https://github.com/wazuh/wazuh-docker.git
+    dest: /opt/wazuh-docker
+    force: yes
+    version: "{{ wazuh_version }}"
+  when: git_repo.failed or git_repo.stdout != wazuh_version 
+
+- name: check if we already have certificates
+  stat:
+    path: /opt/wazuh-docker/single-node/config/wazuh_indexer_ssl_certs/root-ca.pem
+  register: wazuh_ssl_certs
+  check_mode: no
+
+- name: check if wazuh is already running inside docker
+  community.docker.docker_container_info:
+    name: "wazuh.indexer"
+  register: wazuh_docker_container
+  check_mode: no
+
+- set_fact:
+    wazuh_indexer_is_running: "{{ wazuh_docker_container.container.State.Running | default(false) }}"
+    wazuh_certificates_are_present: "{{ wazuh_ssl_certs.stat.exists }}"
+
+- name: generate docker-compose override
+  template:
+    src: docker-compose.override.yml
+    dest: /opt/wazuh-docker/single-node/docker-compose.override.yml
+
+- name: generate user files
+  copy:
+    content: |
+      _meta:
+        type: "internalusers"
+        config_version: 2
+
+      admin:
+        hash: "{{ wazuh_admin_password | bcrypt }}"
+        reserved: true
+        backend_roles:
+        - "admin"
+        description: "wazuh indexer user"
+
+      kibanaserver:
+        hash: "{{ wazuh_kibanaserver_password | bcrypt }}"
+        reserved: true
+        description: "wazuh dashboard user"
+    dest: /opt/wazuh-docker/single-node/config/wazuh_indexer/internal_users.yml
+
+- name: generate config/wazuh_dashboard/wazuh.yml
+  copy:
+    content: |
+      hosts:
+        - 1513629884013:
+            url: "https://wazuh.manager"
+            port: 55000
+            username: wazuh-wui
+            password: "{{ wazuh_api_password }}"
+            run_as: false
+    dest: /opt/wazuh-docker/single-node/config/wazuh_dashboard/wazuh.yml
+
+- name: generate certificates
+  shell: 
+    docker compose -f generate-indexer-certs.yml run --rm generator && sleep 10
+  args:
+    chdir: /opt/wazuh-docker/single-node
+  when: not wazuh_certificates_are_present 
+
+- name: start wazuh
+  shell: 
+    docker compose up -d && sleep 180
+  args:
+    chdir: /opt/wazuh-docker/single-node
+  when: not wazuh_indexer_is_running
+

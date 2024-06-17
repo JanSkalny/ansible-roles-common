@@ -1,0 +1,25 @@
+---
+# deploy script as a python project with requirements and new venv
+# the project is configured as are scripts but are pointing to a directory
+
+- name: install python-venv
+  apt:
+    name: python3-venv
+
+- set_fact:
+    __project: "/opt/{{ item.path | basename }}"
+
+- name: copy project to new dir
+  copy:
+    src: "{{ zabbix_templates_dir }}/{{ item.path }}/"
+    dest: "{{ __project }}"
+    owner: "root"
+    mode: 0644
+
+- name: build python project in a separate venv
+  pip:
+    virtualenv: "{{ item.venv }}"
+    virtualenv_command: "python3 -m venv"
+    name: "{{ __project }}"
+    extra_args: "--force-reinstall"
+

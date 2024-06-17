@@ -1,0 +1,2 @@
+systemd:
+  template: "Systemd by Zabbix agent 2"

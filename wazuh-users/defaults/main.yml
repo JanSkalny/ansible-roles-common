@@ -1,0 +1,7 @@
+wazuh_admin_password: "{{ ( 'indexer' + wazuh_secret + inventory_hostname ) | hash('sha1') }}"
+wazuh_kibanaserver_password: "{{ ( 'dashboard' + wazuh_secret + inventory_hostname ) | hash('sha1') }}"
+
+#wazuh_users:
+# - login: user1
+#   name: "user foo"
+#   hash: "{{ 'foo' | bcrypt }}"

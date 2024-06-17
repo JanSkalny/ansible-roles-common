@@ -1,4 +1,32 @@
 virtual_dir: "/var/lib/virtual"
 
+virtual_images:
+- name: "jammy-server-cloudimg-amd64.img"
+  url: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+
+virtual_version: "ubuntu22.04"
+virtual_image: "{{ virtual_dir }}/images/jammy-server-cloudimg-amd64.img"
+
+# preseed config and default user
+virtual_preseed_country: "SK"
+virtual_preseed_timezone: "Etc/UTC"
+virtual_setup_user: "setup"
+virtual_setup_password: "{{ 'changeme' | password_hash('sha512') }}"
+
+# each virtualized host should have "virtual" variable defined
+# take these as an example and not reasonable defaults
 virtual: 
   name: "{{ inventory_hostname }}"
+  #fqdn: "{{ inventory_hostname }}"   # used by cluster-tools
+  #ram: 1024        # in MBs
+  #cpus: 1          # core count
+  #disk: "10G"      # lvm format
+  #disk_blk: "..."  # qcow2 or device path (defaults to virtual_default_disk_blk)
+
+# by default, use block devices and dev/mapper
+virtual_default_disk_blk: "/dev/mapper/{{ virtual.name }}"
+virtual_use_qcow2: false
+
+# use following if qcow2 images are preffered
+#virtual_default_disk_blk: "{{ virtual_dir }}/data/{{ virtual.name }}.qcow2"
+#virtual_use_qcow2: true

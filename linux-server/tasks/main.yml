@@ -1,5 +1,3 @@
-- import_role:
-    name: common/linux-hostname
 - include_role:
     name: common/linux-virtual
   when: host_type == 'virtual'
@@ -14,8 +12,6 @@
     name: common/sweeten
 - import_role:
     name: common/tools
-- import_role:
-    name: common/ntp
 - import_role:
     name: common/fail2ban
 - import_role:

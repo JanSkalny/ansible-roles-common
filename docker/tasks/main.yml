@@ -19,18 +19,18 @@
     update_cache: yes
   tags: install
 
-- name: remove docker.io
+- name: remove docker.io and docker-compose
   apt:
     name:
     - docker.io
+    - docker-compose
     state: absent
   tags: install
 
-- name: install docker-ce, tools and dependencies
+- name: install docker-ce and dependencies
   apt:
     name:
     - docker-ce
-    - docker-compose
     - python3-pip
     state: present
   tags: install
@@ -39,7 +39,6 @@
   pip:
     name:
     - docker
-    - docker-compose
   tags: install
 
 - name: expose docker daemon

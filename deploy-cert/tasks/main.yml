@@ -3,32 +3,32 @@
      path: "{{ dest_dir }}"
      state: directory
 
- - name: deploy ca chain
+ - name: deploy ca chain to {{ ca_name }}
    copy:
      src: "{{ ca_dir }}/chained-ca{{ src_name_suffix }}.crt"
      dest: "{{ dest_dir }}/{{ ca_name }}"
    when: ca_name is defined and ca_name != ""
 
- - name: deploy cert
+ - name: deploy cert to {{ crt_name }}
    copy:
      src: "{{ ca_dir }}/{{ hostname }}{{src_name_suffix}}.crt"
      dest: "{{ dest_dir }}/{{ crt_name }}"
    when: crt_name is defined and crt_name != ""
 
- - name: deploy key
+ - name: deploy key to {{ key_name }}
    copy:
      src: "{{ ca_dir }}/{{ hostname }}{{src_name_suffix}}.key"
      dest: "{{ dest_dir }}/{{ key_name }}"
    when: key_name is defined and key_name != ""
 
- - name: deploy pem
+ - name: deploy pem to {{ pem_name }}
    copy:
      src: "{{ ca_dir }}/{{ hostname }}.pem"
      dest: "{{ dest_dir }}/{{ pem_name }}"
    when: pem_name is defined and pem_name != ""
 
  # to make elastic happy :)
- - name: generate fullchain cert
+ - name: generate fullchain cert to {{ fullchain_name }}
    copy:
      dest: "{{ dest_dir }}/{{ fullchain_name }}"
      content: |

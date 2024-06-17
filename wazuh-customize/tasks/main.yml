@@ -1,0 +1,89 @@
+- community.docker.docker_volume_info:
+    name: "wazuh_wazuh_etc"
+  register: wazuh_etc_volume
+  check_mode: no
+
+- community.docker.docker_container_info:
+    name: "wazuh.manager"
+  register: wazuh_docker_container
+  check_mode: no
+
+- set_fact:
+    wazuh_manager_is_running: "{{ wazuh_docker_container.container.State.Running | default(false) }}"
+    wazuh_etc_is_present: "{{ wazuh_etc_volume.exists | default(false) }}"
+
+- name: "making sure wazuh manager is running"
+  fail:
+    msg: "wazuh manager not running!"
+  when: not wazuh_manager_is_running
+
+- name: "making sure wazuh etc volume is present"
+  fail:
+    msg: "wazuh etc docker volume is not present"
+  when: not wazuh_etc_is_present
+
+- name: make sure test dir is present
+  file:
+    state: directory
+    path: "/var/lib/docker/volumes/wazuh_wazuh_etc/_data/{{ item }}"
+  with_items:
+    - test/
+    - test/rules/
+    - test/decoders/
+
+- name: generate config files for testing
+  template:
+    src: "{{ item.src }}"
+    dest: "/var/lib/docker/volumes/wazuh_wazuh_etc/_data/test/{{ item.dest }}"
+    owner: 101
+    group: 101
+  vars:
+    wazuh_test_dir: "test/"
+  with_items:
+    - src: local_decoder.xml
+      dest: decoders/local_decoder.xml
+    - src: local_rules.xml
+      dest: rules/local_rules.xml
+    - src: ossec.conf
+      dest: ossec.conf
+
+- name: test configuration files
+  community.docker.docker_container_exec:
+    container: "wazuh.manager"
+    command: "bash -c \"{{ item.cmd }}\""
+    user: root
+  with_items:
+    - name: ossec.conf
+      cmd: /var/ossec/bin/wazuh-csyslogd -t -c /var/ossec/etc/test/ossec.conf
+    - name: local_rules.xml
+      cmd: /var/ossec/bin/wazuh-analysisd -t -c /var/ossec/etc/test/ossec.conf
+  register: res_tests
+
+#- debug:
+#    msg: "{{ res_tests }}"
+
+- name: generate config files
+  template:
+    src: "{{ item.src }}"
+    dest: "/var/lib/docker/volumes/wazuh_wazuh_etc/_data/{{ item.dest }}"
+    owner: 101
+    group: 101
+  with_items:
+    - src: local_decoder.xml
+      dest: decoders/local_decoder.xml
+    - src: local_rules.xml
+      dest: rules/local_rules.xml
+    - src: ossec.conf
+      dest: ossec.conf
+  register: res_configs
+
+- debug:
+    msg: "reconfigure wazuh-manager"
+  when: res_configs.changed
+
+
+#XXX: alternativne docker restart wazuh.manager
+- community.docker.docker_container_exec:
+    container: "wazuh.manager"
+    command: "/var/ossec/bin/wazuh-control restart"
+    user: root
