@@ -1,28 +1,9 @@
-- name: check if wazuh is already running inside docker
-  community.docker.docker_container_info:
-    name: "wazuh.indexer"
-  register: wazuh_docker_container
-  check_mode: no
-
-- set_fact:
-    wazuh_indexer_is_running: "{{ wazuh_docker_container.container.State.Running | default(false) }}"
-
-- name: "making sure wazuh.indexer is running"
-  fail:
-    msg: "wazuh indexer not running!"
-  when: not wazuh_indexer_is_running
-
-- name: generate user files
-  template:
-    src: internal_users.yml
-    dest: /opt/wazuh-docker/single-node/config/wazuh_indexer/internal_users.yml
-
 - name: expose internal_users.yml into wazuh.indexer container
   shell: |
     docker cp /opt/wazuh-docker/single-node/config/wazuh_indexer/internal_users.yml wazuh.indexer:/tmp/internal_users.yml
 
-# based on https://documentation.wazuh.com/current/deployment-options/docker/wazuh-container.html#change-pwd-existing-usr
-- community.docker.docker_container_exec:
+- name: run securityadmin.sh inside wazuh.indexer
+  community.docker.docker_container_exec:
     container: "wazuh.indexer"
     env:
       CACERT: /usr/share/wazuh-indexer/certs/root-ca.pem

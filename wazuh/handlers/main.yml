@@ -1,0 +1,18 @@
+# https://documentation.wazuh.com/current/deployment-options/docker/wazuh-container.html#change-pwd-existing-usr
+- name: reconfigure wazuh users
+  include_tasks: handler-reconfigure-users.yml 
+
+#XXX: alternatively run docker restart wazuh.manager
+- name: reconfigure wazuh manager
+  community.docker.docker_container_exec:
+    container: "wazuh.manager"
+    command: "/var/ossec/bin/wazuh-control restart"
+    user: root
+
+- name: restart wazuh dashboard
+  debug:
+    msg: "FIXME: restart wazuh dashboard"
+
+- name: restart entire wazuh
+  debug:
+    msg: "FIXME: restart entire wazuh"
