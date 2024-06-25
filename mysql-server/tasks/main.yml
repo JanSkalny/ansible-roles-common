@@ -54,3 +54,7 @@
     state: present
   when: "{{ zabbix_mysql_monitor_password | default('') != '' }}"
 
+- name: enable mysql service
+  service:
+    name: mysql
+    enabled: yes
