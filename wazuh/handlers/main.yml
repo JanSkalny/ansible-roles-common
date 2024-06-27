@@ -5,13 +5,14 @@
 #XXX: alternatively run docker restart wazuh.manager
 - name: reconfigure wazuh manager
   community.docker.docker_container_exec:
-    container: "wazuh.manager"
+    container: wazuh.manager
     command: "/var/ossec/bin/wazuh-control restart"
     user: root
 
 - name: restart wazuh dashboard
-  debug:
-    msg: "FIXME: restart wazuh dashboard"
+  community.docker.docker_container:
+    name: wazuh.dashboard
+    state: restarted
 
 - name: restart entire wazuh
   debug:
