@@ -7,3 +7,6 @@
 [submodule "zabbix/templates/zabbix-syslog-ng"]
 	path = zabbix/templates/zabbix-syslog-ng
 	url = https://github.com/JanSkalny/zabbix-syslog-ng.git
+[submodule "zabbix/templates/zabbix-wireguard"]
+	path = zabbix/templates/zabbix-wireguard
+	url = https://github.com/JanSkalny/zabbix-wireguard.git
