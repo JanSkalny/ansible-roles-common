@@ -1,0 +1,3 @@
+sockstat:
+  template: "sockstat by Zabbix agent"
+  params: "zabbix-misp/sockstat.conf"
