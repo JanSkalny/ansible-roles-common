@@ -372,6 +372,33 @@ outputs:
       #session-resumption: no
 {% endraw %}
 
+{% if suricata_dns_log | default(False) %}
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: "/var/log/suricata/dns-%Y-%m-%d-%H:%M.json"
+      rotate-interval: 1h
+      types:
+        - dns:
+            requests: no
+{% endif %}
+{% if suricata_tls_log | default(False) %}
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: "/var/log/suricata/tls-%Y-%m-%d-%H:%M.json"
+      rotate-interval: 1h
+      types:
+        - tls:
+            extended: yes
+            # output TLS transaction where the session is resumed using a
+            # session id
+            #session-resumption: no
+            # custom controls which TLS fields that are included in eve-log
+            #custom: [subject, issuer, session_resumed, serial, fingerprint, sni, version, not_before, not_after, certificate, chain, ja3, ja3s]
+
+{% endif %}
+
   # output module to store certificates chain to disk
   - tls-store:
       enabled: no
