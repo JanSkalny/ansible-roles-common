@@ -10,6 +10,7 @@
     shell: "{{ default_user_shell }}"
     state: present
     createhome: yes
+    password: "*"
   with_items : "{{ users }}"
 
 - name: add authorized_keys

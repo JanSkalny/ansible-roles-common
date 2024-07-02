@@ -6,10 +6,25 @@ wazuh_version: "v4.7.5"
 wazuh_expose_syslog: True
 wazuh_indexer_ram: "4096m"
 
+# list of vulnerability-detectors by platfrom. eg. debian, ubuntu, centos, ...
+wazuh_vuln_detectors: []
+
+#XXX: in $2b$12$salt format
+wazuh_salt: "CHANGEME"
+
 # default technical accounts have passwords based on wazuh_secret
 # feel free to override wazuh_admin_password
 wazuh_admin_password: "{{ ( 'indexer' + wazuh_secret + inventory_hostname ) | hash('sha1') }}"
 wazuh_kibanaserver_password: "{{ ( 'dashboard' + wazuh_secret + inventory_hostname ) | hash('sha1') }}"
 wazuh_api_password: "FOO@@@{{ ( 'api' + wazuh_secret + inventory_hostname ) | hash('sha1') }}"
-
 #XXX: changing admin or kibanaserver passwords require docker-compose down / docker-compose up -d on wazuh-docker/single-node
+
+#wazuh_users:
+# - login: user1
+#   name: "user foo"
+#   hash: "{{ 'foo' | bcrypt }}"
+# - login: user2
+#   name: "bar"
+#   read-only: yes
+#   hash: "$2b$..."
+

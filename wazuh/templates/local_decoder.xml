@@ -18,4 +18,10 @@
   - extra_data - Any extra data
 -->
 
+<!-- XXX: Example, but SOMETHING mus be present for `wazuh-analysisd -t` to pass -->
+<decoder name="local_decoder_example">
+  <program_name>local_decoder_example</program_name>
+</decoder>
+
+<!-- custom decoders -->
 {{ wazuh_local_decoders | default("")}}

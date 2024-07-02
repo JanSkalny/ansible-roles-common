@@ -1,1 +1,1 @@
-{{ reverse_ssh_server.fingerprint }}
+{{ reverse_ssh_server_fingerprint }}

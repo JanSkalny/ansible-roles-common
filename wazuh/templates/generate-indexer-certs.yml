@@ -1,0 +1,13 @@
+services:
+  generator:
+    network_mode: host
+    image: wazuh/wazuh-certs-generator:local
+    hostname: wazuh-certs-generator
+    volumes:
+      - ./config/wazuh_indexer_ssl_certs/:/certificates/
+      - ./config/certs.yml:/config/certs.yml
+{% if proxy_host | default("") != "" %}
+    environment:
+      http_proxy:  "{{ proxy_env.http_proxy }}"
+      https_proxy:  "{{ proxy_env.https_proxy }}"
+{% endif %}

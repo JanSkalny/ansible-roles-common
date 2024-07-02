@@ -1,0 +1,124 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-06-27T15:41:11Z'
+  groups:
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: 06eacf393d584b548d9f93cf5d0797e5
+      template: 'sockstat by Zabbix agent'
+      name: 'sockstat by Zabbix agent'
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          uuid: d051fe2a07f64d8a96fbd53ab9622a89
+          name: 'Total Sockets'
+          key: sockstat.sockets
+          delay: '30'
+          units: sockets
+          description: 'Number of open sockets'
+          tags:
+            -
+              tag: Application
+              value: 'Network Sockets'
+        -
+          uuid: b42ac171fb8047338ce352263700c965
+          name: 'TCP Sockets Allocated'
+          key: sockstat.tcp.allocated
+          delay: '30'
+          units: sockets
+          tags:
+            -
+              tag: Application
+              value: 'Network Sockets'
+        -
+          uuid: 89686141a3574644bc253979f24fa508
+          name: 'TCP Sockets In Use'
+          key: sockstat.tcp.inuse
+          delay: '30'
+          units: sockets
+          description: 'TCP sockets currently in use on the system.'
+          tags:
+            -
+              tag: Application
+              value: 'Network Sockets'
+        -
+          uuid: b21799f66ad44b98a2dc5089fc9b0229
+          name: 'TCP Sockets Memory'
+          key: sockstat.tcp.mem
+          delay: '120'
+          units: bytes
+          tags:
+            -
+              tag: Application
+              value: 'Network Sockets'
+        -
+          uuid: 914cb9eefda740b3a8efbb054454145c
+          name: 'TCP Sockets Orphaned'
+          key: sockstat.tcp.orphan
+          delay: '120'
+          units: sockets
+          tags:
+            -
+              tag: Application
+              value: 'Network Sockets'
+        -
+          uuid: 66bbecce69984860ab7d5c45746787f5
+          name: 'TCP Sockets in TIME_WAIT'
+          key: sockstat.tcp.timewait
+          delay: '30'
+          units: sockets
+          tags:
+            -
+              tag: Application
+              value: 'Network Sockets'
+        -
+          uuid: 6d98df59b8a2403b92c7f9a512d4b6e9
+          name: 'UDP Sockets In Use'
+          key: sockstat.udp.inuse
+          delay: '30'
+          units: sockets
+          tags:
+            -
+              tag: Application
+              value: 'Network Sockets'
+        -
+          uuid: a316f5e8b8cc4b6db84155fe2a0df200
+          name: 'UDP Socket Memory'
+          key: sockstat.udp.mem
+          delay: '120'
+          units: bytes
+          tags:
+            -
+              tag: Application
+              value: 'Network Sockets'
+  graphs:
+    -
+      uuid: 1a3bf91b3d01448583f6c4cb8568f2df
+      name: 'TCP Sockets'
+      type: STACKED
+      graph_items:
+        -
+          drawtype: FILLED_REGION
+          color: EE0000
+          item:
+            host: 'Linux server sockstat by Zabbix agent'
+            key: sockstat.tcp.orphan
+        -
+          sortorder: '1'
+          drawtype: FILLED_REGION
+          color: 00DD00
+          item:
+            host: 'Linux server sockstat by Zabbix agent'
+            key: sockstat.tcp.inuse
+        -
+          sortorder: '2'
+          drawtype: FILLED_REGION
+          color: DDDD00
+          item:
+            host: 'Linux server sockstat by Zabbix agent'
+            key: sockstat.tcp.timewait

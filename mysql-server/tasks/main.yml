@@ -52,5 +52,9 @@
     password: "{{ zabbix_mysql_monitor_password }}"
     priv: "*.*:REPLICATION CLIENT,PROCESS,SHOW DATABASES,SHOW VIEW"
     state: present
-  when: "{{ zabbix_mysql_monitor_password | default('') != '' }}"
+  when: zabbix_mysql_monitor_password is defined
 
+- name: enable mysql service
+  service:
+    name: mysql
+    enabled: yes

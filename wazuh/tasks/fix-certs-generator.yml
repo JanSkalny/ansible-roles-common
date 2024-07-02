@@ -1,0 +1,18 @@
+- name: rewrite generate-indexer-certs.yml with proxy env and :local image
+  template: 
+    src: generate-indexer-certs.yml
+    dest: /opt/wazuh-docker/single-node/generate-indexer-certs.yml
+
+- name: fix curl requests in entrypoint.sh
+  replace:
+    path: /opt/wazuh-docker/indexer-certs-creator/config/entrypoint.sh
+    regexp: " \\| awk  '{print \\$2}'\\)$"
+    replace: " | awk  '{print $2}' | sort)"
+
+- name: build docker image and tag as :local
+  community.docker.docker_image:
+    build:
+      path: /opt/wazuh-docker/indexer-certs-creator/
+    name: wazuh/wazuh-certs-generator
+    source: build
+    tag: local

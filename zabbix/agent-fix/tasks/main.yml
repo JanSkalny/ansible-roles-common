@@ -48,15 +48,6 @@
      state: "file"
   when: openvpn_status_file is defined and openvpn_status_file.state is defined and openvpn_status_file.state == 'file'
 
-- name: docker fix group
-  user:
-    name: "zabbix"
-    group: "zabbix"
-    groups: "docker"
-  notify: restart zabbix-agent
-  #when: "'docker' in group_names"
-  when: inventory_hostname in groups.docker
-
 # old configs
 - name: Remove old config dir
   file:

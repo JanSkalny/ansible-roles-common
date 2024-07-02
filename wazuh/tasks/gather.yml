@@ -1,0 +1,48 @@
+- name: check state of wazuh-docker repo
+  command: git describe --tags
+  args:
+    chdir: /opt/wazuh-docker
+  register: git_repo
+  check_mode: no
+  ignore_errors: yes
+  changed_when: false
+
+- name: check if we already have certificates
+  stat:
+    path: /opt/wazuh-docker/single-node/config/wazuh_indexer_ssl_certs/root-ca.pem
+  register: wazuh_ssl_certs
+  check_mode: no
+
+- name: check if wazuh.indexer is running
+  community.docker.docker_container_info:
+    name: "wazuh.indexer"
+  register: wazuh_indexer_container
+  check_mode: no
+
+- name: check if wazuh.manager is running
+  community.docker.docker_container_info:
+    name: "wazuh.manager"
+  register: wazuh_manager_container
+  check_mode: no
+
+- name: check if wazuh etc volume is present
+  community.docker.docker_volume_info:
+    name: "wazuh_wazuh_etc"
+  register: wazuh_etc_volume
+  check_mode: no
+
+- name: determine wazuh uid
+  community.docker.docker_container_exec:
+    container: wazuh.manager
+    command: id -u wazuh
+  register: wazuh_indexer_uid
+  check_mode: no
+  ignore_errors: yes
+  changed_when: false
+
+- set_fact:
+    wazuh_indexer_is_running: "{{ wazuh_indexer_container.container.State.Running | default(false) }}"
+    wazuh_manager_is_running: "{{ wazuh_manager_container.container.State.Running | default(false) }}"
+    wazuh_certificates_are_present: "{{ wazuh_ssl_certs.stat.exists }}"
+    wazuh_etc_is_present: "{{ wazuh_etc_volume.exists | default(false) }}"
+    wazuh_uid: "{{ wazuh_indexer_uid.stdout }}"

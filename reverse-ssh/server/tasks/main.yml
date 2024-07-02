@@ -1,12 +1,12 @@
 - name: create ssh user
   user:
-    name: "{{ reverse_ssh.user }}"
+    name: "{{ reverse_ssh_server_user }}"
     comment: "Reverse SSH user"
 
 - name: prepare directories
   file:
-    path: "/home/{{ reverse_ssh.user }}/.ssh"
-    owner: "{{ reverse_ssh.user }}"
+    path: "/home/{{ reverse_ssh_server_user }}/.ssh"
+    owner: "{{ reverse_ssh_server_user }}"
     state: directory
     mode: 0700
 

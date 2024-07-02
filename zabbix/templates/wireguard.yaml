@@ -1,0 +1,6 @@
+wireguard:
+  template: "WireGuard by Zabbix agent"
+  sudoers: "zabbix-wireguard/sudoers"
+  params: "zabbix-wireguard/wireguard.conf"
+  scripts:
+    - "zabbix-wireguard/zabbix_wireguard.sh"

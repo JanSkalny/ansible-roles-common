@@ -1,2 +1,2 @@
-reverse_ssh:
-  user: "cat"
+reverse_ssh_client_user: "cat"
+reverse_ssh_server_user: "cat"
