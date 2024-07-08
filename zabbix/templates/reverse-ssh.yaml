@@ -1,0 +1,6 @@
+reverse-ssh:
+  template: "Reverse SSH by Zabbix agent"
+  sudoers: "zabbix-reverse-ssh/sudoers"
+  params: "zabbix-reverse-ssh/reverse_ssh.conf"
+  scripts:
+    - "zabbix-reverse-ssh/zabbix_reverse_ssh.sh"
