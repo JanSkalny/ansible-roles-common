@@ -10,3 +10,6 @@
 [submodule "zabbix/templates/zabbix-wireguard"]
 	path = zabbix/templates/zabbix-wireguard
 	url = https://github.com/JanSkalny/zabbix-wireguard.git
+[submodule "zabbix/templates/zabbix-reverse-ssh"]
+	path = zabbix/templates/zabbix-reverse-ssh
+	url = https://github.com/JanSkalny/zabbix-reverse-ssh.git
