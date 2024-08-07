@@ -8,13 +8,20 @@ HostKey /etc/ssh/ssh_host_dsa_key
 HostKey /etc/ssh/ssh_host_ecdsa_key
 HostKey /etc/ssh/ssh_host_ed25519_key
 
-UsePrivilegeSeparation yes
+
+RekeyLimit {{ sshd_rekey_limit | default('1G') }}
+
+KexAlgorithms {{ sshd_kex_algorithms | default('sntrup761x25519-sha512@openssh.com,curve25519-sha256@libssh.org,curve25519-sha256,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512') }}
+Ciphers {{ sshd_ciphers | default('chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr') }}
+MACs {{ sshd_macs | default('umac-128-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com') }}
+
 
 SyslogFacility AUTH
 LogLevel INFO
 
 LoginGraceTime 60
 StrictModes yes
+MaxAuthTries {{ sshd_max_auth_tries | default(5) }}
 
 IgnoreRhosts yes
 HostbasedAuthentication no
@@ -34,14 +41,14 @@ X11DisplayOffset 10
 PrintMotd no
 PrintLastLog yes
 TCPKeepAlive yes
-UseLogin no
 UseDNS no
 ClientAliveInterval 300
 
 #MaxStartups 10:30:60
 MaxSessions {{ sshd_max_sessions | default(20) }}
  
-Banner /etc/issue.net
+Banner none
+VersionAddendum none
 
 # Allow client to pass locale environment variables
 AcceptEnv LANG LC_*
