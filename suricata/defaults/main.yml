@@ -6,6 +6,10 @@ suricata_eve: "yes"
 suricata_syslog: "no"
 suricata_fast: "no"
 
+# dnslog and tlslog files
+suricata_dns_log: False
+suricata_tls_log: False
+
 suricata_eve_rotate_interval: "1h"
 suricata_default_packet_size: 1536
 

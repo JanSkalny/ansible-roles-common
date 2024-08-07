@@ -1,5 +1,5 @@
 [mysqld]
-innodb_flush_log_at_trx_commit=2
+innodb_flush_log_at_trx_commit={{ mysql_flush_log | default(2) }}
 {% if ansible_distribution == 'Ubuntu' and ansible_distribution_major_version < "20" %}
 query_cache_type=1
 {% endif %}
