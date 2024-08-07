@@ -8,7 +8,6 @@ HostKey /etc/ssh/ssh_host_dsa_key
 HostKey /etc/ssh/ssh_host_ecdsa_key
 HostKey /etc/ssh/ssh_host_ed25519_key
 
-UsePrivilegeSeparation yes
 
 SyslogFacility AUTH
 LogLevel INFO
@@ -34,7 +33,6 @@ X11DisplayOffset 10
 PrintMotd no
 PrintLastLog yes
 TCPKeepAlive yes
-UseLogin no
 UseDNS no
 ClientAliveInterval 300
 
