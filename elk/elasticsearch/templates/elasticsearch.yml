@@ -1,7 +1,9 @@
 cluster:
   name: "{{ elastic_cluster_name }}"
 {% if 'master' in elastic_node_roles and elastic_version.split('.') | first | int >= 7 %}
+{% if elastic_master_nodes | length > 1 %}
   initial_master_nodes: {{ elastic_master_nodes | to_json }}
+{% endif %}
 {% if elastic_custom_cluster_settings | default(False) %}
   {{ elastic_custom_cluster_settings | to_nice_yaml(indent=2) }}
 {% endif %}
@@ -18,6 +20,7 @@ node:
   roles: {{ elastic_node_roles | to_json }}
 {% endif %}
 
+{% if elastic_master_nodes | length > 1 %}
 {% if elastic_version.split('.') | first | int <= 6 %}
 discovery.zen:
   ping.unicast.hosts: {{ elastic_master_nodes | to_json }}
@@ -25,6 +28,9 @@ discovery.zen:
 {% endif %}
 {% if elastic_version.split('.') | first | int >= 7 %}
 discovery.seed_hosts: {{ elastic_master_nodes | to_json }}
+{% endif %}
+{% else %}
+discovery.type: single-node
 {% endif %}
 
 path:

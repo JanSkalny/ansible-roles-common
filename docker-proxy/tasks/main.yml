@@ -12,3 +12,5 @@
     - reload systemd
     - restart docker
 
+# XXX: other tasks might rely on docker connectivity... run handlers
+- meta: flush_handlers
