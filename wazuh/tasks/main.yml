@@ -22,12 +22,13 @@
   git:
     repo: https://github.com/wazuh/wazuh-docker.git
     dest: /opt/wazuh-docker
-    force: wazuh_upgrade|default(0)
+    force: "{{ wazuh_upgrade|default(False) }}"
     version: "{{ wazuh_version }}"
   when: git_repo.failed or git_repo.stdout != wazuh_version 
 
 ## configure wazuh
 - include_tasks: users.yml
+
 ## generate certificates
 - include_tasks: fix-certs-generator.yml
 

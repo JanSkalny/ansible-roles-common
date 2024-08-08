@@ -7,12 +7,16 @@
   replace:
     path: /opt/wazuh-docker/indexer-certs-creator/config/entrypoint.sh
     regexp: " \\| awk  '{print \\$2}'\\)$"
-    replace: " | awk  '{print $2}' | sort)"
+    replace: " | awk  '{print $2}' | sort | uniq)"
 
 - name: build docker image and tag as :local
   community.docker.docker_image:
     build:
       path: /opt/wazuh-docker/indexer-certs-creator/
+      args:
+        http_proxy: "{{ proxy_env.http_proxy | default('') }}"
+        https_proxy: "{{ proxy_env.https_proxy | default('') }}"
     name: wazuh/wazuh-certs-generator
     source: build
     tag: local
+
