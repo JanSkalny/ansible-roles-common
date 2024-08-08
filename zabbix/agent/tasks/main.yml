@@ -16,17 +16,14 @@
         - "zabbix-agent"
         state: absent
     - file:
-        path: "/etc/zabbix/zabbix_agentd.conf"
+        path: "{{ item }}"
         state: absent
-    - file:
-        path: "/etc/zabbix/zabbix_agentd.conf.dpkg-dist"
-        state: absent
-    - file:
-        path: "/etc/zabbix/zabbix_agentd.d"
-        state: absent
-    - file:
-        path: "/etc/zabbix/zabbix_agentd.psk"
-        state: absent
+      with_items:
+        - /etc/zabbix/zabbix_agentd.conf
+        - /etc/zabbix/zabbix_agentd.conf.dpkg-dist
+        - /etc/zabbix/zabbix_agentd.d
+        - /etc/zabbix/zabbix_agentd.psk
+        - /etc/logrotate.d/zabbix-agent
   when: "not ( ansible_distribution_release == 'xenial' or ansible_distribution_release == 'trusty' )"
 
 - name: install SW dependencies and tools
