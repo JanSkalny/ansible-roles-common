@@ -11,6 +11,33 @@
     state: present
   tags: install
 
+- name: Create a certbot.service override directory
+  file:
+    owner: root
+    group: root
+    mode: 0755
+    path: /etc/systemd/system/certbot.service.d
+    state: directory
+  tags: configure
+
+- name: set certbot's proxy values
+  community.general.ini_file:
+    dest: /etc/systemd/system/certbot.service.d/override.conf
+    owner: root
+    group: root
+    mode: 0644
+    ignore_spaces: true
+    no_extra_spaces: true
+    section: Service
+    option: Environment
+    value: "http_proxy=http://{{proxy_host}}:{{proxy_port}} https_proxy=http://{{proxy_host}}:{{proxy_port}}"
+  tags: configure
+
+- name: make systemd reread configs
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  tags: configure
+
 - name: configure certbot
   template:
       src: cli.ini
