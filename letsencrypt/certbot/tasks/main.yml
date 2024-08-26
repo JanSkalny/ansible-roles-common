@@ -19,6 +19,7 @@
     path: /etc/systemd/system/certbot.service.d
     state: directory
   tags: configure
+  when: proxy_host is not undefined and proxy_port is not undefined
 
 - name: set certbot's proxy values
   community.general.ini_file:
@@ -32,6 +33,7 @@
     option: Environment
     value: "http_proxy=http://{{proxy_host}}:{{proxy_port}} https_proxy=http://{{proxy_host}}:{{proxy_port}}"
   tags: configure
+  when: proxy_host is not undefined and proxy_port is not undefined
 
 - name: make systemd reread configs
   ansible.builtin.systemd_service:
