@@ -37,7 +37,7 @@
     user: "{{ reverse_ssh_server_user }}"
     state: present
     key: "{{ reverse_ssh_client_key.public_key }} {{ reverse_ssh_client_user }}@{{ inventory_hostname }}"
-    key_options: "command=\"/bin/cat\",permitopen=\"127.0.0.{{ reverse_ssh_client_id }}:{{ 2000+reverse_ssh_client_id }}\""
+    key_options: "command=\"/bin/cat\",permitopen=\"127.0.0.1:{{ 2000+reverse_ssh_client_id }}\""
   delegate_to: "{{ reverse_ssh_server_host }}"
 
 - name: configure systemd
