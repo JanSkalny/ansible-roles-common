@@ -18,10 +18,10 @@ services:
 {% if wazuh_manager_use_proxy == True %}
       HTTP_PROXY: "{{ proxy_env.http_proxy | default("") }}"
       HTTPS_PROXY: "{{ proxy_env.https_proxy | default("") }}"
-      NO_PROXY: "127.0.0.0/8"
+      NO_PROXY: "127.0.0.0/8,wazuh.indexer,wazuh.dashboard"
       http_proxy: "{{ proxy_env.http_proxy | default("") }}"
       https_proxy: "{{ proxy_env.https_proxy | default("") }}"
-      no_proxy: "127.0.0.0/8"
+      no_proxy: "127.0.0.0/8,wazuh.indexer,wazuh.dashboard"
 {% endif %}
   wazuh.indexer:
     container_name: "wazuh.indexer"
