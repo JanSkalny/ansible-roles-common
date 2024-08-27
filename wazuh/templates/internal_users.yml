@@ -19,7 +19,10 @@ kibanaserver:
   hash: "{{ wazuh_user.hash | default(wazuh_user.password | bcrypt(wazuh_salt)) }}"
   description: "{{ wazuh_user.name | default('User '+wazuh_user.login) }}"
   backend_roles:
-  - "kibanauser"
-  - "readall"
+{% for role in wazuh_user.override_roles | default(["kibanauser", "readall"]) %}
+  - "{{ role }}"
+{% endfor %}{% for role in wazuh_user.additional_roles | default([]) %}
+  - "{{ role }}"
+{% endfor %}
 
 {% endfor %}
