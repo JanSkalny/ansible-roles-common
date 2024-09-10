@@ -11,9 +11,15 @@ HostKey /etc/ssh/ssh_host_ed25519_key
 
 RekeyLimit {{ sshd_rekey_limit | default('1G') }}
 
-KexAlgorithms {{ sshd_kex_algorithms | default('sntrup761x25519-sha512@openssh.com,curve25519-sha256@libssh.org,curve25519-sha256,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512') }}
-Ciphers {{ sshd_ciphers | default('chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr') }}
-MACs {{ sshd_macs | default('umac-128-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com') }}
+{% if sshd_kex_algorithms | default(False) %}
+KexAlgorithms {{ sshd_kex_algorithms }}
+{% endif %}
+{% if sshd_ciphers | default(False) %}
+Ciphers {{ sshd_ciphers }}
+{% endif %}
+{% if sshd_macs | default(False) %}
+MACs {{ sshd_macs }}
+{% endif %}
 
 
 SyslogFacility AUTH
