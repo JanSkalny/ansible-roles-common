@@ -451,7 +451,7 @@ $IT4 -A DOCKER-USER -i br-+ -o br-+ -j RETURN
   {% set src_addrs = normalize_addrs(input_rule, 'src').split(',') %}
   {% set tcp_ports = normalize_ports(input_rule, 'tcp').split(',') | difference(['']) %}
   {% set udp_ports = normalize_ports(input_rule, 'udp').split(',') | difference(['']) %}
-  {% set firewall_tmp_target = {"LOG_ACCEPT": "LOG_DOCKER_ACCEPT", "LOG_WILL_DROP": "LOCK_DOCKER_WILL_DROP", "ACCEPT": "RETURN" }[input_rule.rule | default("LOG_ACCEPT")] | default(input_rule.rule) %}
+  {% set firewall_tmp_target = {"LOG_ACCEPT": "LOG_DOCKER_ACCEPT", "LOG_WILL_DROP": "LOG_DOCKER_WILL_DROP", "ACCEPT": "RETURN" }[input_rule.rule | default("LOG_ACCEPT")] | default(input_rule.rule) %}
 
 # {{ input_rule | to_json }}
 # dockerized target: {{ firewall_tmp_target }}
@@ -484,7 +484,7 @@ $IT4 -A DOCKER-USER -i {{ firewall_iface_name }} -j  {{ firewall_default_rule_fo
 ###  {% set dest_addrs = normalize_addrs(output_rule, 'dest').split(',') %}
 ###  {% set tcp_ports = normalize_ports(output_rule, 'tcp').split(',') | difference(['']) %}
 ###  {% set udp_ports = normalize_ports(output_rule, 'udp').split(',') | difference(['']) %}
-###  {% set firewall_tmp_target = {"LOG_ACCEPT": "LOG_DOCKER_ACCEPT", "LOG_WILL_DROP": "LOCK_DOCKER_WILL_DROP", "ACCEPT": "RETURN" }[output_rule.rule | default("LOG_ACCEPT")] | default(output_rule.rule) %}
+###  {% set firewall_tmp_target = {"LOG_ACCEPT": "LOG_DOCKER_ACCEPT", "LOG_WILL_DROP": "LOG_DOCKER_WILL_DROP", "ACCEPT": "RETURN" }[output_rule.rule | default("LOG_ACCEPT")] | default(output_rule.rule) %}
 ###
 #### {{ output_rule | to_json }}
 #### dockerized target: {{ firewall_tmp_target }}
