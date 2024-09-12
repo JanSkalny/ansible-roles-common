@@ -17,7 +17,7 @@
     - tcptraceroute
     - nmap
     - patch
-    - iptraf
+    - iptraf-ng
     - curl
     - wget
     - cron

@@ -15,7 +15,7 @@ services:
       INDEXER_PASSWORD: "{{ wazuh_admin_password }}"
       API_USERNAME: "wazuh-wui"
       API_PASSWORD: "{{ wazuh_api_password }}"
-{% if wazuh_manager_use_proxy == True %}
+{% if wazuh_manager_use_proxy | default(False) == True %}
       HTTP_PROXY: "{{ proxy_env.http_proxy | default("") }}"
       HTTPS_PROXY: "{{ proxy_env.https_proxy | default("") }}"
       NO_PROXY: "127.0.0.0/8,wazuh.indexer,wazuh.dashboard"
