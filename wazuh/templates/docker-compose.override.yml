@@ -4,7 +4,12 @@ services:
     container_name: "wazuh.manager"
     volumes:
       - /data/logs:/logs:ro
-{% if wazuh_expose_syslog == False %}
+{% if ( wazuh_custom_ports | type_debug == 'list' ) and (wazuh_custom_ports | length > 0) %}
+    ports: !override {{ wazuh_custom_ports }}
+{% else %}
+    # overriding the defaults still, because there usually is syslog-ng
+    # listening on 514, which means it would collide with the upstream defaults
+    # of also listening on 514.
     ports: !override
       - "1514:1514"
       - "1515:1515"
