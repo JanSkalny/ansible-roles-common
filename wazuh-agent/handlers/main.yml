@@ -1,0 +1,4 @@
+- name: restart wazuh-agent service
+  service:
+    name: "wazuh-agent"
+    state: restarted
