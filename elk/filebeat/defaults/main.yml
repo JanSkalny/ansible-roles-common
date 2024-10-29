@@ -2,17 +2,27 @@ filebeat_es_user: "filebeat"
 
 filebeat_config:
   output.elasticsearch:
-    hosts: ["https://{{ inventory_hostname }}:9200"]
+    hosts: ["https://{{ filebeat_es_hostname | default(inventory_hostname) }}:9200"]
     ssl.certificate_authorities: "/etc/elasticsearch/tls/ca.crt"
     username: "{{ filebeat_es_user }}"
     password: "{{ filebeat_es_password }}"
+
   filebeat.config.modules:
     path: ${path.config}/modules.d/*.yml
+
   processors:
   - add_host_metadata:
       when.not.contains.tags: forwarded
   - add_docker_metadata: ~
   - add_kubernetes_metadata: ~
+
+  setup.template.overwrite: false
+  setup.template.settings:
+    index:
+      number_of_replicas: 0
+      number_of_shards: 1
+      codec: best_compression
+
 
 filebeat_modules:
   - name: elasticsearch
