@@ -8,13 +8,26 @@ HostKey /etc/ssh/ssh_host_dsa_key
 HostKey /etc/ssh/ssh_host_ecdsa_key
 HostKey /etc/ssh/ssh_host_ed25519_key
 
-UsePrivilegeSeparation yes
+
+RekeyLimit {{ sshd_rekey_limit | default('1G') }}
+
+{% if sshd_kex_algorithms | default(False) %}
+KexAlgorithms {{ sshd_kex_algorithms }}
+{% endif %}
+{% if sshd_ciphers | default(False) %}
+Ciphers {{ sshd_ciphers }}
+{% endif %}
+{% if sshd_macs | default(False) %}
+MACs {{ sshd_macs }}
+{% endif %}
+
 
 SyslogFacility AUTH
 LogLevel INFO
 
 LoginGraceTime 60
 StrictModes yes
+MaxAuthTries {{ sshd_max_auth_tries | default(5) }}
 
 IgnoreRhosts yes
 HostbasedAuthentication no
@@ -34,14 +47,14 @@ X11DisplayOffset 10
 PrintMotd no
 PrintLastLog yes
 TCPKeepAlive yes
-UseLogin no
 UseDNS no
 ClientAliveInterval 300
 
 #MaxStartups 10:30:60
 MaxSessions {{ sshd_max_sessions | default(20) }}
  
-Banner /etc/issue.net
+Banner none
+VersionAddendum none
 
 # Allow client to pass locale environment variables
 AcceptEnv LANG LC_*

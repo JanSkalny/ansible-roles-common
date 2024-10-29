@@ -1,0 +1,78 @@
+- name: install wazuh-agent dependencies
+  package:
+    name:
+    - software-properties-common
+    - apt-transport-https
+
+- name: add wazuh-agent gpg key
+  apt_key:
+    url: "https://packages.wazuh.com/key/GPG-KEY-WAZUH"
+    keyring: /etc/apt/trusted.gpg.d/wazuh.gpg
+    state: present
+
+- name: add wazuh-agent repo
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main"
+    update_cache: yes
+
+- name: check installed software
+  package_facts:
+    manager: auto
+  check_mode: no
+
+- name: find latest build for requested version of wazuh-agent
+  shell: "apt-cache show wazuh-agent={{ wazuh_agent_version }}-\\* | grep '^Version: [0-9]' | sort -n | tail -n 1 | awk '{print $2}'"
+  register: res
+  check_mode: no
+  changed_when: False
+  ignore_errors: True
+
+- set_fact:
+    wazuh_agent_version_installed: "{{ ansible_facts.packages['wazuh-agent'][0]['version'] | default('') }}"
+    wazuh_agent_version_latest: "{{ res.stdout }}"
+
+- name: check if we need to reinstall wazuh-agent
+  set_fact:
+    reinstall_wazuh_agent: "{{ wazuh_agent_version_installed != wazuh_agent_version_latest }}"
+
+- debug:
+    msg:
+     - "wazuh_agent_version={{ wazuh_agent_version }}"
+     - "wazuh_agent_version_latest={{ wazuh_agent_version_latest }}"
+     - "wazuh_agent_version_installed={{ wazuh_agent_version_installed }}"
+     - "reinstall_wazuh_agent={{ reinstall_wazuh_agent }}"
+     - "wazuh_manager={{ wazuh_manager }}"
+
+- name: unhold wazuh-agent package
+  ansible.builtin.dpkg_selections:
+    name: "wazuh-agent"
+    selection: install
+  when: reinstall_wazuh_agent and wazuh_agent_version_installed != ""
+
+- name: install wazuh-agent package
+  package:
+    name: "wazuh-agent={{ wazuh_agent_version_latest }}"
+    state: present
+  when: reinstall_wazuh_agent
+  notify: restart wazuh-agent service
+
+- name: configure wazuh-agent
+  template:
+    src: ossec.conf
+    dest: /var/ossec/etc/ossec.conf
+    owner: root
+    group: wazuh
+    mode: 0660
+  notify: restart wazuh-agent service
+
+- name: make sure wazuh-agent service is enabled
+  service:
+    name: wazuh-agent
+    enabled: yes
+
+- name: hold wazuh-agent package
+  ansible.builtin.dpkg_selections:
+    name: wazuh-agent
+    selection: hold
+  when: reinstall_wazuh_agent
+

@@ -16,10 +16,11 @@ kibanaserver:
 
 {% for wazuh_user in wazuh_users %}
 {{ wazuh_user.login }}:
-  hash: "{{ wazuh_user.hash | default(wazuh_user.password | bcrypt(wazuh_salt)) }}"
+  hash: "{{ wazuh_user.hash | default((wazuh_user.password | default('foo'+wazuh_salt)) | bcrypt(wazuh_salt)) }}"
   description: "{{ wazuh_user.name | default('User '+wazuh_user.login) }}"
   backend_roles:
-  - "kibanauser"
-  - "readall"
+{% for role in wazuh_user.roles | default(["kibanauser", "readall"]) %}
+  - "{{ role }}"
+{% endfor %}
 
 {% endfor %}

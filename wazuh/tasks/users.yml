@@ -4,13 +4,13 @@
     dest: /opt/wazuh-docker/single-node/docker-compose.override.yml
   notify: restart entire wazuh
 
-- name: generate config/wazuh_dashboard/wazuh.yml
+- name: generate internal_users.yml
   template:
     src: internal_users.yml
     dest: /opt/wazuh-docker/single-node/config/wazuh_indexer/internal_users.yml
   notify: reconfigure wazuh users
 
-- name: generate config/wazuh_dashboard/wazuh.yml
+- name: generate dashboard.yml
   template:
     src: dashboard.yml
     dest: /opt/wazuh-docker/single-node/config/wazuh_dashboard/wazuh.yml

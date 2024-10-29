@@ -12,7 +12,7 @@
 - name: restart wazuh dashboard
   community.docker.docker_container:
     name: wazuh.dashboard
-    state: restarted
+    restart: true
 
 - name: restart entire wazuh
   debug:

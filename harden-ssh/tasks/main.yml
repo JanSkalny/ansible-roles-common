@@ -1,6 +1,12 @@
+- name: set distro-specific variables
+  include_vars: '{{ item }}'
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+    - default.yml
+
 # TODO:
 # overit na centos, bsd a mozno aj macos
-
+#
 - name: cleanup old ssh files
   file:
     path: "/etc/ssh/{{ item }}"

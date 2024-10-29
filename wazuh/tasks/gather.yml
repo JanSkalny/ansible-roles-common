@@ -45,4 +45,4 @@
     wazuh_manager_is_running: "{{ wazuh_manager_container.container.State.Running | default(false) }}"
     wazuh_certificates_are_present: "{{ wazuh_ssl_certs.stat.exists }}"
     wazuh_etc_is_present: "{{ wazuh_etc_volume.exists | default(false) }}"
-    wazuh_uid: "{{ wazuh_indexer_uid.stdout }}"
+    wazuh_uid: "{{ wazuh_indexer_uid.stdout | default(0) }}"

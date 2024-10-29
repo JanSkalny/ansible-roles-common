@@ -1,18 +1,3 @@
-- name: save zabbix PSK
-  local_action:
-    module: lineinfile
-    line: "zabbix_agent_psk: \"{{  zabbix_agent_psk }}\""
-    regexp: '^zabbix_agent_psk: '
-    path: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/zabbix.yml"
-    create: yes
-  notify: restart zabbix-agent
-  become: no
-
-- name: remove old logrotate for zabbix
-  file:
-    path: "/etc/logrotate.d/zabbix-agent"
-    state: absent
-
 - name: defaults
   set_fact:
     suricata_huge: {}
@@ -47,37 +32,3 @@
      mode: "g+r"
      state: "file"
   when: openvpn_status_file is defined and openvpn_status_file.state is defined and openvpn_status_file.state == 'file'
-
-# old configs
-- name: Remove old config dir
-  file:
-    path: /etc/zabbix/zabbix_agent.d
-    state: absent
-
-# unused configs
-- name: Remove unused config dir
-  file:
-    path: /etc/zabbix/zabbix_agent2.d
-    state: absent
-  tags: never
-
-- name: Create config dir
-  file:
-    path: /etc/zabbix/zabbix_agent2.d
-    state: directory
-    owner: zabbix
-    group: zabbix
-    mode: 0775
-  tags: never
-
-# we are using some templates which needs this old configs
-# not any more
-- name: old configs to zabbix_agent2.d
-  copy:
-    src: "zabbix_agent2.d"
-    dest: /etc/zabbix
-    owner: zabbix
-    group: zabbix
-    mode: 0640
-    directory_mode: 0755
-  tags: never
