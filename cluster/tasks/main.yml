@@ -71,11 +71,23 @@
   - libvirt-guests
   ignore_errors: yes
 
+- name: remove old cluster maintenance scripts
+  file:
+    path: "/usr/local/bin/{{ item }}"
+    state: absent
+  with_items:
+    - cluster-drain-node.sh
+  tags: install
+
 - name: deploy cluster maintenance scripts
   copy:
-    src: cluster-drain-node.sh
-    dest: /usr/local/bin/cluster-drain-node.sh
+    src: "{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
     mode: 0700
+  with_items:
+    - cluster-drain.sh
+    - cluster-unmove.sh
+    - cluster-list-vms.sh
   tags: install
 
 # TODO:
