@@ -2,8 +2,8 @@ www_use_ondrej: true
 www_disable_autoindex: true
 
 php_versions:
- - 8.3
-default_php_version: 8.3
+ - 8.4
+default_php_version: 8.4
 
 php_remove_versions:
  - 5.6
@@ -15,6 +15,7 @@ php_remove_versions:
  - 8.0
  - 8.1
  - 8.2
+ - 8.3
 
 # PHP configuration variables (php.ini)
 php_post_max_size: "64M"
