@@ -23,6 +23,13 @@ while getopts ":as" opt; do
 done
 shift $((OPTIND -1))
 
+# adjust timers when running simulation
+if [[ "$SIMULATE" == true ]]; then
+  echo "Running in simulation mode"
+  MIN_OBSERVE_TIME=1
+  WAIT_AFTER_MIGRATION=3
+fi
+
 # remainder is ignore host (defaults to hostname -s)
 if [[ ! -z "$1" ]]; then
     IGNORE_HOST="$1"
@@ -74,7 +81,8 @@ for VM in $( virsh list | grep running | awk '{print $2}'); do
     sleep 1
   else
     # request migration
-    crm res move "${VM}_vm" $NEXT_NODE > /dev/null
+	echo -n "Starting migration... "
+    crm res move "${VM}_vm" $NEXT_NODE > /dev/null 2>/dev/null
 
     # observe migration process
     for I in $( seq 1 $MAX_MIGRATE_TIME ); do
@@ -85,11 +93,10 @@ for VM in $( virsh list | grep running | awk '{print $2}'); do
       # stop waiting
       if [ $? -eq 1 ]; then
         echo " migrated!"
-        echo ""
         sleep $WAIT_AFTER_MIGRATION
         break
       fi
-      echo -n "status=$STATUS"
+	  echo -n "${STATUS:0:1}"
     done
 
     # if still running, migration failed
