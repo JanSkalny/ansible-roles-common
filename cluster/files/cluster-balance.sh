@@ -40,6 +40,7 @@ wait_for_healthy_cluster
 # balance VMs for each service group
 for GROUP in $( grep service_group /var/lib/virtual/conf/*.xml | cut -d '>' -f 2 | cut -d '<' -f 1 | sort | uniq ); do
 
+  echo ""
   echo "Solving service group $GROUP..."
 
   VM_CNT=0
@@ -59,9 +60,14 @@ for GROUP in $( grep service_group /var/lib/virtual/conf/*.xml | cut -d '>' -f 2
 
     echo "- $NAME ($VM) running on $ACTIVE_NODE"
     UNUSED_NODES=($( echo "${UNUSED_NODES[@]}" | tr ' ' '\n' | grep -v $ACTIVE_NODE) )
-  #XXX: this produces empty strings in array :/
+    #XXX: this produces empty strings in array :/
     #UNUSED_NODES=("${UNUSED_NODES[@]/$ACTIVE_NODE}")
   done
+
+  if [ ${#UNUSED_NODES[@]} -eq 0 ]; then
+    warn "No valid migrations tagrets. Ignored group $GROUP!"
+    continue
+  fi
 
   echo "Valid migration targets are:"
   for NODE in "${UNUSED_NODES[@]}"; do
@@ -120,7 +126,6 @@ for GROUP in $( grep service_group /var/lib/virtual/conf/*.xml | cut -d '>' -f 2
         echo -n " $i"
         sleep 1
       done
-      echo ""
     fi
 
     if [[ "$SIMULATE" == true ]]; then
@@ -140,7 +145,6 @@ for GROUP in $( grep service_group /var/lib/virtual/conf/*.xml | cut -d '>' -f 2
       wait_for_healthy_cluster
     fi
   done
-  echo ""
 done
 
 # make sure cluster is clean when we're done
