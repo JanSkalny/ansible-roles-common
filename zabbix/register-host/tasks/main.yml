@@ -3,9 +3,11 @@
     name: zabbix_template_definitions
     file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
   with_items: "{{ zabbix_templates }}"
+  tags: configure
 
 - set_fact:
     zabbix_linked_templates:  "{{ zabbix_template_definitions | json_query('*.template') | unique }}"
+  tags: configure
 
 #XXX: kedze niektore macra obsahuju nested jinju, je potrebne urobit merge cez iterativny lookup namiesto
 #zabbix_macros: "{{ vars | select('match', '^zabbix_macros__') | map('extract', vars) | flatten }}"
@@ -13,6 +15,7 @@
 - set_fact:
     zabbix_macros: "{{ zabbix_macros | default([]) + lookup('vars', item) }}"
   loop: "{{ vars | select('match', '^zabbix_macros__') }}"
+  tags: configure
 
 - debug: msg="zabbix_template_definitions={{ zabbix_template_definitions }}", verbosity=1
 - debug: msg="zabbix_linked_templates={{ zabbix_linked_templates }}", verbosity=1
@@ -32,6 +35,7 @@
   community.zabbix.zabbix_group:
     state: present
     host_groups: "{{ zabbix_groups }}"
+  tags: configure
 
 - name: add host to zabbix server
   vars:

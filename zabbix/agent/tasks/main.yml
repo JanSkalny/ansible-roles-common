@@ -88,6 +88,7 @@
     hash_behaviour: merge
     name: zabbix_template_definitions
     file: "{{ zabbix_templates_dir }}/{{ item }}.yaml"
+  tags: configure
   with_items: "{{ zabbix_templates }}"
 
 - name: deploy zabbix sudoers.d
@@ -97,6 +98,7 @@
     owner: "root"
     mode: 0640
   with_items: "{{ zabbix_templates }}"
+  tags: configure
   when: zabbix_template_definitions[item].sudoers | default(false)
 
 - name: deploy zabbix cron.d
@@ -106,6 +108,7 @@
     owner: "root"
     mode: 0640
   with_items: "{{ zabbix_templates }}"
+  tags: configure
   when: zabbix_template_definitions[item].crond | default(false)
 
 - name: deploy zabbix user parameters
@@ -116,6 +119,7 @@
     group: "zabbix"
     mode: 0640
   with_items: "{{ zabbix_templates }}"
+  tags: configure
   when: zabbix_template_definitions[item].params | default(false)
   notify: restart zabbix-agent
 
@@ -125,6 +129,7 @@
     dest: "/usr/local/bin/{{ item | basename }}"
     owner: "root"
     mode: 0755
+  tags: configure
   with_items: "{{ zabbix_template_definitions | json_query('* | [?scripts] .scripts') | flatten }}"
 
 - name: deploy zabbix script projects (python)
@@ -174,4 +179,11 @@
   notify: restart zabbix-agent
   when: inventory_hostname in groups.docker
 
-
+- name: disable sudo logging for zabbix
+  blockinfile:
+    path: /etc/pam.d/sudo
+    insertafter: "#%PAM-1.0"
+    block: |
+      account [success=1 default=ignore] pam_succeed_if.so user = zabbix quiet
+      session [success=1 default=ignore] pam_succeed_if.so user = zabbix quiet
+  tags: configure
