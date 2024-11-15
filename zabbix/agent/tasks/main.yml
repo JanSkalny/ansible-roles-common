@@ -180,10 +180,8 @@
   when: inventory_hostname in groups.docker
 
 - name: disable sudo logging for zabbix
-  blockinfile:
+  lineinfile:
     path: /etc/pam.d/sudo
-    insertafter: "#%PAM-1.0"
-    block: |
-      account [success=1 default=ignore] pam_succeed_if.so user = zabbix quiet
-      session [success=1 default=ignore] pam_succeed_if.so user = zabbix quiet
+    insertbefore: "@include common-auth"
+    line: session [success=1 default=ignore] pam_succeed_if.so ruser = zabbix quiet
   tags: configure
