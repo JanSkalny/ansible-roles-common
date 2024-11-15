@@ -1,15 +1,20 @@
 [submodule "zabbix/templates/zabbix-misp"]
 	path = zabbix/templates/zabbix-misp
 	url = https://github.com/JanSkalny/zabbix-misp.git
+	branch = master
 [submodule "zabbix/templates/zabbix-smartctl"]
 	path = zabbix/templates/zabbix-smartctl
 	url = https://github.com/JanSkalny/zabbix-smartctl.git
+	branch = master
 [submodule "zabbix/templates/zabbix-syslog-ng"]
 	path = zabbix/templates/zabbix-syslog-ng
 	url = https://github.com/JanSkalny/zabbix-syslog-ng.git
+	branch = master
 [submodule "zabbix/templates/zabbix-wireguard"]
 	path = zabbix/templates/zabbix-wireguard
 	url = https://github.com/JanSkalny/zabbix-wireguard.git
+	branch = master
 [submodule "zabbix/templates/zabbix-reverse-ssh"]
 	path = zabbix/templates/zabbix-reverse-ssh
 	url = https://github.com/JanSkalny/zabbix-reverse-ssh.git
+	branch = master
