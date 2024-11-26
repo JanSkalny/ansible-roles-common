@@ -113,5 +113,8 @@
   </devices>
   <metadata>
     <fqdn>{{ virtual.fqdn | default(virtual.name) }}</fqdn>
+{% if virtual.service_group | default(False) %}
+    <service_group>{{ virtual.service_group }}</service_group>
+{% endif %}
   </metadata>
 </domain>

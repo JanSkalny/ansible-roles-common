@@ -2,6 +2,7 @@
   package:
     name:
     - python3-libvirt
+    - python3-lxml
     - virtinst
     - unar
     - bridge-utils

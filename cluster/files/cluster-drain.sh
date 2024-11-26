@@ -7,27 +7,7 @@ MAX_MIGRATE_TIME=300
 AUTO_MIGRATE_TIME=5
 WAIT_AFTER_MIGRATION=10
 
-warn() {
-  echo "$*" 1>&2
-}
-
-fail() {
-  echo "$*" 1>&2
-  exit 1
-}
-
-check_status() {
-  CNT=$( crm status | grep -i "failed" | wc -l | awk '{print $1}' )
-  [ $CNT -ne 0 ] && echo -n "f" && return 1
-
-  CNT=$( crm status | grep "Migrating" | wc -l | awk '{print $1}' )
-  [ $CNT -ne 0 ] && echo -n "m" && return 1
-
-  CNT=$( crm status | grep "Monitoring" | wc -l | awk '{print $1}' )
-  [ $CNT -ne 0 ] && echo -n "o" && return 1
-
-  return 0
-}
+. /usr/local/bin/cluster-tools.sh
 
 IGNORE_HOST=$( hostname -s )
 ASK_FOR_CONFIRMATION=true
@@ -43,6 +23,13 @@ while getopts ":as" opt; do
 done
 shift $((OPTIND -1))
 
+# adjust timers when running simulation
+if [[ "$SIMULATE" == true ]]; then
+  echo "Running in simulation mode"
+  MIN_OBSERVE_TIME=1
+  WAIT_AFTER_MIGRATION=3
+fi
+
 # remainder is ignore host (defaults to hostname -s)
 if [[ ! -z "$1" ]]; then
     IGNORE_HOST="$1"
@@ -57,35 +44,15 @@ NODE_INDEX=0
 echo "Migration targets are ${NODES[@]}"
 
 for VM in $( virsh list | grep running | awk '{print $2}'); do
-  # observe cluster for at least 10 seconds and make sure everything is ok
-  echo -n "Checking cluster status..."
-  FAILS=$MIN_OBSERVE_TIME
-  ATTEMPTS=0
-  while [[ $FAILS -gt 0 ]]; do
-    ((ATTEMPTS++))
-    ((FAILS--))
-
-    sleep 1 
-    check_status
-    if [[ $? -eq 1 ]]; then
-      # failure resets count-down to 10
-      FAILS=$MIN_OBSERVE_TIME
-    else
-      echo -n "."
-    fi
-
-    # terminate after 300 seconds
-    [[ $ATTEMPTS -ge $MAX_OBSERVE_TIME ]] && fail " UNCLEAN!"
-  done
-  echo " OK"
+  # make sure cluster is healthy
+  wait_for_healthy_cluster
 
   # get VM name from config xml
   UUID=$(virsh dumpxml "$VM" | xmllint --xpath 'string(/domain/uuid/text())' -)
   [ -z "$UUID" ] && fail "$VM does not have uuid?"
   XML_FILE=$(grep -l "<name>$VM</name>" /var/lib/virtual/conf/*.xml)
   [ -f "$XML_FILE" ] || fail "$VM does not have XML file"
-  NAME=$(cat "$XML_FILE" | xmllint --xpath '/domain/metadata/fqdn/text()' - 2>/dev/null)
-  [ -z "$NAME" ] && fail "$VM does not have a fqdn defined in its metadata!"
+  NAME=$( cluster_vm_name_from_xml "$XML_FILE" )
 
   # check if VM is defined in corosync
   crm conf show | grep "${VM}_vm" > /dev/null
@@ -114,7 +81,8 @@ for VM in $( virsh list | grep running | awk '{print $2}'); do
     sleep 1
   else
     # request migration
-    crm res move "${VM}_vm" $NEXT_NODE > /dev/null
+	echo -n "Starting migration... "
+    crm res move "${VM}_vm" $NEXT_NODE > /dev/null 2>/dev/null
 
     # observe migration process
     for I in $( seq 1 $MAX_MIGRATE_TIME ); do
@@ -125,15 +93,14 @@ for VM in $( virsh list | grep running | awk '{print $2}'); do
       # stop waiting
       if [ $? -eq 1 ]; then
         echo " migrated!"
-        echo ""
         sleep $WAIT_AFTER_MIGRATION
         break
       fi
-      echo -n "${STATUS:0:1}"
+	  echo -n "${STATUS:0:1}"
     done
 
     # if still running, migration failed
     virsh list | grep $UUID > /dev/null
-    [ $? -eq 1 ] || echo " failed!"done
+    [ $? -eq 1 ] || echo " failed!"
   fi
 done
