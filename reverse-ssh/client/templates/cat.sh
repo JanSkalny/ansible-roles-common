@@ -6,6 +6,7 @@ sleep 5
 
 ssh -tt \
 	-o BatchMode=yes \
+  -o ExitOnForwardFailure=yes \
 	-o ServerAliveInterval=15 \
 	-o ServerAliveCountMax=3 \
 	-o SetupTimeout=30 \
