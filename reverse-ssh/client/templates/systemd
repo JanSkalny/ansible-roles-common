@@ -5,6 +5,7 @@ After=network.target
 [Service]
 Type=simple
 Restart=always
+RestartSec=60
 User={{ reverse_ssh_client_user }}
 Group={{ reverse_ssh_client_user }}
 ExecStart=/home/{{ reverse_ssh_client_user }}/cat.sh
