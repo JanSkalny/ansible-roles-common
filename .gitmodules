@@ -18,3 +18,6 @@
 	path = zabbix/templates/zabbix-reverse-ssh
 	url = https://github.com/JanSkalny/zabbix-reverse-ssh.git
 	branch = master
+[submodule "zabbix/templates/zabbix-needrestart"]
+	path = zabbix/templates/zabbix-needrestart
+	url = https://github.com/JanSkalny/zabbix-needrestart.git
