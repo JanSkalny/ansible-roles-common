@@ -34,11 +34,13 @@
     value: "http_proxy=http://{{proxy_host}}:{{proxy_port}} https_proxy=http://{{proxy_host}}:{{proxy_port}}"
   tags: configure
   when: proxy_host is defined and proxy_port is defined
+  register: certbot_systemd_override
 
 - name: make systemd reread configs
   ansible.builtin.systemd_service:
     daemon_reload: true
   tags: configure
+  when: certbot_systemd_override.changed
 
 - name: configure certbot
   template:
