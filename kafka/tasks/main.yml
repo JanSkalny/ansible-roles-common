@@ -1,0 +1,14 @@
+- file:
+    path: /opt/kafka-docker/
+    state: directory
+
+- name: generate docker-compose
+  template:
+    src: docker-compose.yml
+    dest: /opt/kafka-docker/docker-compose.yml
+
+- name: run docker compose
+  shell: 
+    docker compose up -d && sleep 120
+  args:
+    chdir: /opt/kafka-docker/
