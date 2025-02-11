@@ -30,7 +30,7 @@
       dest: decoders/local_decoder.xml
     - src: local_rules.xml
       dest: rules/local_rules.xml
-    - src: ossec.conf
+    - src: "ossec.conf_{{ wazuh_version }}"
       dest: ossec.conf
 
 - name: test configuration files
@@ -60,7 +60,7 @@
       dest: decoders/local_decoder.xml
     - src: local_rules.xml
       dest: rules/local_rules.xml
-    - src: ossec.conf
+    - src: "ossec.conf_{{ wazuh_version }}"
       dest: ossec.conf
   notify: reconfigure wazuh manager
 
