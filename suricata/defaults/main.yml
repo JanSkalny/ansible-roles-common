@@ -13,7 +13,7 @@ suricata_tls_log: False
 
 # compress/erase suricata EVE logs after ... days
 suricata_eve_compress_after: 7
-suricata_eve_erase_after: 90
+suricata_eve_erase_after: 180
 
 suricata_eve_rotate_interval: "1h"
 suricata_default_packet_size: 1536

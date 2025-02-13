@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # avoid race conditions
-flock -n /tmp/suricata-log.lock || exit 1
+exec 200>/tmp/suricata-log.lock
+flock -n 200 || exit 1
 
 # compress json files after than 7 days
 find /var/log/suricata/ -type f -name "*.json" -mtime +{{ suricata_eve_compress_after | default(7) }} -exec gzip {} \;
