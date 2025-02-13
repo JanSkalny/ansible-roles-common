@@ -116,6 +116,10 @@ echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects
 echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route
 echo 0 > /proc/sys/net/ipv6/conf/all/accept_source_route
 
+{% for iface in firewall_no_martians_ifaces | default([]) %}
+echo 0 > /proc/sys/net/ipv4/conf/{{ iface }}/log_martians
+{% endfor %}
+
 for PROTO in 4 6; do
   IT=$( eval echo \$IT$PROTO )
   X=$( [ $PROTO -eq 6 ] && echo "6" )
