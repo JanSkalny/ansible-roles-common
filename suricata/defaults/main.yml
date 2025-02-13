@@ -2,13 +2,18 @@
 suricata: "{{ suricata_small }}"
 
 # enable or disable output formats
-suricata_eve: "yes"
-suricata_syslog: "no"
-suricata_fast: "no"
+suricata_eve: True
+suricata_syslog: False
+suricata_syslog_eve: True
+suricata_fast: False
 
 # dnslog and tlslog files
 suricata_dns_log: False
 suricata_tls_log: False
+
+# compress/erase suricata EVE logs after ... days
+suricata_eve_compress_after: 7
+suricata_eve_erase_after: 90
 
 suricata_eve_rotate_interval: "1h"
 suricata_default_packet_size: 1536
