@@ -21,6 +21,12 @@
   with_items:
     - src: DefaultJob.conf
       dest: jobdefs/DefaultJob.conf
+    - src: Full.conf
+      dest: pool/Full.conf
+    - src: Differential.conf
+      dest: pool/Differential.conf
+    - src: Incremental.conf
+      dest: pool/Incremental.conf
   notify:
     - restart bareos-director
 

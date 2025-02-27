@@ -1,9 +1,17 @@
 #XXX: define in group_vars/all/, since variable is used on dir and fds
 # bareos_secret: "fooBarBaz"
 
-bareos_client_main_includes:
+bareos_client_default_includes:
   - /etc
   - /home
   - /root
-  - /var
-  - /opt
+  - /var/backups
+
+bareos_client_default_excludes:
+  - /proc
+  - /tmp
+  - /.journal
+  - /.fsck
+  - /var/run
+  - /run
+  - /sys
