@@ -1,12 +1,28 @@
- - name: pull minio-docker 
+ - name: prepare minio-docker directory
    file:
      path: /opt/minio-docker
      state: directory
 
- - name: generate docker-compose 
+ - name: get current minio version
+   shell: 
+     cmd: docker compose images | grep minio | awk '{print $3}'
+     chdir: "/opt/minio-docker"
+   check_mode: no
+   failed_when: false
+   changed_when: false
+   register: res
+
+ - set_fact:
+     minio_running_version: "{{ res.stdout_lines[0] | default('') }}"
+
+ - name: don't run upgrade unless minio_upgrade is set to 1
+   fail:
+     msg: "minio version mismatch and minio_upgrade is not set to 1"
+   when: minio_running_version != "" and minio_running_version != minio_version and minio_upgrade != 1
+
+ - name: generate docker-compose (single node cluster)
    copy:
      content: |
-       version: '3.7'
        services:
          minio:
            image: quay.io/minio/minio:{{ minio_version }}
@@ -31,10 +47,21 @@
        volumes:
          data:
      dest: /opt/minio-docker/docker-compose.yml
+   register: res
 
- - name: run docker compose
+ - debug: 
+     msg: will docker compose down
+   when: minio_running_version != "" and res.changed
+
+ - name: stop minio if running
    shell: 
-     docker compose up -d && sleep 30
-   args:
+     cmd: docker compose down
      chdir: /opt/minio-docker/
+   when: res.changed and minio_running_version != ""
+
+ - name: start minio
+   shell: 
+     cmd: docker compose up -d && sleep 30
+     chdir: /opt/minio-docker/
+   when: res.changed
 

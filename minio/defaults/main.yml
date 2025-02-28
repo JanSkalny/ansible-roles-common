@@ -1,2 +1,5 @@
 #XXX: override to use specific version
 minio_version: "latest"
+
+# temporarily change to 1, if you really want to perform upgrade
+minio_upgrade: 0
