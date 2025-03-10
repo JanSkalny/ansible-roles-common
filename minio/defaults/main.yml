@@ -3,3 +3,17 @@ minio_version: "latest"
 
 # temporarily change to 1, if you really want to perform upgrade
 minio_upgrade: 0
+
+minio_use_tls: yes
+
+# stand-alone installation is default
+#minio_cluster: "minio-{1..4}.example.org"
+
+# when using cluster, minio_container_name must be part of minio_cluster 
+# either leave inventory_hostname and write matching minio_cluster pattern, or
+# use | split(.) | first and rely on dns_search
+minio_container_name: "{{ inventory_hostname }}"
+
+
+minio_api_port: 9000
+minio_console_port: 443

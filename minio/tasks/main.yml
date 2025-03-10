@@ -20,32 +20,9 @@
      msg: "minio version mismatch and minio_upgrade is not set to 1"
    when: minio_running_version != "" and minio_running_version != minio_version and minio_upgrade != 1
 
- - name: generate docker-compose (single node cluster)
-   copy:
-     content: |
-       services:
-         minio:
-           image: quay.io/minio/minio:{{ minio_version }}
-           command: server --console-address ":9001" /data
-           ports:
-             - "8443:9000"
-             - "443:9001"
-           volumes:
-             - data:/data
-             - ./certs:/root/.minio/certs
-           healthcheck:
-             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-             interval: 30s
-             timeout: 20s
-             retries: 3
-           restart: unless-stopped
-           environment:
-             MINIO_ROOT_USER: "{{ minio_admin_user }}"
-             MINIO_ROOT_PASSWORD: "{{ minio_admin_password }}"
-             #VIRTUAL_HOST: "{{ inventory_hostname }}"
-             #VIRTUAL_PORT: 8080
-       volumes:
-         data:
+ - name: generate docker-compose
+   template:
+     src: docker-compose.yml
      dest: /opt/minio-docker/docker-compose.yml
    register: res
 
@@ -61,7 +38,7 @@
 
  - name: start minio
    shell: 
-     cmd: docker compose up -d && sleep 30
+     cmd: docker compose up -d && sleep 5
      chdir: /opt/minio-docker/
    when: res.changed
 
