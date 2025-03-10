@@ -1,8 +1,8 @@
 - name: install cluster sw
-  apt: 
-    name: 
-    - pacemaker 
-    - corosync 
+  apt:
+    name:
+    - pacemaker
+    - corosync
     - crmsh
     - pcs
     - fence-agents
@@ -12,14 +12,14 @@
   tags: install
 
 - name: install additional cluster sw (jammy)
-  apt: 
-    name: 
+  apt:
+    name:
     - resource-agents-extra
   when: ansible_distribution_major_version|int >= 22
   tags: install
 
 - name: prepare directories
-  file: 
+  file:
     path: "{{item}}"
     state: directory
     owner: root
@@ -38,7 +38,7 @@
 
 - name: deploy corosync authkey
   copy:
-    content: "{{ cluster.authkey|b64decode }}" 
+    content: "{{ cluster.authkey|b64decode }}"
     dest: /etc/corosync/authkey
     mode: 0400
     owner: root
@@ -90,7 +90,9 @@
     - cluster-list-vms.sh
     - cluster-balance.sh
     - cluster-tools.sh
-  tags: install
+  tags:
+  - install
+  - cluster-tools
 
 # TODO:
 # configure drbd / ocfs
