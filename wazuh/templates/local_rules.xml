@@ -1,3 +1,7 @@
 <!-- ansible managed start -->
+{% if wazuh_local_rules_file is defined %}
+{{ lookup('ansible.builtin.file', '{{ root_dir }}host_vars/{{ inventory_hostname }}/{{ wazuh_local_rules_file }}') }}
+{% else %}
 {{ wazuh_local_rules | default(wazuh_default_local_rules, true)}}
+{% endif %}
 <!-- ansible managed end   -->
