@@ -1,0 +1,52 @@
+- name: https transport for apt
+  apt:
+    name: apt-transport-https
+    state: present
+  tags: install
+
+- name: add fluentbit apt key
+  apt_key:
+    url: "https://packages.fluentbit.io/fluentbit.key"
+    keyring: /etc/apt/trusted.gpg.d/fluentbit.gpg
+    state: present
+  tags: install
+
+- name: add fluentbit repository
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/fluentbit.gpg] https://packages.fluentbit.io/ubuntu/{{ ansible_distribution_release }} {{ ansible_distribution_release }} main"
+    filename: "fluentbit"
+    state: present
+    update_cache: yes
+  tags: install
+
+- name: install fluentbit
+  apt:
+    name: fluent-bit
+    state: present
+  tags: install
+
+
+- name: prepare templated systemd service
+  copy:
+    dest: /etc/systemd/system/fluent-bit@.service
+    content: |
+      [Unit]
+      Description=Fluent Bit Instance - %I
+      Documentation=https://docs.fluentbit.io/manual/
+      Requires=network.target
+      After=network.target
+
+      [Service]
+      Type=simple
+      EnvironmentFile=-/etc/sysconfig/fluent-bit
+      EnvironmentFile=-/etc/default/fluent-bit
+      ExecStart=/opt/fluent-bit/bin/fluent-bit -c /etc/fluent-bit/%i/fluent-bit.yaml
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload systemd
+
