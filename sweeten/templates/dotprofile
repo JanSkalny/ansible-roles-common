@@ -8,3 +8,5 @@ PS1='\[\e[1;17m\]\u@{{ custom_ps1_hostname }}\[\e[0m\] \W \$ '
 {% else %}
 PS1='\[\e[1;17m\]\u@\h\[\e[0m\] \W \$ '
 {% endif %}
+
+test -f ~/.bashrc && source ~/.bashrc
