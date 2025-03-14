@@ -1,0 +1,7 @@
+destination d_wazuh_listener {
+  network(
+    "127.0.0.1"
+    port({{ wazuh_syslog_listener_port | default(wazuh_syslog_listener_default_port) }})
+    transport(tcp)
+  );
+}

@@ -17,3 +17,8 @@
 - name: restart entire wazuh
   debug:
     msg: "FIXME: restart entire wazuh"
+
+- name: reload syslog-ng
+  ansible.builtin.systemd_service:
+    name: syslog-ng
+    state: reloaded
