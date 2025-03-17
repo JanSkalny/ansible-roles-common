@@ -4,4 +4,4 @@ destination d_wazuh_listener {
     port({{ wazuh_syslog_listener_port | default(wazuh_syslog_listener_default_port) }})
     transport(tcp)
   );
-}
+};
