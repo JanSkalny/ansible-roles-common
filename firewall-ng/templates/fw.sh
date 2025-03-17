@@ -22,13 +22,13 @@
 {% endif %}
 {% endfor %}
 {% endif %}
-{{ results | flatten | join(",") }}
+{{ results | sort | flatten | join(",") }}
 {%- endmacro -%}
 
 {%- macro normalize_ports(rule, proto) -%}
 {%- if 'proto' in rule -%}
 {%- if proto in rule.proto -%}
-{{ '' if not rule.proto[proto] else ( ( (rule.proto[proto]).replace(' ','').split(',') if rule.proto[proto] is string else ( [rule.proto[proto]] if rule.proto[proto] is number else rule.proto[proto] ) ) | join(",")) }}
+{{ '' if not rule.proto[proto] else ( ( (rule.proto[proto]).replace(' ','').split(',') if rule.proto[proto] is string else ( [rule.proto[proto]] if rule.proto[proto] is number else rule.proto[proto] ) ) | sort | join(",")) }}
 {%- endif -%}
 {%- endif -%}
 {%- endmacro -%}
@@ -42,7 +42,7 @@
 {%- for dest_addr in dest_addrs -%}
 {% if 'proto' in rule %}
 {% for rule_proto, rule_ports in rule.proto.items() %}
-{% set rule_ports = normalize_ports(rule, rule_proto).split(',') | default([]) | difference(['']) %}
+{% set rule_ports = normalize_ports(rule, rule_proto).split(',') | default([]) | difference(['']) | sort %}
 {% set src = " -s "+src_addr if src_addr|length else "" %}
 {% set dest = " -d "+dest_addr if dest_addr|length else "" %}
 {% for port in rule_ports %}
