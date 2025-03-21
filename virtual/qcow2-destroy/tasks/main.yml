@@ -1,0 +1,4 @@
+- name: remove qcow2 file
+  file:
+    path: "{{ virtual.disk_blk | default(virtual_default_disk_blk) }}"
+    state: absent
