@@ -1,1 +1,2 @@
-vrrp_global_secret: "change_me"
+#vrrp_global_secret: "changeme"
+vrrp_default_priority: 100
