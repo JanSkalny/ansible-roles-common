@@ -72,7 +72,6 @@
   shell: cp "{{ virtual_image }}" "{{ virtual.disk_blk | default(virtual_default_disk_blk) }}" && qemu-img resize "{{ virtual.disk_blk | default(virtual_default_disk_blk) }}" {{ virtual.disk_size }}G
   when: virtual_use_qcow2 | default(False)
 
-
 - name: create vm using virt-install
   shell: |
     virt-install \
