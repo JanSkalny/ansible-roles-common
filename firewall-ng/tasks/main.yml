@@ -3,6 +3,7 @@
   package:
     name: 
       - iptables
+      - ipset
     state: present
   when: ansible_distribution_file_variety == 'Debian'
 
