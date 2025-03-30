@@ -74,4 +74,7 @@ xpack.security.authc.realms.ldap.ldap1:
     role_mapping: "role_mapping.yml"
   unmapped_groups_as_roles: false
 {% endif %}
+{% else %}
+xpack.security.enabled: false
+xpack.security.transport.ssl.enabled: false
 {% endif %}
