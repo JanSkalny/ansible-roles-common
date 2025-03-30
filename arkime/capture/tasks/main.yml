@@ -1,0 +1,57 @@
+- name: check if arkime-capture is running
+  community.docker.docker_container_info:
+    name: "arkime-capture"
+  register: arkime_capture_container
+  check_mode: no
+
+- set_fact:
+    arkime_capture_is_running: "{{ arkime_capture_container.container.State.Running | default(false) }}"
+
+- name: prepare dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /opt/arkime-capture
+    - /opt/arkime-capture/raw
+
+- name: generate docker-compose
+  copy:
+    content: |
+      name: arkime
+      services:
+        capture:
+          container_name: "arkime-capture"
+          image: ghcr.io/arkime/arkime/arkime:{{ arkime_version }}
+          network_mode: "host"
+          #privileged: true
+          #cap_add:
+          #  - NET_ADMIN
+          #  - NET_RAW
+          ulimits:
+            memlock:
+              soft: -1
+              hard: -1
+          command: /opt/arkime/bin/docker.sh capture --update-geo
+          environment:
+           - ARKIME__elasticsearch={{ arkime_elastic_url }}
+           - ARKIME__serverSecret={{ arkime_server_secret }}
+           - ARKIME__interface={{ arkime_capture_interfaces | join(";") }}
+          volumes:
+           - /opt/arkime-capture/raw:/opt/arkime/raw
+          restart: unless-stopped
+    dest: /opt/arkime-capture/docker-compose.yml
+  register: arkime_capture_compose
+
+- name: run docker compose down, if compose file changed and already running
+  shell: docker compose down
+  args:
+    chdir: /opt/arkime-capture
+  when: arkime_capture_is_running and arkime_capture_compose.changed
+
+- name: run docker compose up
+  shell: docker compose up -d && sleep 10
+  args:
+    chdir: /opt/arkime-capture
+  when: arkime_capture_compose.changed or not arkime_capture_is_running
+
