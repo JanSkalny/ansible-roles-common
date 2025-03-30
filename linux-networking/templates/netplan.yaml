@@ -8,13 +8,21 @@
 {% if 'bond_master' in iface %}
       optional: true
 {% endif %}
-{% if 'address' in iface and iface.address != 'dhcp' %}
-      link-local: []
-      addresses: {{ [ iface.address ]}}
-{% elif 'address' in iface and iface.address == 'dhcp' %}
-      link-local: []
+
+{% set addr_list = [] %}
+{% for a in [iface.get('address'), iface.get('address6')] if a and a != 'dhcp' %}
+{% set _ = addr_list.append(a) %}
+{% endfor %}
+{% if addr_list %}
+      addresses: {{ addr_list }}
+{% endif %}
+{% if 'address' in iface and iface.address == 'dhcp' %}
       dhcp4: yes
 {% endif %}
+{% if 'address6' in iface and iface.address6 == 'dhcp' %}
+      dhcp6: yes
+{% endif %}
+
 {%if 'dns' in iface %}
       nameservers:
         addresses: {{ iface.dns }}
@@ -25,11 +33,15 @@
 {% if 'mtu' in iface %}
       mtu: {{ iface.mtu }}
 {% endif %}
-{% if 'routes' in iface or 'gateway' in iface %}
+{% if 'routes' in iface or 'gateway' in iface or 'gateway6' in iface %}
       routes:
 {% if 'gateway' in iface %}
        - to: 0.0.0.0/0
          via: {{ iface.gateway }}
+{% endif %}
+{% if 'gateway6' in iface %}
+       - to: ::/0
+         via: {{ iface.gateway6 }}
 {% endif %}
 {% if 'routes' in iface %}
 {% for route in iface.routes %}
