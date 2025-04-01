@@ -1,0 +1,5 @@
+fluentbit:
+  template: "fluentbit by Zabbix agent"
+  params: "zabbix-fluentbit/fluentbit.conf"
+  scripts:
+    - "zabbix-fluentbit/zabbix_fluentbit.sh"

@@ -1,0 +1,174 @@
+zabbix_export:
+  version: '6.4'
+  template_groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: eb469d4ca1e94406a5de4ac0a66cfe12
+      template: 'fluentbit by Zabbix agent'
+      name: 'fluentbit by Zabbix agent'
+      groups:
+        - name: Templates
+      discovery_rules:
+        - uuid: 46fb0b2386ba483c8dd006f9e5cc275b
+          name: 'fluentbit inputs'
+          key: fluentbit.discover-inputs
+          lifetime: 1h
+          item_prototypes:
+            - uuid: d60c1c2b87fb46dfb9771f168f4fa263
+              name: 'fluentbit {#INSTANCE} input {#NAME} bytes'
+              type: DEPENDENT
+              key: 'fluentbit.input-bytes[{#INSTANCE},{#NAME}]'
+              delay: '0'
+              units: Bytes
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.input["{#NAME}"].bytes'
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'fluentbit.instance-metrics[{#INSTANCE}]'
+            - uuid: 05ac9d980448404299c81c5c16c82257
+              name: 'fluentbit {#INSTANCE} input {#NAME} records'
+              type: DEPENDENT
+              key: 'fluentbit.input-records[{#INSTANCE},{#NAME}]'
+              delay: '0'
+              units: records
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.input["{#NAME}"].records'
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'fluentbit.instance-metrics[{#INSTANCE}]'
+            - uuid: 0d25621143824634b49411faa202a4d8
+              name: 'fluentbit {#INSTANCE} metrics'
+              key: 'fluentbit.instance-metrics[{#INSTANCE}]'
+              history: 14d
+              value_type: TEXT
+              trends: '0'
+        - uuid: c952a1429fb9475d86e841501aeb2a89
+          name: 'fluentbit instances'
+          key: fluentbit.discover-instances
+          lifetime: 1h
+        - uuid: 8894e71ab1fc4921b3133318aaec4b5d
+          name: 'fluentbit outputs'
+          key: fluentbit.discover-outputs
+          lifetime: 1h
+          item_prototypes:
+            - uuid: 4cb8c62aa7e045b199e45a11a5035c9d
+              name: 'fluentbit {#INSTANCE} metrics (outputs)'
+              key: 'fluentbit.instance-metrics-outputs[{#INSTANCE}]'
+              history: 14d
+              value_type: TEXT
+              trends: '0'
+              description: 'copy of fluentbit.instance-metrics, since dependent items can''t be used across LLD rules, but still have to be unique :/'
+            - uuid: ce4344ef5ec34b52b441ccc038b25201
+              name: 'fluentbit {#INSTANCE} output {#NAME} proc_bytes'
+              type: DEPENDENT
+              key: 'fluentbit.output-bytes[{#INSTANCE},{#NAME}]'
+              delay: '0'
+              units: bytes
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.output["{#NAME}"].proc_bytes'
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'fluentbit.instance-metrics-outputs[{#INSTANCE}]'
+            - uuid: ea14c039180c4dc9a1348b9fbb69b2e3
+              name: 'fluentbit {#INSTANCE} output {#NAME} dropped_records'
+              type: DEPENDENT
+              key: 'fluentbit.output-dropped-records[{#INSTANCE},{#NAME}]'
+              delay: '0'
+              units: records
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.output["{#NAME}"].dropped_records'
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'fluentbit.instance-metrics-outputs[{#INSTANCE}]'
+            - uuid: fab145a24f5742b2ba951dc4e4d80e45
+              name: 'fluentbit {#INSTANCE} output {#NAME} errors'
+              type: DEPENDENT
+              key: 'fluentbit.output-errors[{#INSTANCE},{#NAME}]'
+              delay: '0'
+              units: records
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.output["{#NAME}"].errors'
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'fluentbit.instance-metrics-outputs[{#INSTANCE}]'
+            - uuid: 11df8a41fd664bc082e19934ec38ce0b
+              name: 'fluentbit {#INSTANCE} output {#NAME} proc_records'
+              type: DEPENDENT
+              key: 'fluentbit.output-records[{#INSTANCE},{#NAME}]'
+              delay: '0'
+              units: records
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.output["{#NAME}"].proc_records'
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'fluentbit.instance-metrics-outputs[{#INSTANCE}]'
+            - uuid: 482d0ce1419e43edb0498244cd44de3c
+              name: 'fluentbit {#INSTANCE} output {#NAME} retried_records'
+              type: DEPENDENT
+              key: 'fluentbit.output-retried-records[{#INSTANCE},{#NAME}]'
+              delay: '0'
+              units: records
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.output["{#NAME}"].retried_records'
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'fluentbit.instance-metrics-outputs[{#INSTANCE}]'
+            - uuid: a09271a929704d5c87040127f3d2ea2f
+              name: 'fluentbit {#INSTANCE} output {#NAME} retries_failed'
+              type: DEPENDENT
+              key: 'fluentbit.output-retries-failed[{#INSTANCE},{#NAME}]'
+              delay: '0'
+              units: records
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.output["{#NAME}"].retries_failed'
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'fluentbit.instance-metrics-outputs[{#INSTANCE}]'
+            - uuid: 5887320720194b27a825c1a33c78a9ff
+              name: 'fluentbit {#INSTANCE} output {#NAME} retries'
+              type: DEPENDENT
+              key: 'fluentbit.output-retries[{#INSTANCE},{#NAME}]'
+              delay: '0'
+              units: records
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.output["{#NAME}"].retries'
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'fluentbit.instance-metrics-outputs[{#INSTANCE}]'
