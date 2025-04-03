@@ -64,3 +64,18 @@
       dest: ossec.conf
   notify: reconfigure wazuh manager
 
+
+- name: copy wazuh_manager.conf to git repo
+  ansible.builtin.template:
+    src: "ossec.conf_{{ wazuh_version }}"
+    dest: "/opt/wazuh-docker/single-node/config/wazuh_cluster/wazuh_manager.conf"
+    owner: "root"
+    group: "root"
+  notify:
+    - reconfigure wazuh manager
+  register: manager_conf
+
+- name: msg
+  ansible.builtin.debug:
+    msg: restart compose manually
+  when: manager_conf.changed
