@@ -50,7 +50,7 @@ TCPKeepAlive yes
 UseDNS no
 ClientAliveInterval 300
 
-#MaxStartups 10:30:60
+MaxStartups {{ sshd_max_startups | default("10:30:100") }}
 MaxSessions {{ sshd_max_sessions | default(20) }}
  
 Banner none

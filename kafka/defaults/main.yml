@@ -1,0 +1,14 @@
+kafka_version: "3.8.1"
+
+kafka_node_name: "{{ inventory_hostname }}"
+
+kafka_nodes: [ "{{ kafka_node_name }}" ]
+kafka_controller_nodes: [ "{{ kafka_node_name }}" ]
+
+kafka_node_id: "{{ kafka_nodes.index(kafka_node_name) + 1 }}"
+
+kafka_node_roles:
+  - broker
+  - controller
+
+

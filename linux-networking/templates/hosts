@@ -5,7 +5,9 @@
 {% else %}
 127.0.0.1 localhost 
 {% if inventory_hostname not in etc_hosts.keys() %}
+{% if ansible_default_ipv4.address | default(False) %}
 {{ ansible_default_ipv4.address }} {{ inventory_hostname }}
+{% endif %}
 {% endif %}
 {% endif %}
 
