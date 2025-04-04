@@ -12,6 +12,16 @@ wazuh_vuln_detectors: []
 #XXX: in $2b$12$salt format
 wazuh_salt: "CHANGEME"
 
+# our default ports overriding the upstream defaults still, because there
+# usually is syslog-ng listening on 514, which means it would collide with the
+# upstream defaults of also listening on 514.
+wazuh_default_ports:
+  - "1514:1514"
+  - "1515:1515"
+  - "55000:55000"
+
+wazuh_syslog_listener_default_port: 5144
+
 # default technical accounts have passwords based on wazuh_secret
 # feel free to override wazuh_admin_password
 wazuh_admin_password: "{{ ( 'indexer' + wazuh_secret + inventory_hostname ) | hash('sha1') }}"

@@ -109,12 +109,17 @@ ipset create {{ firewall_list.name }} hash:ip {{ 'timeout '+(firewall_list.ttl|s
 echo {{ firewall6_ip_forward | default(0) | int }} > /proc/sys/net/ipv6/conf/all/forwarding
 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
 echo {{ firewall_rp_filter | default(1) | int }} > /proc/sys/net/ipv4/conf/all/rp_filter
-echo {{ firewall_log_martians | default(1) | int }} > /proc/sys/net/ipv4/conf/all/log_martians
+echo 0 > /proc/sys/net/ipv4/conf/all/log_martians
+echo {{ firewall_log_martians | default(1) | int }} > /proc/sys/net/ipv4/conf/default/log_martians
 echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
 echo 1 > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
 echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects
 echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route
 echo 0 > /proc/sys/net/ipv6/conf/all/accept_source_route
+
+{% for iface in firewall_no_martians_ifaces | default([]) %}
+echo 0 > /proc/sys/net/ipv4/conf/{{ iface }}/log_martians
+{% endfor %}
 
 for PROTO in 4 6; do
   IT=$( eval echo \$IT$PROTO )

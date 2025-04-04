@@ -26,6 +26,8 @@
     version: "{{ wazuh_version }}"
   when: git_repo.failed or git_repo.stdout != wazuh_version 
 
+- include_tasks: syslog_listener.yml
+
 ## configure wazuh
 - include_tasks: users.yml
 

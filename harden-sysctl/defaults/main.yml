@@ -16,7 +16,7 @@ sysctl_config:
     net.ipv4.conf.all.accept_source_route: 0
     net.ipv4.conf.all.accept_redirects: 0
     net.ipv4.conf.all.secure_redirects: 0
-    net.ipv4.conf.all.log_martians: "{{ firewall_log_martians | default(1) }}"
+    net.ipv4.conf.all.log_martians: "0"
 
     net.ipv4.conf.default.rp_filter: "{{ firewall_rp_filter | default(1) | int }}"
     net.ipv4.conf.default.send_redirects: 0
