@@ -19,7 +19,7 @@
     path: /etc/systemd/system/certbot.service.d
     state: directory
   tags: configure
-  when: proxy_host is defined and proxy_port is defined
+  when: proxy_host is defined and proxy_host and proxy_port is defined
 
 - name: set certbot's proxy values
   community.general.ini_file:
@@ -33,7 +33,7 @@
     option: Environment
     value: "http_proxy=http://{{proxy_host}}:{{proxy_port}} https_proxy=http://{{proxy_host}}:{{proxy_port}}"
   tags: configure
-  when: proxy_host is defined and proxy_port is defined
+  when: proxy_host is defined and proxy_host and proxy_port is defined
   register: certbot_systemd_override
 
 - name: make systemd reread configs
