@@ -1,0 +1,235 @@
+zabbix_export:
+  version: '6.4'
+  template_groups:
+    - uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
+      name: Templates/Applications
+  templates:
+    - uuid: c0f130bcc7684c088bdb7e1ff8fe520f
+      template: 'Suricata by Zabbix agent'
+      name: 'Suricata by Zabbix agent'
+      groups:
+        - name: Templates/Applications
+      items:
+        - uuid: 618f78d1da684455add5b9cf4a2e1aa6
+          name: 'Suricata proc count'
+          key: 'proc.num[suricata]'
+          tags:
+            - tag: Application
+              value: Suricata
+          triggers:
+            - uuid: 4979885f247442f3b87a21a6e012c80a
+              expression: 'last(/Suricata by Zabbix agent/proc.num[suricata])=0'
+              name: 'Suricata is down (proc count is zero)'
+              priority: HIGH
+        - uuid: 5a105f280608468abc494e9f984ab872
+          name: 'Suricata capture kernel_drops'
+          key: 'suricata.stats[capture.kernel_drops]'
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: 393c654db9f94dd8a143198416d5f484
+          name: 'Suricata capture kernel_packets'
+          key: 'suricata.stats[capture.kernel_packets]'
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: 481c11d9b9384abeb5f1ee58d921c7cd
+          name: 'Suricata memuse flow'
+          key: 'suricata.stats[flow.memuse]'
+          units: B
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: 081c3527186e44d5849a88e17f516ac9
+          name: 'Suricata memuse ftp'
+          key: 'suricata.stats[ftp.memuse]'
+          units: B
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: c7962e7c995c46bba88aa873d1b97f03
+          name: 'Suricata memuse http'
+          key: 'suricata.stats[http.memuse]'
+          units: B
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: 065133048cc54ecaa828ac6d82b36175
+          name: 'Suricata memuse tcp'
+          key: 'suricata.stats[tcp.memuse]'
+          units: B
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: e1bb18770ba84f8d967a47630fac0aaa
+          name: 'Suricata memuse tcp.reassembly'
+          key: 'suricata.stats[tcp.reassembly_memuse]'
+          units: B
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: 7ad38c27b52b4988ae88790b60641630
+          name: 'Suricata systemd service'
+          key: 'systemd.unit.info[suricata.service]'
+          value_type: TEXT
+          trends: '0'
+          tags:
+            - tag: Application
+              value: Suricata
+          triggers:
+            - uuid: 25d8abfe4f8b4bbe9682f4587221ccda
+              expression: 'last(/Suricata by Zabbix agent/systemd.unit.info[suricata.service])<>"active"'
+              name: 'Suricata is down'
+              priority: HIGH
+        - uuid: 4321644509c44d2babcf902abc57d7a4
+          name: 'vfs.file.time[/var/lib/suricata/rules/suricata.rules,modify]'
+          key: 'vfs.file.time[/var/lib/suricata/rules/suricata.rules,modify]'
+          delay: 1h
+          history: 7d
+          trends: 30d
+          tags:
+            - tag: Application
+              value: Suricata
+          triggers:
+            - uuid: 74e108fb576b46719b87548145760b22
+              expression: 'fuzzytime(/Suricata by Zabbix agent/vfs.file.time[/var/lib/suricata/rules/suricata.rules,modify],14d)=0'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'fuzzytime(/Suricata by Zabbix agent/vfs.file.time[/var/lib/suricata/rules/suricata.rules,modify],14d)<>0'
+              name: 'Suricata rules update time'
+              priority: WARNING
+              description: 'Testujem ci su aktualizovane ruly na suricate. Musia byt aktualizovane do 14 dni.'
+              manual_close: 'YES'
+      discovery_rules:
+        - uuid: 7b8f20021539441dac1d4e538d6df434
+          name: 'Suricata App protocols'
+          key: suricata.discover-apps
+          delay: 30m
+          item_prototypes:
+            - uuid: 46024f1009254593ab0a51dc6527c0b9
+              name: 'Suricata app {#APP}'
+              key: 'suricata.stats[app_layer.flow.{#APP}]'
+              units: pps
+              preprocessing:
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              tags:
+                - tag: Application
+                  value: Suricata
+      dashboards:
+        - uuid: 0e55c40f54444cb59f33ef49d6a7e7fd
+          name: Suricata
+          pages:
+            - widgets:
+                - type: graphprototype
+                  width: '21'
+                  height: '6'
+                  fields:
+                    - type: INTEGER
+                      name: columns
+                      value: '9'
+                    - type: ITEM_PROTOTYPE
+                      name: itemid
+                      value:
+                        host: 'Suricata by Zabbix agent'
+                        key: 'suricata.stats[app_layer.flow.{#APP}]'
+                    - type: INTEGER
+                      name: rows
+                      value: '3'
+                    - type: INTEGER
+                      name: show_legend
+                      value: '0'
+                    - type: INTEGER
+                      name: source_type
+                      value: '3'
+                - type: graphprototype
+                  'y': '6'
+                  width: '21'
+                  height: '5'
+                  fields:
+                    - type: ITEM_PROTOTYPE
+                      name: itemid
+                      value:
+                        host: 'Suricata by Zabbix agent'
+                        key: 'suricata.stats[app_layer.flow.{#APP}]'
+                    - type: INTEGER
+                      name: source_type
+                      value: '3'
+                - type: graph
+                  'y': '11'
+                  width: '11'
+                  height: '6'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: 'Suricata by Zabbix agent'
+                        name: 'Suricata memory usage'
+                - type: graph
+                  x: '11'
+                  'y': '11'
+                  width: '10'
+                  height: '6'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: 'Suricata by Zabbix agent'
+                        name: 'Suricata packet drops'
+  graphs:
+    - uuid: e7997017837447d5b8165af15af4875d
+      name: 'Suricata memory usage'
+      type: STACKED
+      graph_items:
+        - sortorder: '1'
+          color: 1A7C11
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[flow.memuse]'
+        - sortorder: '2'
+          color: F63100
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[ftp.memuse]'
+        - sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[http.memuse]'
+        - sortorder: '4'
+          color: A54F10
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[tcp.memuse]'
+        - sortorder: '5'
+          color: FC6EA3
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[tcp.reassembly_memuse]'
+    - uuid: 25fec1bd931644e99e17905a4c3cc1ad
+      name: 'Suricata packet drops'
+      show_work_period: 'NO'
+      type: STACKED
+      graph_items:
+        - sortorder: '1'
+          drawtype: BOLD_LINE
+          color: FF0000
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[capture.kernel_drops]'
+        - sortorder: '2'
+          drawtype: FILLED_REGION
+          color: 43A047
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[capture.kernel_packets]'
