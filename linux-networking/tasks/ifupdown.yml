@@ -42,5 +42,6 @@
     enabled: no
   with_items:
     - systemd-networkd
+    - networkd-dispatcher
     - systemd-resolved
 

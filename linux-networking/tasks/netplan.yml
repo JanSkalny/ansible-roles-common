@@ -39,6 +39,7 @@
     enabled: yes
   with_items:
     - systemd-networkd
+    - networkd-dispatcher
 
 - name: disable systemd services
   systemd:
