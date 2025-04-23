@@ -46,6 +46,7 @@ http.port: "{{ elastic_port }}"
 xpack.security.enabled: true
 xpack.security.autoconfiguration.enabled: false
 xpack.security.enrollment.enabled: true
+{% if elastic_tls | default(True) %}
 xpack.security.http.ssl:
   enabled: true
   certificate: tls/fullchain.pem
@@ -57,6 +58,7 @@ xpack.security.transport.ssl:
   certificate: tls/fullchain.pem
   key: tls/server.key
   certificate_authorities: tls/ca.crt
+{% endif %}
 {% if elastic_ldap %}
 xpack.security.authc.realms.ldap.ldap1:
   order: 0
