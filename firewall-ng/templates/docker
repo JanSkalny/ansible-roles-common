@@ -466,8 +466,8 @@ $IT4 -A DOCKER-USER -i br-+ -o br-+ -j RETURN
 {% for input_rule in firewall_input %}
 {% with %}
   {% set src_addrs = normalize_addrs(input_rule, 'src').split(',') %}
-  {% set tcp_ports = normalize_ports(input_rule, 'tcp').split(',') | difference(['']) %}
-  {% set udp_ports = normalize_ports(input_rule, 'udp').split(',') | difference(['']) %}
+  {% set tcp_ports = normalize_ports(input_rule, 'tcp').split(',') | difference(['']) | sort %}
+  {% set udp_ports = normalize_ports(input_rule, 'udp').split(',') | difference(['']) | sort %}
   {% set firewall_tmp_target = {"LOG_ACCEPT": "LOG_DOCKER_ACCEPT", "LOG_WILL_DROP": "LOG_DOCKER_WILL_DROP", "ACCEPT": "RETURN" }[input_rule.rule | default("LOG_ACCEPT")] | default(input_rule.rule) %}
 
 # {{ input_rule | to_json }}
