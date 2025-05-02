@@ -30,6 +30,9 @@ services:
       https_proxy: "{{ proxy_env.https_proxy | default("") }}"
       no_proxy: "127.0.0.0/8,wazuh.indexer,wazuh.dashboard"
 {% endif %}
+{% if wazuh_aws_creds is defined %}
+{{ wazuh_aws_creds }}
+{% endif %}
   wazuh.indexer:
     container_name: "wazuh.indexer"
     environment:

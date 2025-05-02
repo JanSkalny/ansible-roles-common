@@ -35,6 +35,34 @@ suricata_sources:
 - et/open
 
 # suricata profiles, can be selected into suricata: variable
+suricata_small:
+    flow:
+        memcap: 128mb
+        hash_size: 65536
+        prealloc: 10000
+    stream:
+        memcap: 64mb
+        checksum_validation: "no"
+        prealloc_sessions: 10000
+        reassembly: 
+            memcap: 256mb
+    af_packet:
+        buffer_size: 32768
+
+suricata_medium:
+    flow:
+        memcap: 512mb
+        hash_size: 262144
+        prealloc: 262144
+    stream:
+        memcap: 1gb
+        checksum_validation: "no"
+        prealloc_sessions: 100000
+        reassembly: 
+            memcap: 2gb
+    af_packet:
+        buffer_size: 65536
+
 suricata_big:
     flow:
         memcap: 1gb
@@ -49,19 +77,6 @@ suricata_big:
     af_packet:
         buffer_size: 262144
 
-suricata_small:
-    flow:
-        memcap: 128mb
-        hash_size: 65536
-        prealloc: 10000
-    stream:
-        memcap: 64mb
-        checksum_validation: "no"
-        prealloc_sessions: 10000
-        reassembly: 
-            memcap: 256mb
-    af_packet:
-        buffer_size: 32768
 
 suricata_huge:
     flow:
