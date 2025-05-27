@@ -308,4 +308,7 @@
 </ossec_config>
 
 <!-- ansible managed -->
+{% if wazuh_syslog_listener | d(False) %}
+{{ wazuh_syslog_listener_ossec_conf_snippet }}
+{% endif %}
 {{ wazuh_custom_config | default("") }}
