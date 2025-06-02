@@ -12,3 +12,19 @@ wazuh_default_local_rules: |
       <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
     </rule>
   </group>
+
+wazuh_syslog_listener_ossec_conf_snippet: |
+  <ossec_config>
+    <remote>
+      <connection>syslog</connection>
+      <port>514</port>
+      <protocol>tcp</protocol>
+      <allowed-ips>172.16.0.0/12</allowed-ips>
+    </remote>
+    <remote>
+      <connection>syslog</connection>
+      <port>514</port>
+      <protocol>udp</protocol>
+      <allowed-ips>172.16.0.0/12</allowed-ips>
+    </remote>
+  </ossec_config>

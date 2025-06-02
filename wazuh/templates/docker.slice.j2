@@ -1,0 +1,10 @@
+[Unit]
+Description=Slice that limits resources of docker.service
+Before=slices.target
+
+[Slice]
+CPUAccounting=yes
+CPUQuota={{docker_max_cpu | default("300%")}}
+
+MemoryAccounting=yes
+MemoryMax={{docker_max_ram | default("8G")}}

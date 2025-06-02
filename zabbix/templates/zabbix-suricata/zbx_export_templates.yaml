@@ -1,0 +1,913 @@
+zabbix_export:
+  version: '6.4'
+  template_groups:
+    - uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
+      name: Templates/Applications
+  templates:
+    - uuid: c0f130bcc7684c088bdb7e1ff8fe520f
+      template: 'Suricata by Zabbix agent'
+      name: 'Suricata by Zabbix agent'
+      groups:
+        - name: Templates/Applications
+      items:
+        - uuid: 02f2293af2964dae9e9ce93aa04a530f
+          name: 'Suricata proc memuse'
+          key: 'proc.mem[suricata]'
+          units: B
+        - uuid: 618f78d1da684455add5b9cf4a2e1aa6
+          name: 'Suricata proc count'
+          key: 'proc.num[suricata]'
+          tags:
+            - tag: Application
+              value: Suricata
+          triggers:
+            - uuid: 4979885f247442f3b87a21a6e012c80a
+              expression: 'last(/Suricata by Zabbix agent/proc.num[suricata])=0'
+              name: 'Suricata is down (proc count is zero)'
+              priority: HIGH
+        - uuid: c13e91ed5b364d1c801dc2ad18f06bdf
+          name: 'Suricata app BitTorrent-DHT flows'
+          key: 'suricata.stats[app_layer.flow.bittorrent-dht]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: f4f1e4e72c2b4efbb2d920a0dd2044dc
+          name: 'Suricata app DCERPC flows'
+          key: 'suricata.stats[app_layer.flow.dcerpc]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 5b2efb5bb6934cd78c20a3904cfda84e
+          name: 'Suricata app DHCP flows'
+          key: 'suricata.stats[app_layer.flow.dhcp]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 15803eec2bb34bcb8e7b0138cf3f80fa
+          name: 'Suricata app DNS flows'
+          key: 'suricata.stats[app_layer.flow.dns]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 6729d07e1a2e4b08ae3e471f51d2ee14
+          name: 'Suricata app FTP-DATA flows'
+          key: 'suricata.stats[app_layer.flow.ftp-data]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 6a77b660a5a54e7c90fc9e541ce1987f
+          name: 'Suricata app FTP flows'
+          key: 'suricata.stats[app_layer.flow.ftp]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: f88e26830a9a42638319066f2c455f3d
+          name: 'Suricata app HTTP/2 flows'
+          key: 'suricata.stats[app_layer.flow.http2]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: a9db17f9b8d543b2b7a68ec68a6f7dc5
+          name: 'Suricata app HTTP flows'
+          key: 'suricata.stats[app_layer.flow.http]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: d1c5d3bdb4e5400c819d15f733ca2b4d
+          name: 'Suricata app IKE flows'
+          key: 'suricata.stats[app_layer.flow.ike]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: b909a3e161274143930316cb346030de
+          name: 'Suricata app IMAP flows'
+          key: 'suricata.stats[app_layer.flow.imap]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: d3c3b4386a44447b91dbdf9431139e1e
+          name: 'Suricata app KRB5 flows'
+          key: 'suricata.stats[app_layer.flow.krb5]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 7f03bbeb66a14234ae3bcb80d39134f3
+          name: 'Suricata app MQTT flows'
+          key: 'suricata.stats[app_layer.flow.mqtt]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: b2f84ce3f13a487b81d9fd206c34dc8a
+          name: 'Suricata app NFS flows'
+          key: 'suricata.stats[app_layer.flow.nfs]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: c9a1db8d4c494c1e85fc465c35a94dcd
+          name: 'Suricata app NTP flows'
+          key: 'suricata.stats[app_layer.flow.ntp]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 39ab7bdbf2804e18bdcc4f7e6c7615eb
+          name: 'Suricata app QUIC flows'
+          key: 'suricata.stats[app_layer.flow.quic]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 9b65d9b930674cb98d9245ac49be3d1b
+          name: 'Suricata app RDP flows'
+          key: 'suricata.stats[app_layer.flow.rdp]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: a46e19f4d5b747f5a1e437b3cfaa282a
+          name: 'Suricata app RFB flows'
+          key: 'suricata.stats[app_layer.flow.rfb]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 2d567e37fd7e4660a6ec89a2071809f8
+          name: 'Suricata app SIP flows'
+          key: 'suricata.stats[app_layer.flow.sip]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 8bb2aa391df74fc8859df494e70e8c4f
+          name: 'Suricata app SMB flows'
+          key: 'suricata.stats[app_layer.flow.smb]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 6df8e64ad1e6447b95eb09fc12fc1962
+          name: 'Suricata app SMTP flows'
+          key: 'suricata.stats[app_layer.flow.smtp]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: a10f7c09cf2144c7bde5e08fa42bde3d
+          name: 'Suricata app SNMP flows'
+          key: 'suricata.stats[app_layer.flow.snmp]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: ebd8d3b8897f4ab6b78842aa2ad1f3b2
+          name: 'Suricata app SSH flows'
+          key: 'suricata.stats[app_layer.flow.ssh]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 97c2dbcd4f4943399d8d0088b32108e4
+          name: 'Suricata app Telnet flows'
+          key: 'suricata.stats[app_layer.flow.telnet]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 85f4b379c7234cd18fdb8ff0ef693407
+          name: 'Suricata app TFTP flows'
+          key: 'suricata.stats[app_layer.flow.tftp]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: c9dcf7e0ff1c4701bceae689af812101
+          name: 'Suricata app TLS flows'
+          key: 'suricata.stats[app_layer.flow.tls]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 5a105f280608468abc494e9f984ab872
+          name: 'Suricata capture kernel_drops'
+          key: 'suricata.stats[capture.kernel_drops]'
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: 393c654db9f94dd8a143198416d5f484
+          name: 'Suricata capture kernel_packets'
+          key: 'suricata.stats[capture.kernel_packets]'
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: f43e8302b4d3456cac163cb848e48177
+          name: 'Suricata decoder ARP'
+          key: 'suricata.stats[decoder.arp]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 8a26f6a9fbb1412ca7a119c9fa3aefb0
+          name: 'Suricata decoder Avg Pkt Size'
+          key: 'suricata.stats[decoder.avg_pkt_size]'
+          units: B
+        - uuid: 678bd1247db44f2c827d7e79aa694d7f
+          name: 'Suricata decoder Bytes'
+          key: 'suricata.stats[decoder.bytes]'
+          units: Bps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: c2ffec0f6b4f487b97ff51bb4b6c78f0
+          name: 'Suricata decoder Ethernet'
+          key: 'suricata.stats[decoder.ethernet]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 0a78ff982ad544cfa5b4caa658fc1291
+          name: 'Suricata decoder IPv4 Opt Pad Required'
+          key: 'suricata.stats[decoder.event.ipv4.opt_pad_required]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 62dcbb9b20a448728c6a44e1d90275b8
+          name: 'Suricata decoder IPv6 Zero Len Padn'
+          key: 'suricata.stats[decoder.event.ipv6.zero_len_padn]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 2e314b2107904fdeb30a08ac2edcb5e0
+          name: 'Suricata decoder VXLAN Unknown Payload Type'
+          key: 'suricata.stats[decoder.event.vxlan.unknown_payload_type]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 45b2dd2345ae4de98239a4c438f77f15
+          name: 'Suricata decoder ICMPv4'
+          key: 'suricata.stats[decoder.icmpv4]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: b2a9dc09d94d4fc08d3f449f3a20d780
+          name: 'Suricata decoder ICMPv6'
+          key: 'suricata.stats[decoder.icmpv6]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: b3b6be8b15d14ea28bfb5e66b9aa6e9d
+          name: 'Suricata decoder Invalid'
+          key: 'suricata.stats[decoder.invalid]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: e2a6679e283f4014a66f9d6e907dc28b
+          name: 'Suricata decoder IPv4'
+          key: 'suricata.stats[decoder.ipv4]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 74a267f4ed88460d89aa41f21c74995f
+          name: 'Suricata decoder IPv6'
+          key: 'suricata.stats[decoder.ipv6]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 98d2109498d64757a26364f11eb0f1cf
+          name: 'Suricata decoder Max Pkt Size'
+          key: 'suricata.stats[decoder.max_pkt_size]'
+          units: B
+        - uuid: 2021f845f86a41fda160a77c573c1d13
+          name: 'Suricata decoder Packets'
+          key: 'suricata.stats[decoder.pkts]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 72b384e79f6c4557a933f0b6cd47cc87
+          name: 'Suricata decoder TCP'
+          key: 'suricata.stats[decoder.tcp]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 4ae6c1f7c4694ce282c16c43e474295b
+          name: 'Suricata decoder UDP'
+          key: 'suricata.stats[decoder.udp]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: c90e379206c645e1a1dcf91b88c89a9f
+          name: 'Suricata decoder Unknown Ethertype'
+          key: 'suricata.stats[decoder.unknown_ethertype]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 008c8c8bfa9648e5a850fdbe4c361fb8
+          name: 'Suricata decoder VLAN'
+          key: 'suricata.stats[decoder.vlan]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: f19a1b3e30224dbeb0133e8bbd8cb5e6
+          name: 'Suricata decoder VXLAN'
+          key: 'suricata.stats[decoder.vxlan]'
+          value_type: FLOAT
+          units: pps
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 9b3a2c57f84f4d8b82795b405f78d1e3
+          name: 'Suricata flow active'
+          key: 'suricata.stats[flow.active]'
+          units: flows
+        - uuid: 7f99e3c83d8a4677a2d4e80dfcf4ed1f
+          name: 'Suricata flow ICMPv4'
+          key: 'suricata.stats[flow.icmpv4]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 8cf77ecf1fa448b5b019db878de0132e
+          name: 'Suricata flow ICMPv6'
+          key: 'suricata.stats[flow.icmpv6]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 481c11d9b9384abeb5f1ee58d921c7cd
+          name: 'Suricata memuse flow'
+          key: 'suricata.stats[flow.memuse]'
+          units: B
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: 145ee97a8cc0404e9ff6ceef91e9ad85
+          name: 'Suricata flow spare'
+          key: 'suricata.stats[flow.spare]'
+          units: flows
+        - uuid: cfb55e5eafdd4bb7ad94d82c2a35e9dc
+          name: 'Suricata flow TCP'
+          key: 'suricata.stats[flow.tcp]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 2b5c234c2e6345acb364c1de98e3b72f
+          name: 'Suricata flow total'
+          key: 'suricata.stats[flow.total]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 9cc90cb53b8b40b29d4f07d9d23cc163
+          name: 'Suricata flow UDP'
+          key: 'suricata.stats[flow.udp]'
+          value_type: FLOAT
+          units: flows/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+        - uuid: 081c3527186e44d5849a88e17f516ac9
+          name: 'Suricata memuse ftp'
+          key: 'suricata.stats[ftp.memuse]'
+          units: B
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: c7962e7c995c46bba88aa873d1b97f03
+          name: 'Suricata memuse http'
+          key: 'suricata.stats[http.memuse]'
+          units: B
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: 065133048cc54ecaa828ac6d82b36175
+          name: 'Suricata memuse tcp'
+          key: 'suricata.stats[tcp.memuse]'
+          units: B
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: e1bb18770ba84f8d967a47630fac0aaa
+          name: 'Suricata memuse tcp.reassembly'
+          key: 'suricata.stats[tcp.reassembly_memuse]'
+          units: B
+          tags:
+            - tag: Application
+              value: Suricata
+        - uuid: 7ad38c27b52b4988ae88790b60641630
+          name: 'Suricata systemd service'
+          key: 'systemd.unit.info[suricata.service]'
+          value_type: TEXT
+          trends: '0'
+          tags:
+            - tag: Application
+              value: Suricata
+          triggers:
+            - uuid: 25d8abfe4f8b4bbe9682f4587221ccda
+              expression: 'last(/Suricata by Zabbix agent/systemd.unit.info[suricata.service])<>"active"'
+              name: 'Suricata is down'
+              priority: HIGH
+        - uuid: 4321644509c44d2babcf902abc57d7a4
+          name: 'vfs.file.time[/var/lib/suricata/rules/suricata.rules,modify]'
+          key: 'vfs.file.time[/var/lib/suricata/rules/suricata.rules,modify]'
+          delay: 1h
+          history: 7d
+          trends: 30d
+          tags:
+            - tag: Application
+              value: Suricata
+          triggers:
+            - uuid: 74e108fb576b46719b87548145760b22
+              expression: 'fuzzytime(/Suricata by Zabbix agent/vfs.file.time[/var/lib/suricata/rules/suricata.rules,modify],14d)=0'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'fuzzytime(/Suricata by Zabbix agent/vfs.file.time[/var/lib/suricata/rules/suricata.rules,modify],14d)<>0'
+              name: 'Suricata rules update time'
+              priority: WARNING
+              description: 'Testujem ci su aktualizovane ruly na suricate. Musia byt aktualizovane do 14 dni.'
+              manual_close: 'YES'
+      dashboards:
+        - uuid: 0e55c40f54444cb59f33ef49d6a7e7fd
+          name: Suricata
+          pages:
+            - widgets:
+                - type: graphprototype
+                  width: '21'
+                  height: '6'
+                  fields:
+                    - type: INTEGER
+                      name: columns
+                      value: '9'
+                    - type: INTEGER
+                      name: rows
+                      value: '3'
+                    - type: INTEGER
+                      name: show_legend
+                      value: '0'
+                    - type: INTEGER
+                      name: source_type
+                      value: '3'
+                - type: graphprototype
+                  'y': '6'
+                  width: '21'
+                  height: '5'
+                  fields:
+                    - type: INTEGER
+                      name: source_type
+                      value: '3'
+                - type: graph
+                  'y': '11'
+                  width: '11'
+                  height: '6'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: 'Suricata by Zabbix agent'
+                        name: 'Suricata memory usage'
+                - type: graph
+                  x: '11'
+                  'y': '11'
+                  width: '10'
+                  height: '6'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: 'Suricata by Zabbix agent'
+                        name: 'Suricata packet drops'
+  graphs:
+    - uuid: c6db44c79b1444a6b89bf2675649f070
+      name: 'Suricata app flows'
+      type: STACKED
+      graph_items:
+        - color: 1A7C11
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.bittorrent-dht]'
+        - sortorder: '1'
+          color: '274482'
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.dcerpc]'
+        - sortorder: '2'
+          color: F63100
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.dhcp]'
+        - sortorder: '3'
+          color: 2774A4
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.dns]'
+        - sortorder: '4'
+          color: A54F10
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.ftp-data]'
+        - sortorder: '5'
+          color: FC6EA3
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.ftp]'
+        - sortorder: '6'
+          color: 6C59DC
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.http2]'
+        - sortorder: '7'
+          color: AC8C14
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.http]'
+        - sortorder: '8'
+          color: 611F27
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.ike]'
+        - sortorder: '9'
+          color: F230E0
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.imap]'
+        - sortorder: '10'
+          color: 5CCD18
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.krb5]'
+        - sortorder: '11'
+          color: BB2A02
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.mqtt]'
+        - sortorder: '12'
+          color: 5A2B57
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.nfs]'
+        - sortorder: '13'
+          color: 89ABF8
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.ntp]'
+        - sortorder: '14'
+          color: 7EC25C
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.quic]'
+        - sortorder: '15'
+          color: 2B5429
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.rdp]'
+        - sortorder: '16'
+          color: 8048B4
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.rfb]'
+        - sortorder: '17'
+          color: FD5434
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.sip]'
+        - sortorder: '18'
+          color: 790E1F
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.smb]'
+        - sortorder: '19'
+          color: 87AC4D
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.smtp]'
+        - sortorder: '20'
+          color: E89DF4
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.snmp]'
+        - sortorder: '21'
+          color: '274482'
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.ssh]'
+        - sortorder: '22'
+          color: 1A7C11
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.telnet]'
+        - sortorder: '23'
+          color: F63100
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.tftp]'
+        - sortorder: '24'
+          color: 2774A4
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[app_layer.flow.tls]'
+    - uuid: f5a119f1846e421d8fdb3e9f64db332d
+      name: 'Suricata decoder errors'
+      graph_items:
+        - color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.invalid]'
+        - sortorder: '1'
+          color: '274482'
+          calc_fnc: ALL
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.event.ipv4.opt_pad_required]'
+        - sortorder: '2'
+          color: F63100
+          calc_fnc: ALL
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.event.ipv6.zero_len_padn]'
+        - sortorder: '3'
+          color: 2774A4
+          calc_fnc: ALL
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.unknown_ethertype]'
+        - sortorder: '4'
+          color: A54F10
+          calc_fnc: ALL
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.event.vxlan.unknown_payload_type]'
+    - uuid: affd6e52c08d4eb399af2adeba206f7e
+      name: 'Suricata decoder protocols'
+      type: STACKED
+      graph_items:
+        - color: A54F10
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.tcp]'
+        - sortorder: '1'
+          color: FC6EA3
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.udp]'
+        - sortorder: '2'
+          color: '274482'
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.icmpv4]'
+        - sortorder: '3'
+          color: F63100
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.icmpv6]'
+        - sortorder: '4'
+          color: 1A7C11
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.arp]'
+        - sortorder: '5'
+          color: 2774A4
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.invalid]'
+        - sortorder: '6'
+          color: 6C59DC
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.unknown_ethertype]'
+        - sortorder: '7'
+          color: AC8C14
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[decoder.event.vxlan.unknown_payload_type]'
+    - uuid: e7997017837447d5b8165af15af4875d
+      name: 'Suricata memory usage'
+      type: STACKED
+      graph_items:
+        - sortorder: '1'
+          color: 1A7C11
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[flow.memuse]'
+        - sortorder: '2'
+          color: F63100
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[ftp.memuse]'
+        - sortorder: '3'
+          color: 2774A4
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[http.memuse]'
+        - sortorder: '4'
+          color: A54F10
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[tcp.memuse]'
+        - sortorder: '5'
+          color: FC6EA3
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[tcp.reassembly_memuse]'
+    - uuid: 8e84a171e4ee4580b7fae64745fc3330
+      name: 'Suricata new flows'
+      type: STACKED
+      graph_items:
+        - color: F63100
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[flow.tcp]'
+        - sortorder: '1'
+          color: 2774A4
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[flow.udp]'
+        - sortorder: '2'
+          color: 1A7C11
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[flow.icmpv4]'
+        - sortorder: '3'
+          color: '274482'
+          calc_fnc: MIN
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[flow.icmpv6]'
+    - uuid: 25fec1bd931644e99e17905a4c3cc1ad
+      name: 'Suricata packet drops'
+      show_work_period: 'NO'
+      type: STACKED
+      graph_items:
+        - sortorder: '1'
+          drawtype: BOLD_LINE
+          color: FF0000
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[capture.kernel_drops]'
+        - sortorder: '2'
+          drawtype: FILLED_REGION
+          color: 43A047
+          item:
+            host: 'Suricata by Zabbix agent'
+            key: 'suricata.stats[capture.kernel_packets]'

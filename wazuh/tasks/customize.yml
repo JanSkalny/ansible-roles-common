@@ -1,3 +1,42 @@
+- name: deploy docker.slice
+  ansible.builtin.template:
+    src: docker.slice.j2
+    dest: /etc/systemd/system/docker.slice
+    group: root
+    owner: root
+    mode: 0644
+  register: slice
+
+- name: create override directory
+  ansible.builtin.file:
+    owner: root
+    group: root
+    mode: 0755
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+
+- name: deploy docker.service override template
+  ansible.builtin.template:
+    src: docker.conf.j2
+    dest: /etc/systemd/system/docker.service.d/override.conf
+    group: root
+    owner: root
+    mode: 0644
+
+- name: reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: restart {{ item }}
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+    - docker.socket
+    - docker.service
+  when:
+    slice.changed
+
 - name: making sure wazuh manager is running
   fail:
     msg: "wazuh manager not running!"
