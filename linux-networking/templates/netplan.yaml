@@ -22,7 +22,6 @@
 {% if 'address6' in iface and iface.address6 == 'dhcp' %}
       dhcp6: yes
 {% endif %}
-
 {%if 'dns' in iface %}
       nameservers:
         addresses: {{ iface.dns }}
