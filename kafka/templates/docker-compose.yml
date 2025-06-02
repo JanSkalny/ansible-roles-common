@@ -3,6 +3,7 @@ services:
   kafka:
 #    restart: unless-stopped
     image: apache/kafka:{{ kafka_version | default('latest') }}
+    hostname: {{ kafka_node_name }}
     container_name: {{ kafka_node_name }}
     ports:
       - 9092:9092
