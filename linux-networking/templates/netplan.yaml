@@ -15,9 +15,6 @@
       link-local: []
       dhcp4: yes
 {% endif %}
-{% if 'gateway' in iface %}
-      gateway4: {{ iface.gateway }}
-{% endif %}
 {%if 'dns' in iface %}
       nameservers:
         addresses: {{ iface.dns }}
@@ -28,12 +25,18 @@
 {% if 'mtu' in iface %}
       mtu: {{ iface.mtu }}
 {% endif %}
-{% if 'routes' in iface %}
+{% if 'gateway' in iface or 'routes' in iface %}
       routes:
+{% if 'gateway' in iface %}
+      - to: 0.0.0.0/0
+        via: {{ iface.gateway }}
+{% endif %}
+{% if 'routes' in iface %}
 {% for route in iface.routes %}
        - to: {{ route.net }}
          via: {{ route.via }}
 {% endfor %}
+{% endif %}
 {% endif %}
 {% endmacro %}
 

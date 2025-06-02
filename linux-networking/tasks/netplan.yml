@@ -17,6 +17,7 @@
   template:
     src: netplan.yaml
     dest: /etc/netplan/01-netcfg.yaml
+    mode: 0600
   notify:
   - reboot host to apply networking changes
   - netplan apply
