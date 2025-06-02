@@ -1,0 +1,35 @@
+#TODO: make sure iptables, conntrack and nftables are installed
+- name: ensure iptables command is present
+  package:
+    name: 
+      - iptables
+      #- ipset
+    state: present
+  when: ansible_distribution_file_variety == 'Debian'
+
+#- debug:
+#    msg: "firewall_objects: {{ firewall_objects }}"
+
+#- debug:
+#    msg: "firewall_input: {{ firewall_input }}"
+
+- name: generate fw.sh
+  template: 
+    src: "{{ firewall_template }}"
+    dest: /etc/init.d/fw.sh
+    owner: root 
+    group: root 
+    mode: 0750
+  tags: configure
+  notify: reload firewall
+  when: firewall_template is defined
+
+- name: load fw.sh on boot
+  file: 
+    src: /etc/init.d/fw.sh 
+    dest: /etc/rc2.d/S19fw 
+    owner: root
+    group: root
+    state: link
+  ignore_errors: "{{ ansible_check_mode }}" # errors not in checking mode
+  when: firewall_template is defined

@@ -1,0 +1,2 @@
+ - name: reload firewall
+   raw: /etc/init.d/fw.sh
