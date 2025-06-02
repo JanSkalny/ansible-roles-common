@@ -8,12 +8,19 @@
 {% if 'bond_master' in iface %}
       optional: true
 {% endif %}
-{% if 'address' in iface and iface.address != 'dhcp' %}
-      link-local: []
-      addresses: {{ [ iface.address ]}}
-{% elif 'address' in iface and iface.address == 'dhcp' %}
-      link-local: []
+
+{% set addr_list = [] %}
+{% for a in [iface.get('address'), iface.get('address6')] if a and a != 'dhcp' %}
+{% set _ = addr_list.append(a) %}
+{% endfor %}
+{% if addr_list %}
+      addresses: {{ addr_list }}
+{% endif %}
+{% if 'address' in iface and iface.address == 'dhcp' %}
       dhcp4: yes
+{% endif %}
+{% if 'address6' in iface and iface.address6 == 'dhcp' %}
+      dhcp6: yes
 {% endif %}
 {%if 'dns' in iface %}
       nameservers:
@@ -25,11 +32,15 @@
 {% if 'mtu' in iface %}
       mtu: {{ iface.mtu }}
 {% endif %}
-{% if 'gateway' in iface or 'routes' in iface %}
+{% if 'routes' in iface or 'gateway' in iface or 'gateway6' in iface %}
       routes:
 {% if 'gateway' in iface %}
-      - to: 0.0.0.0/0
-        via: {{ iface.gateway }}
+       - to: 0.0.0.0/0
+         via: {{ iface.gateway }}
+{% endif %}
+{% if 'gateway6' in iface %}
+       - to: ::/0
+         via: {{ iface.gateway6 }}
 {% endif %}
 {% if 'routes' in iface %}
 {% for route in iface.routes %}
@@ -50,43 +61,41 @@ network:
 {% endif %}
 {% endfor %}
 
+{% set vlans = networking | dict2items
+    | selectattr("value.vlan-id", "defined")
+    | selectattr("value.vlan-iface", "defined")
+    | list %}
+{% if vlans %}
   vlans:
-{% set netplan_has_vlan = [] %}
-{% for iface_name,item in networking.items() %}
-{% if 'vlan-id' in item and 'vlan-iface' in item %}
-{%do netplan_has_vlan.append(True) %}
+{% for iface_name, item in vlans %}
     vlan{{ item['vlan-id'] }}:
       id: {{ item['vlan-id'] }}
       link: {{ item['vlan-iface'] }}
 {{ generate_iface_config(item, "vlan%d" % item['vlan-id']) }}
-{% endif %}
 {% endfor %}
-{% if not netplan_has_vlan %}
-    {}
 {% endif %}
 
+{% set bridges = networking | dict2items
+    | selectattr("value.bridge_ports", "defined")
+    | list %}
+{% if bridges %}
   bridges:
-{% set netplan_has_bridge = [] %}
-{% for iface_name,item in networking.items() %}
-{% if 'bridge_ports' in item %}
-{%do netplan_has_bridge.append(True) %}
+{% for iface_name, item in bridges %}
     {{ iface_name }}:
       interfaces: {{ item.bridge_ports }}
       parameters:
         stp: false
         forward-delay: 0
 {{ generate_iface_config(item, iface_name) }}
-{% endif %}
 {% endfor %}
-{% if not netplan_has_bridge %}
-    {}
 {% endif %}
 
+{% set bonds = networking | dict2items
+    | selectattr("value.bond_slaves", "defined")
+    | list %}
+{% if bonds %}
   bonds:
-{% set netplan_has_bond = [] %}
-{% for iface_name,item in networking.items() %}
-{% if 'bond_slaves' in item %}
-{%do netplan_has_bond.append(True) %}
+{% for iface_name, item in bonds %}
     {{ iface_name }}:
       interfaces: {{ item.bond_slaves }}
       parameters:
@@ -94,9 +103,5 @@ network:
         lacp-rate: fast
         mii-monitor-interval: 100
 {{ generate_iface_config(item, iface_name) }}
-{% endif %}
 {% endfor %}
-{% if not netplan_has_bond %} 
-    {}
 {% endif %}
-

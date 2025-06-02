@@ -1,0 +1,6 @@
+needrestart:
+  template: "needrestart by Zabbix agent"
+  sudoers: "zabbix-needrestart/sudoers"
+  params: "zabbix-needrestart/needrestart.conf"
+  scripts:
+    - "zabbix-needrestart/zabbix_needrestart.sh"

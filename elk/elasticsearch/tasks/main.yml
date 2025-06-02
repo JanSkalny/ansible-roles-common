@@ -97,6 +97,16 @@
   when: elastic_ldap
   notify: restart elasticsearch
 
+- name: remove keystore passwords, if running insecure
+  block:
+    - shell: /usr/share/elasticsearch/bin/elasticsearch-keystore list | grep xpack.security | grep password
+      register: elastic_keystore
+      changed_when: false
+      failed_when: false
+    - shell: /usr/share/elasticsearch/bin/elasticsearch-keystore remove "{{ item }}"
+      with_items: "{{ elastic_keystore.stdout_lines }}"
+  when: not elastic_secure
+
 - name: flush handlers
   meta: flush_handlers
 

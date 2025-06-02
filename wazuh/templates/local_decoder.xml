@@ -1,4 +1,4 @@
-<!-- ansible managed -->
+<!-- ansible managed start -->
 
 <!--
   - Allowed static fields:
@@ -17,11 +17,15 @@
   - status     - event status (success, failure, etc)
   - extra_data - Any extra data
 -->
+{% if wazuh_local_decoders is not defined %}
 
-<!-- XXX: Example, but SOMETHING mus be present for `wazuh-analysisd -t` to pass -->
+<!-- XXX: Example, but SOMETHING must be present for `wazuh-analysisd -t` to pass -->
 <decoder name="local_decoder_example">
   <program_name>local_decoder_example</program_name>
 </decoder>
+{% endif %}
 
 <!-- custom decoders -->
 {{ wazuh_local_decoders | default("")}}
+
+<!-- ansible managed end -->

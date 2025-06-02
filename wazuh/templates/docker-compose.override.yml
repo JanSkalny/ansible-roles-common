@@ -5,15 +5,17 @@ services:
     volumes:
       - /data/logs:/logs:ro
 {% if ( wazuh_custom_ports | type_debug == 'list' ) and (wazuh_custom_ports | length > 0) %}
-    ports: !override {{ wazuh_custom_ports }}
+{% if wazuh_syslog_listener | d(False) == True %}
+    ports: !override {{ wazuh_custom_ports + wazuh_syslog_listener_ports }}
 {% else %}
-    # overriding the defaults still, because there usually is syslog-ng
-    # listening on 514, which means it would collide with the upstream defaults
-    # of also listening on 514.
-    ports: !override
-      - "1514:1514"
-      - "1515:1515"
-      - "55000:55000"
+    ports: !override {{ wazuh_custom_ports }}
+{% endif %}
+{% else %}
+{% if wazuh_syslog_listener | d(False) == True %}
+    ports: !override {{ wazuh_default_ports + wazuh_syslog_listener_ports }}
+{% else %}
+    ports: !override {{ wazuh_default_ports }}
+{% endif %}
 {% endif %}
     environment:
       INDEXER_USERNAME: "admin"

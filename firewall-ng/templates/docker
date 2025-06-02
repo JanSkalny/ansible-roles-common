@@ -22,26 +22,26 @@
 {% endif %}
 {% endfor %}
 {% endif %}
-{{ results | flatten | join(",") }}
+{{ results | sort | flatten | join(",") }}
 {%- endmacro -%}
 
 {%- macro normalize_ports(rule, proto) -%}
 {%- if 'proto' in rule -%}
 {%- if proto in rule.proto -%}
-{{ '' if not rule.proto[proto] else ( ( (rule.proto[proto]).replace(' ','').split(',') if rule.proto[proto] is string else ( [rule.proto[proto]] if rule.proto[proto] is number else rule.proto[proto] ) ) | join(",")) }}
+{{ '' if not rule.proto[proto] else ( ( (rule.proto[proto]).replace(' ','').split(',') if rule.proto[proto] is string else ( [rule.proto[proto]] if rule.proto[proto] is number else rule.proto[proto] ) ) | sort | join(",")) }}
 {%- endif -%}
 {%- endif -%}
 {%- endmacro -%}
 
 {%- macro generate_rule(rule, chain, default_action='LOG_ACCEPT', ip_ver=4) -%}
+# {{ rule | to_json }}
 {% set src_addrs = normalize_addrs(rule, 'src', ip_ver).split(',') %}
 {% set dest_addrs = normalize_addrs(rule, 'dest', ip_ver).split(',') %}
-# {{ rule | to_json }}
 {% for src_addr in src_addrs -%}
 {%- for dest_addr in dest_addrs -%}
 {% if 'proto' in rule %}
 {% for rule_proto, rule_ports in rule.proto.items() %}
-{% set rule_ports = normalize_ports(rule, rule_proto).split(',') | default([]) | difference(['']) %}
+{% set rule_ports = normalize_ports(rule, rule_proto).split(',') | default([]) | difference(['']) | sort %}
 {% for port in rule_ports %}
 $IT{{ ip_ver }} -A {{ chain }} -p {{ rule_proto }} --dport {{ port }}{{ " -s "+src_addr if src_addr|length else "" }}{{ " -d "+dest_addr if dest_addr|length else "" }} -j {{ rule.rule | default(default_action) }}
 {% endfor %}
@@ -109,12 +109,17 @@ ipset create {{ firewall_list.name }} hash:ip {{ 'timeout '+(firewall_list.ttl|s
 echo {{ firewall6_ip_forward | default(0) | int }} > /proc/sys/net/ipv6/conf/all/forwarding
 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
 echo {{ firewall_rp_filter | default(1) | int }} > /proc/sys/net/ipv4/conf/all/rp_filter
-echo {{ firewall_log_martians | default(1) | int }} > /proc/sys/net/ipv4/conf/all/log_martians
+echo 0 > /proc/sys/net/ipv4/conf/all/log_martians
+echo {{ firewall_log_martians | default(1) | int }} > /proc/sys/net/ipv4/conf/default/log_martians
 echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
 echo 1 > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
 echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects
 echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route
 echo 0 > /proc/sys/net/ipv6/conf/all/accept_source_route
+
+{% for iface in firewall_no_martians_ifaces | default([]) %}
+echo 0 > /proc/sys/net/ipv4/conf/{{ iface }}/log_martians
+{% endfor %}
 
 for PROTO in 4 6; do
   IT=$( eval echo \$IT$PROTO )
@@ -130,9 +135,20 @@ for PROTO in 4 6; do
     $IT -F $CHAIN
     $IT -X $CHAIN
   done
-  for CHAIN in $( $IT -n -L | grep '^Chain LOG_DROP_' | awk '{print $2}' ); do
+  for CHAIN in $( $IT -n -L | grep '^Chain \(LOG_DROP_\|LOG_WILL_DROP\)' | awk '{print $2}' ); do
     $IT -F $CHAIN
     $IT -X $CHAIN
+  done
+  for CHAIN in PREROUTING POSTROUTING; do
+    $IT -t nat -D $CHAIN -j CUSTOM_$CHAIN 2>/dev/null
+    $IT -t nat -F CUSTOM_$CHAIN 2>/dev/null
+    $IT -t nat -X CUSTOM_$CHAIN 2>/dev/null
+  done
+
+  # prepare custom PREROUTING POSTROUTING for nat tables
+  for CHAIN in PREROUTING POSTROUTING; do
+    $IT -t nat -N CUSTOM_$CHAIN
+    $IT -t nat -I $CHAIN -j CUSTOM_$CHAIN
   done
 
   # default rulesets
@@ -314,6 +330,7 @@ $IT4 -A OUTPUT -o veth+ -j ACCEPT
 $IT6 -A OUTPUT -o br+ -j ACCEPT
 $IT6 -A OUTPUT -o veth+ -j ACCEPT
 
+
 ############################################################
 ### INPUT ruleset
 
@@ -449,8 +466,8 @@ $IT4 -A DOCKER-USER -i br-+ -o br-+ -j RETURN
 {% for input_rule in firewall_input %}
 {% with %}
   {% set src_addrs = normalize_addrs(input_rule, 'src').split(',') %}
-  {% set tcp_ports = normalize_ports(input_rule, 'tcp').split(',') | difference(['']) %}
-  {% set udp_ports = normalize_ports(input_rule, 'udp').split(',') | difference(['']) %}
+  {% set tcp_ports = normalize_ports(input_rule, 'tcp').split(',') | difference(['']) | sort %}
+  {% set udp_ports = normalize_ports(input_rule, 'udp').split(',') | difference(['']) | sort %}
   {% set firewall_tmp_target = {"LOG_ACCEPT": "LOG_DOCKER_ACCEPT", "LOG_WILL_DROP": "LOG_DOCKER_WILL_DROP", "ACCEPT": "RETURN" }[input_rule.rule | default("LOG_ACCEPT")] | default(input_rule.rule) %}
 
 # {{ input_rule | to_json }}
@@ -514,9 +531,22 @@ $IT4 -A DOCKER-USER -j RETURN
 
 ############################################################
 ### FORWARD ruleset
+# docker: don't touch FORWARD
+
 ### NAT ruleset
 
-# docker: don't touch FORWARD or anything nat related
+# docker: don't touch nat outside CUSTOM_ chains
+{% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
+{% for net in firewall_iface.masquerade | default([]) %}
+$IT4 -t nat -A CUSTOM_POSTROUTING -o {{ firewall_iface_name }} -s {{ net }} -j MASQUERADE
+{% endfor %}
+{% endfor %}
+
+{% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
+{% for dnat in firewall_iface.dnat | default([]) %}
+$IT4 -t nat -A CUSTOM_PREROUTING -i {{ firewall_iface_name }} -d {{ dnat.orig_to }} -j DNAT --to-destination {{ dnat.to }}
+{% endfor %}
+{% endfor %}
 
 
 ############################################################

@@ -27,12 +27,25 @@
   tags: install
   notify: restart suricata
 
-- name: deploy suricata-nic.sh
+- name: deploy scripts
   template:
-    src: nic.sh
-    dest: /usr/local/bin/suricata-nic.sh
+    src: "{{ item }}"
+    dest: "/usr/local/bin/suricata-{{ item }}"
     mode: 0755
-  tags: install
+  with_items:
+  - nic.sh
+  - set-affinity.sh
+  - prune-eve-logs.sh
+  tags:
+  - install
+  - configure
+
+- name: deploy suricata cron.d for irqs
+  copy:
+    content: |
+      0 2 * * * root /usr/local/bin/suricata-prune-eve-logs.sh
+    dest: /etc/cron.d/suricata-prune-eve-logs
+    mode: 0750
 
 - name: update suricata-update soures
   shell: suricata-update update-sources

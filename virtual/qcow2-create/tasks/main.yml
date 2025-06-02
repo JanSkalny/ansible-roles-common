@@ -9,5 +9,5 @@
   when: qcow2_image.stat.exists
 
 - name: create qcow2 image
-  command: qemu-img create -f qcow2 "{{ virtual.disk_blk | default(virtual_default_disk_blk) }}" "{{ virtual.disk_size }}"
+  command: qemu-img create -f qcow2 "{{ virtual.disk_blk | default(virtual_default_disk_blk) }}" "{{ virtual.disk_size }}"G
   when: not qcow2_image.stat.exists

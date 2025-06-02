@@ -1,0 +1,71 @@
+- name: prepare dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /opt/arkime-viewer
+    - /opt/arkime-viewer/etc
+
+- name: list elastic indices
+  uri:
+    url: "{{ arkime_elastic_url }}/arkime_sequence"
+    method: HEAD
+    status_code: [200, 404]
+    return_content: yes
+  check_mode: off
+  changed_when: false
+  register: arkime_index_check
+
+- debug:
+    msg: "{{ arkime_index_check }}"
+
+- name: initalize arkime dataabse
+  command: >
+    docker run --rm 
+      ghcr.io/arkime/arkime/arkime:{{ arkime_version }} 
+      /opt/arkime/db/db.pl --insecure {{ arkime_elastic_url }} init
+  register: arkime_init_output
+  when: arkime_index_check.status == 404
+
+- debug: 
+    msg: "{{ arkime_init_output }}"
+  when: arkime_index_check.status == 404
+
+- name: generate docker-compose
+  copy:
+    content: |
+      name: arkime
+      services:
+        viewer:
+          container_name: "arkime-viewer"
+          image: ghcr.io/arkime/arkime/arkime:{{ arkime_version }}
+          #network_mode: "host"
+          command: /opt/arkime/bin/docker.sh viewer
+          ports: 
+            - 8005:8005
+          environment:
+          # - ARKIME__elasticsearch={{ arkime_elastic_url }}
+            - ARKIME__serverSecret={{ arkime_server_secret }}
+          volumes:
+            - /opt/arkime-viewer/etc:/opt/arkime/etc
+          restart: unless-stopped
+    dest: /opt/arkime-viewer/docker-compose.yml
+
+- copy:
+    content: |
+      [default]
+      elasticsearch={{ arkime_elastic_url }}
+
+      cronQueries=true
+      authMode=digest
+
+      dropUser=nobody
+      dropGroup=daemon
+    dest: /opt/arkime-viewer/etc/config.ini
+
+# - name: run docker compose
+#   shell: 
+#     docker compose up -d && sleep 10
+#   args:
+#     chdir: /opt/arkime-viewer/
+#

@@ -15,5 +15,6 @@
     dest: "/etc/default/smartmontools"
     regexp: "^start_smartd=yes"
     line: "start_smartd=yes"
+  ignore_errors: yes
   notify: restart smartmontools
 

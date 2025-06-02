@@ -2,14 +2,15 @@
   package:
     name:
     - netplan.io
-    - bridge-utils
     - vlan
     state: present
   tags: install
 
 - name: remove ifupdown
   package:
-    name: ifupdown
+    name: 
+    - ifupdown
+    - bridge-utils
     state: absent
   tags: install
 
@@ -31,4 +32,20 @@
     - 50-cloud-init.yaml
     - 10-interfaces.yaml
   tags: configure
+
+- name: enable systemd services
+  systemd:
+    name: "{{ item }}"
+    enabled: yes
+  with_items:
+    - systemd-networkd
+    - networkd-dispatcher
+
+- name: disable systemd services
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items:
+    - systemd-resolved
 

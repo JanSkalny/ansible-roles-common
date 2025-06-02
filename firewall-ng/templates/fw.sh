@@ -22,13 +22,13 @@
 {% endif %}
 {% endfor %}
 {% endif %}
-{{ results | flatten | join(",") }}
+{{ results | sort | flatten | join(",") }}
 {%- endmacro -%}
 
 {%- macro normalize_ports(rule, proto) -%}
 {%- if 'proto' in rule -%}
 {%- if proto in rule.proto -%}
-{{ '' if not rule.proto[proto] else ( ( (rule.proto[proto]).replace(' ','').split(',') if rule.proto[proto] is string else ( [rule.proto[proto]] if rule.proto[proto] is number else rule.proto[proto] ) ) | join(",")) }}
+{{ '' if not rule.proto[proto] else ( ( (rule.proto[proto]).replace(' ','').split(',') if rule.proto[proto] is string else ( [rule.proto[proto]] if rule.proto[proto] is number else rule.proto[proto] ) ) | sort | join(",")) }}
 {%- endif -%}
 {%- endif -%}
 {%- endmacro -%}
@@ -42,7 +42,7 @@
 {%- for dest_addr in dest_addrs -%}
 {% if 'proto' in rule %}
 {% for rule_proto, rule_ports in rule.proto.items() %}
-{% set rule_ports = normalize_ports(rule, rule_proto).split(',') | default([]) | difference(['']) %}
+{% set rule_ports = normalize_ports(rule, rule_proto).split(',') | default([]) | difference(['']) | sort %}
 {% set src = " -s "+src_addr if src_addr|length else "" %}
 {% set dest = " -d "+dest_addr if dest_addr|length else "" %}
 {% for port in rule_ports %}
@@ -109,12 +109,17 @@ echo {{ firewall_ip_forward | default(0) | int }} > /proc/sys/net/ipv4/ip_forwar
 echo {{ firewall6_ip_forward | default(0) | int }} > /proc/sys/net/ipv6/conf/all/forwarding
 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
 echo {{ firewall_rp_filter | default(1) | int }} > /proc/sys/net/ipv4/conf/all/rp_filter
-echo {{ firewall_log_martians | default(1) | int }} > /proc/sys/net/ipv4/conf/all/log_martians
+echo 0 > /proc/sys/net/ipv4/conf/all/log_martians
+echo {{ firewall_log_martians | default(1) | int }} > /proc/sys/net/ipv4/conf/default/log_martians
 echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
 echo 1 > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
 echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects
 echo 0 > /proc/sys/net/ipv4/conf/all/accept_source_route
 echo 0 > /proc/sys/net/ipv6/conf/all/accept_source_route
+
+{% for iface in firewall_no_martians_ifaces | default([]) %}
+echo 0 > /proc/sys/net/ipv4/conf/{{ iface }}/log_martians
+{% endfor %}
 
 for PROTO in 4 6; do
   IT=$( eval echo \$IT$PROTO )

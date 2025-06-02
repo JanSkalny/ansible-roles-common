@@ -16,4 +16,4 @@ minio_container_name: "{{ inventory_hostname }}"
 
 
 minio_api_port: 9000
-minio_console_port: 443
+minio_console_port: 9001

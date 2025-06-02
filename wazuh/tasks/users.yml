@@ -1,3 +1,11 @@
+---
+- name: validate admin password
+  ansible.builtin.assert:
+    that:
+      - not (wazuh_admin_password is match(".*;.*"))
+      - not (wazuh_admin_password is match(".*&.*"))
+    fail_msg: "wazuh_admin_password must not contain chars from [;&]"
+
 - name: generate docker-compose override
   template:
     src: docker-compose.override.yml

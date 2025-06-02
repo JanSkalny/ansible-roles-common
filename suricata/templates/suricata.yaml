@@ -80,63 +80,38 @@ plugins:
 
 # Configure the type of alert (and other) logging you would like.
 outputs:
+{% if suricata_fast %}
   # a line based alerts log similar to Snort's fast.log
   - fast:
-      enabled: {{ suricata_fast }}
+      enabled: yes
       filename: fast.log
       append: yes
       #filetype: regular # 'regular', 'unix_stream' or 'unix_dgram'
+{% endif %}
 
+{% if suricata_syslog_eve | default(True) %}
   # EVE event log in JSON format through SYSLOG
   - eve-log:
       enabled: yes
-      filetype: syslog #regular|syslog|unix_dgram|unix_stream|redis
-      #filename: neweve-%Y-%m-%d-%H:%M.json
+      filetype: syslog
       identity: "suricata-json"
       facility: local5
       pcap-file: true
-      level: Info ## possible levels: Emergency, Alert, Critical, Error, Warning, Notice, Info, Debug
+      level: Info
       types:
         - alert:
             payload: yes             # enable dumping payload in Base64
             packet: yes              # enable dumping of packet (without stream segments)
             tagged-packets: yes
+{% endif %}
 
-
+{% if suricata_eve | default(True) %}
   # Extensible Event Format (nicknamed EVE) event log in JSON format
   - eve-log:
-      enabled: {{ suricata_eve }}
-      filetype: regular #regular|syslog|unix_dgram|unix_stream|redis
+      enabled: yes
+      filetype: regular
       filename: eve-%Y-%m-%d-%H:%M.json
       rotate-interval: {{ suricata_eve_rotate_interval }}
-      # Enable for multi-threaded eve.json output; output files are amended with
-      # an identifier, e.g., eve.9.json
-      #threaded: false
-      #prefix: "@cee: " # prefix to prepend to each log entry
-      # the following are valid when type: syslog above
-      #identity: "suricata"
-      #facility: local5
-      #level: Info ## possible levels: Emergency, Alert, Critical,
-                   ## Error, Warning, Notice, Info, Debug
-      #ethernet: no  # log ethernet header in events when available
-      #redis:
-      #  server: 127.0.0.1
-      #  port: 6379
-      #  async: true ## if redis replies are read asynchronously
-      #  mode: list ## possible values: list|lpush (default), rpush, channel|publish
-      #             ## lpush and rpush are using a Redis list. "list" is an alias for lpush
-      #             ## publish is using a Redis channel. "channel" is an alias for publish
-      #  key: suricata ## key or channel to use (default to suricata)
-      # Redis pipelining set up. This will enable to only do a query every
-      # 'batch-size' events. This should lower the latency induced by network
-      # connection at the cost of some memory. There is no flushing implemented
-      # so this setting should be reserved to high traffic Suricata deployments.
-      #  pipelining:
-      #    enabled: yes ## set enable to yes to enable query pipelining
-      #    batch-size: 10 ## number of entries to keep in buffer
-
-      # Include top level metadata. Default yes.
-      #metadata: no
 
       # include the name of the input pcap file in pcap file processing mode
       pcap-file: true
@@ -346,6 +321,7 @@ outputs:
         #   event-set: false                # log packets that have a decoder/stream event
         #   state-update: false             # log packets triggering a TCP state update
         #   spurious-retransmission: false  # log spurious retransmission packets
+{% endif %}
 
 {% raw %}
   # a line based log of HTTP requests (no alerts)
@@ -487,6 +463,7 @@ outputs:
       threads: no       # per thread stats
       #null-values: yes  # print counters that have value 0. Default: no
 
+{% if suricata_syslog | default(False) %}
   # a line based alerts log similar to fast.log into syslog
   - syslog:
       enabled: {{ suricata_syslog }}
@@ -496,6 +473,7 @@ outputs:
       facility: local5
       #level: Info ## possible levels: Emergency, Alert, Critical,
                    ## Error, Warning, Notice, Info, Debug
+{% endif %}
 
   # Output module for storing files on disk. Files are stored in
   # directory names consisting of the first 2 characters of the

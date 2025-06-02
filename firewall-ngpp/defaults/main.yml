@@ -1,0 +1,121 @@
+# default firewall is strict. modify these to "LOG_WILL_DROP" in group_vars/all/ first, then selectively enable fw
+firewall_default_rule_input: "LOG_DROP_DEFAULT"              # input rules without match
+firewall_default_rule_output: "LOG_WILL_DROP"                # output rules without match
+firewall_default_rule_forward: "LOG_DROP_DEFAULT"            # forward rules without match
+firewall_default_rule_invalid: "LOG_DROP_INVALID"            # conntrac invalid conenctions
+
+# default template is host/gw firewall
+# use "docker" for docker hosts and set firewall_ip_forward: 1
+firewall_template: "fw-unified.sh"
+
+#  IPv4/IPv6 packet forwarding
+firewall_ip_forward: 0
+firewall6_ip_forward: 0
+
+# IPv6 is disabled by default
+firewall_enable_ipv6: False
+
+# logging martians is a good thing (on host fw)
+firewall_log_martians: 1
+
+# how many icmp pings and icmp6-pings are allowed (per second)
+firewall_ping_rate: 20
+
+# allow all ICMPv6 traffic (not recommended!)
+firewall6_allow_all_icmp: False
+
+# allow ICMP RA messages
+firewall6_allow_ra: True
+
+# some interfaces are whitelisted in input/output (forward in docker template)
+# generally avoid using these
+firewal_whitelisted_iface: ['lo']
+
+## EXAMPLES:
+#firewall_interfaces:
+#   mngPhys:
+#     deny:
+#     - 10.0.0.128/26
+#     - 10.0.0.192/26
+#     default: allow
+#     masquerade:
+#     - 10.0.0.128/26
+#     - 10.0.0.192/26
+#   mngHw:
+#     allow: 10.0.0.64/26
+#     allow_dhcp: true
+#   iscsi0:
+#     allow: 10.0.0.128/26
+#   iscsi1:
+#     allow: 10.0.0.192/26
+
+#firewall_objects_example:
+#   PUB: 10.0.0.0/24
+#   DMZ:
+#     - 10.0.1.0/24
+#     - 10.0.2.0/24
+#   ns.example.com:
+#     10.0.1.34
+
+#firewall_input_example:
+#  - name: ssh from lan
+#    src: LAN
+#    proto:
+#      tcp: 22
+#  - name: elastic from DMZ segment
+#    src: DMZ
+#    dest: 10.10.10.0/24
+#    proto: 
+#      tcp: 9200, 9300
+#      udp: 100:110
+#    rule: LOG_ACCEPT
+
+
+#XXX: re-integrate with "networking" role
+firewall_interfaces: {}
+
+# NAT and other final firewall patches via firewall_final_patch. 
+# example:
+#firewall_final_patch: 
+# - "$IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.97.0/24 -j MASQUERADE"
+# - "$IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.98.0/24 -j MASQUERADE"
+# - "$IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.99.0/24 -j MASQUERADE"
+
+# either per host override, or merge all variables matching prefix "firewall_xxx_*"
+firewall_input:  "{{ vars | select('match', '^firewall_input_') | map('extract', vars) | flatten }}"
+firewall_output:  "{{ vars | select('match', '^firewall_output_') | map('extract', vars) | flatten }}"
+firewall_forward:  "{{ vars | select('match', '^firewall_forward_') | map('extract', vars) | flatten }}"
+firewall_objects:  "{{ {} | combine(vars | select('match', '^firewall_objects_') | map('extract', vars) | list) }}"
+
+# no need to change these
+firewall_iptables: "$( which iptables )"
+firewall6_iptables: "$( which ip6tables )"
+
+# custom "log-drop" chains (don't remove default rules when overridig!)
+firewall_drop_rules:
+  - INVALID
+  - CHECKIF
+  - CHECKIF_DHCP
+  - CHECKIF_SPOOF
+  - CHECKIF_POLICY
+  - CHECKIF_DENY
+  - HONEYPOT
+  - DEFAULT
+  - HACK
+  - POLICY
+  - ROGUE
+  - BLACKLIST
+  - RATELIMIT
+  - IPV6
+
+firewall_will_drop_rules:
+  - DEFAULT
+  - CHECKIF
+  - CHECKIF_POLICY
+  - CHECKIF_DENY
+  - POLICY
+  - INVALID
+  - BLACKLIST
+  - HACK
+
+

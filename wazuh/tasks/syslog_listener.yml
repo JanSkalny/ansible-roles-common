@@ -1,0 +1,32 @@
+- name: set wazuh syslog listener ports
+  ansible.builtin.set_fact:
+    wazuh_syslog_listener_ports:
+      - "{{ wazuh_syslog_listener_port | default(wazuh_syslog_listener_default_port) }}:514/tcp"
+      - "{{ wazuh_syslog_listener_port | default(wazuh_syslog_listener_default_port) }}:514/udp"
+  when: wazuh_syslog_listener | d(False) == True
+
+- name: print wazuh syslog listener port mapping
+  ansible.builtin.debug:
+    msg: "wazuh syslog listener port will be set to {{ wazuh_syslog_listener_port | default(wazuh_syslog_listener_default_port) }}"
+  when:
+    - wazuh_syslog_listener | d(False) == True
+
+- name: install syslog-ng snippet for wazuh listener
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/syslog-ng/conf.d/{{ item }}"
+  with_items:
+    - wazuh_listener.conf
+  when:
+    - wazuh_syslog_listener | d(False) == True
+  notify: reload syslog-ng
+
+- name: clean up syslog-ng snippet for wazuh listener
+  ansible.builtin.file:
+    path: "/etc/syslog-ng/conf.d/{{ item }}"
+    state: absent
+  with_items:
+    - wazuh_listener.conf
+  when:
+    - wazuh_syslog_listener | d(False) == False
+  notify: reload syslog-ng
