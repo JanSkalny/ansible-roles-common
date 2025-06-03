@@ -31,7 +31,7 @@ iface lo inet loopback
 	bond-lacp-rate 1
 {% endif %}
 {% if 'bridge_ports' in iface %}
-	bridge_ports {{ iface.bridge_ports }}
+	bridge_ports {{ iface.bridge_ports | join(' ') }}
 	bridge_stp off
 	bridge_fd 0
 	bridge_maxwait 0
