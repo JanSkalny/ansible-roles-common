@@ -1,7 +1,14 @@
-- name: Purge unwanted packages
+- name: Purge snapd
   apt:
     name: 
       - snapd
+    state: absent
+    purge: yes
+  when: delete_snap | d(True) == True
+
+- name: Purge unwanted packages
+  apt:
+    name:
       - lxd
       - lxc-common
       - lxd-client
