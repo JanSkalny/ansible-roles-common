@@ -6,6 +6,7 @@ zabbix_version_patch:
   "6.0": 4
   "6.2": 2
   "6.4": 1
+  "7.0": 2
 
 # uz su rovnake ale pre istotu to nechame rozdelene keby nieco
 zabbix_distribution_package_name:
