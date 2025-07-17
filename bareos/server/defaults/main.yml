@@ -15,3 +15,17 @@ bareos_client_default_excludes:
   - /var/run
   - /run
   - /sys
+
+bareos_incremental_volume_retention: "10 days"
+bareos_incremental_max_volumes: 100
+bareos_incremental_max_volume_bytes: "1G"
+
+bareos_differential_volume_retention: "40 days"
+bareos_differential_max_volumes: 100
+bareos_differential_max_volume_bytes: "1G"
+
+bareos_full_volume_retention: "180 days"
+bareos_full_max_volumes: 100
+bareos_full_max_volume_bytes: "50G"
+
+
