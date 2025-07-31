@@ -57,8 +57,8 @@ $IT{{ ip_ver }} -A {{ chain }}{{ " -s "+src_addr if src_addr|length else "" }}{{
 {%- endmacro -%}
 
 {%- macro generate_interface_rules(firewall_iface_name, firewall_iface, ip_ver=4) -%}
-{% set allow_nets = normalize_addrs(firewall_iface, 'allow', ip_ver).split(',') | difference(['']) %}
-{% set deny_nets = normalize_addrs(firewall_iface, 'deny', ip_ver).split(',') | difference(['']) %}
+{% set allow_nets = normalize_addrs(firewall_iface, 'allow', ip_ver).split(',') | difference(['']) | sort %}
+{% set deny_nets = normalize_addrs(firewall_iface, 'deny', ip_ver).split(',') | difference(['']) | sort %}
 {% set allow_dst = '-d '+firewall_iface.allow_dst if 'allow_dst' in firewall_iface else '' %}
 {% for deny_net in deny_nets %}
   $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j LOG_DROP_CHECKIF_DENY
