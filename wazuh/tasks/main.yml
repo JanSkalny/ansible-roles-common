@@ -4,7 +4,7 @@
 # should we perform wazuh upgrade?
 - name: is wazuh upgrade needed?
   fail:
-    msg: "wazuh running and deployed version mismatch, upgrade using wazuh_upgrade=1"
+    msg: "wazuh running and deployed version mismatch, upgrade using `-e wazuh_upgrade=1`"
   when: wazuh_indexer_is_running and git_repo.stdout != wazuh_version and wazuh_upgrade|default(0) == 0
 
 - name: stop wazuh, if already running and version mismatch
