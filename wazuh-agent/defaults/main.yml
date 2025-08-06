@@ -1,2 +1,5 @@
 #wazuh_manager: "x.x.x.x"
 wazuh_agent_version: "4.7.5"
+
+# wazuh-agent auditd integration
+wazuh_agent_auditd: False
