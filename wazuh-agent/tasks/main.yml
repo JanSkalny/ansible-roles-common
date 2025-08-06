@@ -65,6 +65,24 @@
     mode: 0660
   notify: restart wazuh-agent service
 
+- name: deploy authd.pass
+  copy:
+    content: |
+      {{ wazuh_agent_password }}
+    dest: "/var/ossec/etc/authd.pass"
+    owner: "root"
+    group: "wazuh"
+    mode: 0640
+  when: wazuh_agent_password|default("") != ""
+  notify: restart wazuh-agent service
+
+- name: undeploy authd.pass
+  file:
+    path: "/var/ossec/etc/authd.pass"
+    state: absent
+  when: wazuh_agent_password|default("") == ""
+  notify: restart wazuh-agent service
+
 - name: make sure wazuh-agent service is enabled
   service:
     name: wazuh-agent
