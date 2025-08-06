@@ -58,11 +58,14 @@
 
 - name: configure wazuh-agent
   template:
-    src: ossec.conf
-    dest: /var/ossec/etc/ossec.conf
+    src: "{{ item }}"
+    dest: "/var/ossec/etc/{{ item }}"
     owner: root
     group: wazuh
     mode: 0660
+  with_items:
+    - ossec.conf
+    - local_internal_options.conf
   notify: restart wazuh-agent service
 
 - name: deploy authd.pass
