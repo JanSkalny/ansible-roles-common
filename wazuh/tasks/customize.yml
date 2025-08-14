@@ -27,7 +27,7 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
-- name: restart {{ item }}
+- name: restart docker socket/service
   ansible.builtin.systemd_service:
     name: "{{ item }}"
     state: restarted
