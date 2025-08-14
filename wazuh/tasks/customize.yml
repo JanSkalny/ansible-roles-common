@@ -88,6 +88,27 @@
 #- debug:
 #    msg: "{{ res_tests }}"
 
+
+## TODO: deleteme when we reach v4.13
+- name: copy sensor-specific decoders to wazuh manager
+  ansible.builtin.template:
+    src: "{{ root_dir }}files/detection/wazuh/decoders/{{ item }}_decoders.xml"
+    dest: "/var/lib/docker/volumes/wazuh_wazuh_etc/_data/decoders/{{ item }}_decoders.xml"
+    owner: "{{ wazuh_uid }}"
+    group: "{{ wazuh_uid }}"
+  with_items: "{{ wazuh_decoders }}"
+  when: wazuh_decoders is defined and wazuh_decoders | length > 0
+
+- name: copy sensor-specific rules to wazuh manager
+  ansible.builtin.template:
+    src: "{{ root_dir }}files/detection/wazuh/rules/1-{{ item }}_rules.xml"
+    dest: "/var/lib/docker/volumes/wazuh_wazuh_etc/_data/rules/1-{{ item }}_rules.xml"
+    owner: "{{ wazuh_uid }}"
+    group: "{{ wazuh_uid }}"
+  with_items: "{{ wazuh_rules }}"
+  when: wazuh_rules is defined and wazuh_rules | length > 0
+
+
 - name: generate config files
   template:
     src: "{{ item.src }}"
