@@ -37,6 +37,35 @@
   when:
     slice.changed
 
+
+- name: read docker's daemon.json
+  ansible.builtin.shell: cat "/etc/docker/daemon.json"
+  register: jsondata
+  changed_when: false
+  check_mode: no
+
+- name: print old daemon.json
+  ansible.builtin.debug:
+    var: jsondata.stdout
+
+- name: update fact with slice information
+  ansible.builtin.set_fact:
+    jsondata: "{{ jsondata.stdout | from_json | combine(item, recursive=False) }}"
+  loop:
+    - { "cgroup-parent": "docker.slice" }
+
+- name: print new daemon.json
+  ansible.builtin.debug:
+    var: jsondata
+  check_mode: no
+
+- name: save new daemon.json
+  ansible.builtin.copy:
+    content: "{{ jsondata | to_nice_json }}"
+    dest: "/etc/docker/daemon.json"
+  register: daemonjson
+
+
 - name: making sure wazuh manager is running
   fail:
     msg: "wazuh manager not running!"
