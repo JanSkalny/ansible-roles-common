@@ -1,0 +1,4 @@
+drbg_vg: "vg0"
+drbd_separate_meta: false
+drbd_meta_vg: "{{ drbd_vg }}"
+drbd_meta_suffix: "_meta"

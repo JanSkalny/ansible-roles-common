@@ -1,0 +1,56 @@
+- name: check if device minor and name match
+  shell: "awk '/device minor/ {print $3}' /etc/drbd.d/{{ drbd_res_name }}.res | tr -d ';'"
+  check_mode: no
+  changed_when: false
+  register: drbd_minor
+
+- name: check if resource still configured
+  shell: drbdadm status monarc.verde.sk
+  check_mode: no
+  changed_when: drbd_status.rc == 0
+  failed_when: drbd_status.rc not in [0, 1, 10]
+  register: drbd_status
+
+- fail:
+    msg: "drbd_minor and drbd_res_id do not match"
+  when: drbd_minor.stdout != drbd_res_id and drbd_status.rc not in [1, 10]
+
+- name: drbdadm down {{ drbd_res_name }}
+  shell: "drbdadm down {{ drbd_res_name }}"
+  when: drbd_status.rc not in [1, 10]
+
+- name: check if resource is down
+  shell: drbdadm status monarc.verde.sk
+  check_mode: no
+  changed_when: false
+  failed_when: drbd_status.rc not in [0, 1, 10]
+  register: drbd_status
+  until: drbd_status.rc in [1, 10]
+  retries: 30
+  delay: 2
+
+- name: destroy resource config
+  file:
+    path: /etc/drbd.d/{{drbd_res_name}}.res
+    state: absent
+
+- debug:
+    msg: "now go, and `lvremove /dev/{{ drbd_vg }}/{{ drbd_res_name }}` or force using `-e drbd_destroy_lvm=1` "
+  when: not drbd_destroy_lvm|default(false)
+
+- name: destroy lv
+  lvol:
+    lv: "{{ drbd_res_name }}"
+    vg: "{{ drbd_vg }}"
+    state: absent
+    force: true
+  when: drbd_destroy_lvm|default(false)
+
+- name: destroy meta lv
+  lvol:
+    lv: "{{ drbd_res_name }}{{ drbd_meta_suffix }}"
+    vg: "{{ drbd_meta_vg }}"
+    state: absent
+    force: true
+  when: drbd_separate_meta and drbd_destroy_lvm|default(false)
+
