@@ -37,6 +37,7 @@
   systemd:
     name: "{{ item }}"
     enabled: yes
+    masked: no
   with_items:
     - systemd-networkd
     - networkd-dispatcher
@@ -46,6 +47,7 @@
     name: "{{ item }}"
     state: stopped
     enabled: no
+    masked: yes
   with_items:
     - systemd-resolved
 
