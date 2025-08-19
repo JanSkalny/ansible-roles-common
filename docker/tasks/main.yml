@@ -31,15 +31,17 @@
   apt:
     name:
     - docker-ce
-    - python3-pip
+#FIXME: ubuntu24.04
+#    - python3-pip
     state: present
   tags: install
 
-- name: install docker & docke-compose python bindings
-  pip:
-    name:
-    - docker
-  tags: install
+#FIXME: ubuntu24.04
+#- name: install docker & docke-compose python bindings
+#  pip:
+#    name:
+#    - docker
+#  tags: install
 
 - name: expose docker daemon
   include_tasks: expose-daemon.yml
