@@ -1,1 +1,7 @@
 auditd_log_execve: False
+auditd_log_auth: False
+auditd_log_priv: False
+auditd_log_identity: False
+auditd_log_bin: False
+auditd_log_etc: False
+auditd_log_kmod: False

@@ -1,35 +1,49 @@
+{% if auditd_log_auth %}
 ## User logins/logouts
 -w /var/log/faillog -p wa -k logins
 -w /var/log/lastlog -p wa -k logins
 -w /var/log/tallylog -p wa -k logins
+{% endif %}
 
+{% if auditd_log_priv %}
 ## Privilege escalation
 -w /etc/sudoers -p wa -k priv_esc
 -w /etc/sudoers.d/ -p wa -k priv_esc
 -a always,exit -F arch=b64 -S execve -F euid=0 -k root_cmd
 -a always,exit -F arch=b32 -S execve -F euid=0 -k root_cmd
+{% endif %}
 
+{% if auditd_log_identity %}
 ## User/group changes
 -w /etc/passwd -p wa -k identity
 -w /etc/group -p wa -k identity
 -w /etc/shadow -p wa -k identity
 -w /etc/gshadow -p wa -k identity
+{% endif %}
 
-## Binary/Config changes
+{% if auditd_log_bin %}
+## Binary changes
 -w /bin/ -p wa -k bin_mod
 -w /sbin/ -p wa -k bin_mod
 -w /usr/bin/ -p wa -k bin_mod
 -w /usr/sbin/ -p wa -k bin_mod
--w /etc/ -p wa -k etc_mod
+{% endif %}
 
+{% if auditd_log_etc %}
+## Config changes
+-w /etc/ -p wa -k etc_mod
+{% endif %}
+
+{% if auditd_log_kmod %}
 ## Kernel mods
 -w /sbin/insmod -p x -k kernel_mod
 -w /sbin/rmmod -p x -k kernel_mod
 -w /sbin/modprobe -p x -k kernel_mod
 -a always,exit -F arch=b64 -S init_module,finit_module,delete_module -k kernel_mod
 -a always,exit -F arch=b32 -S init_module,delete_module -k kernel_mod
+{% endif %}
 
-{% if auditd_log_execve|default(False) %}
+{% if auditd_log_execve %}
 ## execve
 -a always,exit -F arch=b64 -S execve -k exec_log
 -a always,exit -F arch=b32 -S execve -k exec_log
