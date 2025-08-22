@@ -58,12 +58,40 @@
 
 - name: configure wazuh-agent
   template:
-    src: ossec.conf
-    dest: /var/ossec/etc/ossec.conf
+    src: "{{ item }}"
+    dest: "/var/ossec/etc/{{ item }}"
     owner: root
     group: wazuh
     mode: 0660
+  with_items:
+    - ossec.conf
+    - local_internal_options.conf
   notify: restart wazuh-agent service
+
+- name: deploy authd.pass
+  copy:
+    content: |
+      {{ wazuh_agent_password }}
+    dest: "/var/ossec/etc/authd.pass"
+    owner: "root"
+    group: "wazuh"
+    mode: 0640
+  when: wazuh_agent_password|default("") != ""
+  notify: restart wazuh-agent service
+
+- name: undeploy authd.pass
+  file:
+    path: "/var/ossec/etc/authd.pass"
+    state: absent
+  when: wazuh_agent_password|default("") == ""
+  notify: restart wazuh-agent service
+
+- name: auditd intergration
+  template:
+    src: "auditd.rules"
+    dest: /etc/audit/rules.d/wazuh.rules
+  when: wazuh_agent_auditd | default(False)
+  notify: reload audit rules
 
 - name: make sure wazuh-agent service is enabled
   service:
