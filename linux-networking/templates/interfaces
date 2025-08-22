@@ -24,11 +24,12 @@ iface lo inet loopback
 	#bond-primary {{ iface_name }}
 {% endif %}
 {% if 'bond_slaves' in iface %}
-	bond-slaves none
+	bond-slaves {{ iface.bond_slaves | join(" ") }}
 	bond-mode 802.3ad
-	bond-xmit-hash-policy {{ iface.bond_hash_policy | default('layer2+3') }}
+	bond-xmit-hash-policy {{ iface.bond_hash_policy | default('layer3+4') }}
 	bond-miimon 100
 	bond-lacp-rate 1
+	#up ip link set $IFACE up
 {% endif %}
 {% if 'bridge_ports' in iface %}
 	bridge_ports {{ iface.bridge_ports | join(' ') }}
@@ -68,14 +69,16 @@ iface lo inet loopback
 
 {% set ordered_networking = networking.copy() %}
 {% for iface_name,item in networking.items() %}
-{% if iface_name.startswith('bond') and 'order' not in item %}
-{% set x=ordered_networking[iface_name].update({'order': 10})  %}
-{% elif iface_name.startswith('vlan') and 'order' not in item %}
-{% set x=ordered_networking[iface_name].update({'order': 20})  %}
-{% elif iface_name.startswith('brVlan') and 'order' not in item %}
-{% set x=ordered_networking[iface_name].update({'order': 30})  %}
-{% elif 'order' not in item %}
-{% set x=ordered_networking[iface_name].update({'order': 100})  %}
+{% if 'order' not in item %}
+{% if 'bond_slaves' in item or iface_name.startswith('bond') %}
+{% set x=ordered_networking[iface_name].update({'order': 10}) %}
+{% elif 'vlan-iface' in item or iface_name.startswith('vlan') %}
+{% set x=ordered_networking[iface_name].update({'order': 20}) %}
+{% elif 'bridge_ports' in item or iface_name.startswith('brVlan') %}
+{% set x=ordered_networking[iface_name].update({'order': 30}) %}
+{% else %}
+{% set x=ordered_networking[iface_name].update({'order': 0}) %}
+{% endif %}
 {% endif %}
 {% endfor %}
 

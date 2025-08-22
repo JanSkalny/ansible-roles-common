@@ -3,9 +3,14 @@ virtual_dir: "/var/lib/virtual"
 virtual_images:
 - name: "jammy-server-cloudimg-amd64.img"
   url: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+- name: "noble-server-cloudimg-amd64.img"
+  url: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
+- name: "debian-12-genericcloud-amd64.qcow2"
+  url: "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2"
 
-virtual_version: "ubuntu22.04"
-virtual_image: "{{ virtual_dir }}/images/jammy-server-cloudimg-amd64.img"
+
+virtual_version: "ubuntu24.04"
+virtual_image: "{{ virtual_dir }}/images/noble-server-cloudimg-amd64.img"
 
 # preseed config and default user
 virtual_preseed_country: "SK"
