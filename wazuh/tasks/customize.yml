@@ -27,7 +27,7 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
-- name: restart {{ item }}
+- name: restart docker socket/service
   ansible.builtin.systemd_service:
     name: "{{ item }}"
     state: restarted
@@ -36,6 +36,35 @@
     - docker.service
   when:
     slice.changed
+
+
+- name: read docker's daemon.json
+  ansible.builtin.shell: cat "/etc/docker/daemon.json"
+  register: jsondata
+  changed_when: false
+  check_mode: no
+
+- name: print old daemon.json
+  ansible.builtin.debug:
+    var: jsondata.stdout
+
+- name: update fact with slice information
+  ansible.builtin.set_fact:
+    jsondata: "{{ jsondata.stdout | from_json | combine(item, recursive=False) }}"
+  loop:
+    - { "cgroup-parent": "docker.slice" }
+
+- name: print new daemon.json
+  ansible.builtin.debug:
+    var: jsondata
+  check_mode: no
+
+- name: save new daemon.json
+  ansible.builtin.copy:
+    content: "{{ jsondata | to_nice_json }}"
+    dest: "/etc/docker/daemon.json"
+  register: daemonjson
+
 
 - name: making sure wazuh manager is running
   fail:
@@ -87,6 +116,27 @@
 
 #- debug:
 #    msg: "{{ res_tests }}"
+
+
+## TODO: deleteme when we reach v4.13
+- name: copy sensor-specific decoders to wazuh manager
+  ansible.builtin.template:
+    src: "{{ root_dir }}files/detection/wazuh/decoders/{{ item }}_decoders.xml"
+    dest: "/var/lib/docker/volumes/wazuh_wazuh_etc/_data/decoders/{{ item }}_decoders.xml"
+    owner: "{{ wazuh_uid }}"
+    group: "{{ wazuh_uid }}"
+  with_items: "{{ wazuh_decoders }}"
+  when: wazuh_decoders is defined and wazuh_decoders | length > 0
+
+- name: copy sensor-specific rules to wazuh manager
+  ansible.builtin.template:
+    src: "{{ root_dir }}files/detection/wazuh/rules/1-{{ item }}_rules.xml"
+    dest: "/var/lib/docker/volumes/wazuh_wazuh_etc/_data/rules/1-{{ item }}_rules.xml"
+    owner: "{{ wazuh_uid }}"
+    group: "{{ wazuh_uid }}"
+  with_items: "{{ wazuh_rules }}"
+  when: wazuh_rules is defined and wazuh_rules | length > 0
+
 
 - name: generate config files
   template:
