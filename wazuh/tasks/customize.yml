@@ -153,6 +153,22 @@
       dest: ossec.conf
   notify: reconfigure wazuh manager
 
+- name: deploy authd.pass
+  copy:
+    content: |
+      {{ wazuh_agent_password }}
+    dest: "/var/lib/docker/volumes/wazuh_wazuh_etc/_data/authd.pass"
+    owner: "0"
+    group: "{{ wazuh_uid }}"
+  when: wazuh_agent_password|default("") != ""
+  notify: reconfigure wazuh manager
+
+- name: undeploy authd.pass
+  file:
+    path: "/var/lib/docker/volumes/wazuh_wazuh_etc/_data/authd.pass"
+    state: absent
+  when: wazuh_agent_password|default("") == ""
+  notify: reconfigure wazuh manager
 
 - name: copy wazuh_manager.conf to git repo
   ansible.builtin.template:

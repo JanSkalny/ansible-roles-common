@@ -1,0 +1,4 @@
+{% if wazuh_agent_auditd | default(False) %}
+-a exit,always -F arch=b64 -F euid=0 -S execve -k  audit-wazuh-c
+-a exit,always -F arch=b32 -F euid=0 -S execve -k  audit-wazuh-c
+{% endif %}

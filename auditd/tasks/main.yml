@@ -1,0 +1,20 @@
+- name: install auditd packages
+  package:
+    name:
+      - auditd
+      - audispd-plugins
+    state: present
+  tags: install
+
+- name: configure custom auditd rules
+  template:
+    src: custom.rules
+    dest: /etc/audit/rules.d/custom.rules
+  notify: reload audit rules
+
+- name: ensure auditd is running
+  service:
+    name: auditd
+    state: started
+    enabled: yes
+

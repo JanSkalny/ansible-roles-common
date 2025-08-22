@@ -2,3 +2,6 @@
   service:
     name: "wazuh-agent"
     state: restarted
+
+- name: reload audit rules
+  command: augenrules --load

@@ -1,0 +1,3 @@
+- name: reload audit rules
+  command: augenrules --load
+

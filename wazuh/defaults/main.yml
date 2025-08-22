@@ -2,9 +2,12 @@
 #wazuh_secret: "FIXME"
 
 # override per-host
-wazuh_version: "v4.7.5"
+wazuh_version: "v4.12.0"
 wazuh_expose_syslog: True
 wazuh_indexer_ram: "4096m"
+
+# enable wazuh agent password authentication 
+#wazuh_agent_password: "FooBar"
 
 # list of vulnerability-detectors by platfrom. eg. debian, ubuntu, centos, ...
 wazuh_vuln_detectors: []
