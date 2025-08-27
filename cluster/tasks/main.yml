@@ -88,6 +88,7 @@
     - cluster-drain.sh
     - cluster-unmove.sh
     - cluster-list-vms.sh
+    - cluster-list-obsolete.sh
     - cluster-balance.sh
     - cluster-check.sh
     - cluster-tools.sh
