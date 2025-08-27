@@ -22,6 +22,7 @@ Notes:
 Options:
   -a           Disable confirmation prompts (assume "yes")
   -s           Run in simulation (dry-run) mode
+  -f           Ingore fencing operations and allow migration in "S" state.
   -h, --help   Show this help and exit
 
 Examples:
@@ -34,10 +35,11 @@ EOF
 }
 
 # parse arguments
-while getopts ":ash-" opt; do
+while getopts ":asfh-" opt; do
   case ${opt} in
     a) ASK_FOR_CONFIRMATION=false ;;
     s) SIMULATE=true ;;
+    f) IGNORE_FENCING=true ;;
     h) usage; exit 0 ;;
     -)
       case "${OPTARG}" in

@@ -6,6 +6,7 @@ MAX_OBSERVE_TIME=300
 MAX_MIGRATE_TIME=300
 AUTO_MIGRATE_TIME=5
 WAIT_AFTER_MIGRATION=10
+IGNORE_FENCING=false
 
 # cache crm conf show output
 CRM_CONF="$(crm conf show)"
@@ -21,7 +22,11 @@ fail() {
 
 check_status() {
   CNT=$( crm status | grep -i "Pending Fencing Actions" | wc -l | awk '{print $1}' )
-  [ $CNT -ne 0 ] && echo -n "S" && return 1
+  if [[ $IGNORE_FENCING == true ]]; then
+    [ $CNT -ne 0 ] && echo -n "s"
+  else
+    [ $CNT -ne 0 ] && echo -n "S" && return 1
+  fi
 
   CNT=$( crm status | grep -i "failed" | wc -l | awk '{print $1}' )
   [ $CNT -ne 0 ] && echo -n "f" && return 1

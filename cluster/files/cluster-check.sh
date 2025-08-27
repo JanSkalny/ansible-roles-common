@@ -28,7 +28,7 @@ done
 echo ""
 
 # attemt to name every vm xml file
-echo "VMs defined in XML files..."
+echo "Make sure all VMs declared in XML files are defined in corosync and running..."
 for XML in /var/lib/virtual/conf/*.xml; do
   # figure out vm xml file and fqdn
   NAME=$( cluster_vm_name_from_xml "$XML" ) || continue
