@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# tunables
+MIN_OBSERVE_TIME=10
+MAX_OBSERVE_TIME=300
+MAX_MIGRATE_TIME=300
+AUTO_MIGRATE_TIME=5
+WAIT_AFTER_MIGRATION=10
+
 warn() {
   echo "$*" 1>&2
 }
@@ -46,17 +53,25 @@ wait_for_healthy_cluster() {
   echo " OK"
 }
 
-cluster_vm_name_from_xml() {
-  RES=$(cat "$1" | xmllint --xpath '/domain/metadata/fqdn/text()' - 2>/dev/null)
+cluster_vm_fqdn_from_xml() {
+  [ -f "$XML" ] || fail "$1 file missing!"
+  RES=$( cat "$1" | xmllint --xpath '/domain/metadata/fqdn/text()' - 2>/dev/null )
   [ "$RES" == "" ] && fail "$1 does not have a fqdn defined in its metadata!"
   echo "$RES"
 }
 
-cluster_vm_id_from_xml() {
-  #XXX: fixme for short uuids
-  RES=$(cat "$1" | xmllint --xpath '/domain/uuid/text()' - | cut -d '-' -f 1 )
-  [ "$RES" == "" ] && fail "$1 does not have uuid defined!"
-  echo "vm-$RES"
+cluster_vm_name_from_xml() {
+  [ -f "$XML" ] || fail "$1 file missing!"
+  RES=$( cat "$1" | xmllint --xpath '/domain/name/text()' - 2>/dev/null )
+  [ "$RES" == "" ] && fail "$1 does not have name defined!"
+  echo "$RES"
+}
+
+cluster_xml_from_vm_name() {
+  RES=$( grep -l "<name>$1</name>" /var/lib/virtual/conf/*.xml 2>/dev/null )
+  [ "$RES" == "" ] && fail "$1 does not have /var/lib/virtual/conf/ xml file!"
+  [ "$(printf '%s\n' "$RES" | wc -l)" -ne 1 ] && fail "$1 is defined in more than one xml file!"
+  echo "$RES"
 }
 
 cluster_vm_active_node() {

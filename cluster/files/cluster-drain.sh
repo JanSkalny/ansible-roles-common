@@ -1,23 +1,49 @@
 #!/bin/bash
 
-# tunables
-MIN_OBSERVE_TIME=10
-MAX_OBSERVE_TIME=300
-MAX_MIGRATE_TIME=300
-AUTO_MIGRATE_TIME=5
-WAIT_AFTER_MIGRATION=10
-
+# get common functions from cluster-tools.sh
 . /usr/local/bin/cluster-tools.sh
 
-IGNORE_HOST=$( hostname -s )
+DRAIN_FROM=$( hostname -s )
 ASK_FOR_CONFIRMATION=true
 SIMULATE=false
 
+usage() {
+  cat <<'EOF'
+Usage: cluster-drain.sh [options] [FILTER]
+
+Safely migrate VMs from selected node(s).
+
+Notes:
+- provide FILTER (defaults to `hostname -s`) to migrate from multiple hosts.
+- only online nodes are considered valid migration targets.
+- `service_group` requirements are ignored when draining nodes, instead 
+  round-robin is used. Use `cluster-balance.sh` to rebalance if required.
+
+Options:
+  -a           Disable confirmation prompts (assume "yes")
+  -s           Run in simulation (dry-run) mode
+  -h, --help   Show this help and exit
+
+Examples:
+  cluster-drain.sh                      # migrate from current host only
+  cluster-drain.sh srv-1-               # migrate from hosts matching 'srv-1-'
+  cluster-drain.sh -a                   # migrate from current host, no prompts
+  cluster-drain.sh -a -s                # simulate migration from current host 
+  cluster-drain.sh --help               # show help
+EOF
+}
+
 # parse arguments
-while getopts ":as" opt; do
+while getopts ":ash-" opt; do
   case ${opt} in
     a) ASK_FOR_CONFIRMATION=false ;;
     s) SIMULATE=true ;;
+    h) usage; exit 0 ;;
+    -)
+      case "${OPTARG}" in
+        help) usage; exit 0 ;;
+        *) fail "Invalid option: --$OPTARG" ;;
+      esac ;;
     \?) fail "Invalid option: -$OPTARG" ;;
   esac
 done
@@ -32,42 +58,56 @@ fi
 
 # remainder is ignore host (defaults to hostname -s)
 if [[ ! -z "$1" ]]; then
-    IGNORE_HOST="$1"
+    DRAIN_FROM="$1"
 fi
 
-# get list of all cluster ndoes except ariber and IGNORE_HOST provided
-NODES=($( crm status | grep -oP 'Online: \[\K[^\]]+' | tr ', ' '\n' | grep -v '^$' | grep -v arbiter | grep -v "$IGNORE_HOST" ))
+# get list of all cluster nodes
+# (except DRAIN_FROM provided)
+ALL_NODES=($( crm status | grep -oP 'Online: \[\K[^\]]+' | tr ', ' '\n' | grep -v '^$' | grep -v "$DRAIN_FROM" ))
 NODE_INDEX=0
 
 # make sure we have some target nodes
-[ ${#NODES[@]} -eq 0 ] && fail "No valid migration targets!"
-echo "Migration targets are ${NODES[@]}"
+[ ${#ALL_NODES[@]} -eq 0 ] && fail "No valid migration targets!"
+echo "Migration targets are ${ALL_NODES[@]}"
 
-for VM in $( virsh list | grep running | awk '{print $2}'); do
-  # make sure cluster is healthy
-  wait_for_healthy_cluster
+# make sure cluster is healthy
+wait_for_healthy_cluster
 
-  # get VM name from config xml
-  UUID=$(virsh dumpxml "$VM" | xmllint --xpath 'string(/domain/uuid/text())' -)
-  [ -z "$UUID" ] && fail "$VM does not have uuid?"
-  XML_FILE=$(grep -l "<name>$VM</name>" /var/lib/virtual/conf/*.xml)
-  [ -f "$XML_FILE" ] || fail "$VM does not have XML file"
-  NAME=$( cluster_vm_name_from_xml "$XML_FILE" )
+for XML in /var/lib/virtual/conf/*.xml; do
+  # figure out vm name and fqdn
+  NAME=$( cluster_vm_name_from_xml "$XML" ) || exit 1
+  FQDN=$( cluster_vm_fqdn_from_xml "$XML" ) || exit 1
 
   # check if VM is defined in corosync
-  crm conf show | grep "${VM}_vm" > /dev/null
-  [ $? -ne 0 ] && warn "$NAME ($VM) is not defined in corosync!" && continue
+  crm conf show | grep "${NAME}_vm" > /dev/null
+  [ $? -ne 0 ] && warn "- $FQDN ($NAME) is not defined in corosync!!" && continue
+
+  # figure out where is vm running
+  ACTIVE_NODE=$( cluster_vm_active_node "$NAME" )
+  [ "$ACTIVE_NODE" == "" ] && warn "- $FQDN ($NAME) is not running!!" && continue
+
+  # determine if we should migrate VM as well as new node name
+  # don't migrate service, if not running on node we're trying to train
+  echo "$ACTIVE_NODE" | grep -q "$DRAIN_FROM" 2>/dev/null
+  [ $? -ne 0 ] && continue
 
   # round-robin all cluster nodes when migrating
-  NEXT_NODE="${NODES[NODE_INDEX++ % ${#NODES[@]}]}"
+  NEXT_NODE="${ALL_NODES[NODE_INDEX++ % ${#ALL_NODES[@]}]}"
 
   if [[ "$ASK_FOR_CONFIRMATION" == true ]]; then
     # confirm migration
-    echo "Migrate $NAME to $NEXT_NODE?"
-    read -p "Press Enter to continue..."
+    read -p "Move $FQDN to $NEXT_NODE? [Y/n] " cont
+    if [[ $cont =~ ^[Yy]$ || $cont == "" ]]; then
+      # continue with migration
+      echo -n ""
+    else
+      # don't migrate
+      echo "VM $FQDN ($NAME) left running on $ACTIVE_NODE"
+      continue
+    fi
   else
     # wait for 5 seconds and then continue
-    echo -n "Will migrate $NAME to $NEXT_NODE in"
+    echo -n "Will migrate $FQDN ($NAME) to $NEXT_NODE in"
     for i in $(seq "$AUTO_MIGRATE_TIME" -1 1); do
       echo -n " $i"
       sleep 1
@@ -77,30 +117,20 @@ for VM in $( virsh list | grep running | awk '{print $2}'); do
 
   if [[ "$SIMULATE" == true ]]; then
     # simulate migration
-    echo "simulated crm res move ${VM}_vm $NEXT_NODE"
+    echo "Simulated crm res move ${NAME}_vm $NEXT_NODE"
     sleep 1
   else
+    # make sure cluster is healthy (and wait for migration)
+    wait_for_healthy_cluster
+
     # request migration
-	echo -n "Starting migration... "
-    crm res move "${VM}_vm" $NEXT_NODE > /dev/null 2>/dev/null
+    echo "Start migration"
+    crm res move "${NAME}_vm" $NEXT_NODE >/dev/null 2>/dev/null
+    sleep $WAIT_AFTER_MIGRATION
 
-    # observe migration process
-    for I in $( seq 1 $MAX_MIGRATE_TIME ); do
-      sleep 1
-      STATUS=$( virsh list | grep $VM | awk '{print $3}')
-      virsh list | grep $VM > /dev/null
+    # make sure cluster is healthy (and wait for migration)
+    wait_for_healthy_cluster
 
-      # stop waiting
-      if [ $? -eq 1 ]; then
-        echo " migrated!"
-        sleep $WAIT_AFTER_MIGRATION
-        break
-      fi
-	  echo -n "${STATUS:0:1}"
-    done
-
-    # if still running, migration failed
-    virsh list | grep $UUID > /dev/null
-    [ $? -eq 1 ] || echo " failed!"
+    #XXX: add check if VM moved correctly
   fi
 done

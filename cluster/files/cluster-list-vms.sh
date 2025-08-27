@@ -1,28 +1,22 @@
 #!/bin/bash
 
-warn() {
-  echo "$*" 1>&2
-}
+# get common functions from cluster-tools.sh
+. /usr/local/bin/cluster-tools.sh
 
-fail() {
-  echo "$*" 1>&2
-  exit 1
-}
-
-# attempt to name every running vm on this node
-for VM in $( virsh list | grep running | awk '{print $2}'); do
+# attemt to name every vm xml file
+for XML in /var/lib/virtual/conf/*.xml; do
   # get VM name from config xml
-  UUID=$(virsh dumpxml "$VM" | xmllint --xpath 'string(/domain/uuid/text())' -)
-  [ -z "$UUID" ] && fail "$VM does not have uuid?"
-  XML_FILE=$(grep -l "<name>$VM</name>" /var/lib/virtual/conf/*.xml)
-  [ -f "$XML_FILE" ] || fail "$VM does not have XML file"
-  NAME=$(cat "$XML_FILE" | xmllint --xpath '/domain/metadata/fqdn/text()' - 2>/dev/null)
-  [ -z "$NAME" ] && fail "$VM does not have a fqdn defined in its metadata!"
+  NAME=$( cluster_vm_name_from_xml "$XML" ) || exit 1
+  FQDN=$( cluster_vm_fqdn_from_xml "$XML" ) || exit 1
 
   # check if VM is defined in corosync
-  crm conf show | grep "${VM}_vm" > /dev/null
-  [ $? -ne 0 ] && warn "$NAME ($VM) is not defined in corosync!" && continue
+  crm conf show | grep "${NAME}_vm" > /dev/null
+  [ $? -ne 0 ] && warn "$FQDN ($NAME) is not defined in corosync!" && continue
+
+  # figure out where is vm running
+  ACTIVE_NODE=$( cluster_vm_active_node "$NAME" )
+  [ "$ACTIVE_NODE" == "" ] && warn "$FQDN ($NAME) is not running!!" && continue
 
   # print vm name
-  echo "$NAME ($VM)"
+  echo "$FQDN ($NAME) running on $ACTIVE_NODE"
 done

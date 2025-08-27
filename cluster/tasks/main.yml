@@ -89,6 +89,7 @@
     - cluster-unmove.sh
     - cluster-list-vms.sh
     - cluster-balance.sh
+    - cluster-check.sh
     - cluster-tools.sh
   tags:
   - install
