@@ -10,6 +10,6 @@ for XML in /var/lib/virtual/conf/*.xml; do
   FQDN=$( cluster_vm_fqdn_from_xml "$XML" ) || continue
 
   # check if VM is defined in corosync
-  crm conf show | grep "${NAME}_vm" > /dev/null
+  echo "$CRM_CONF" | grep "${NAME}_vm" >/dev/null
   [ $? -ne 0 ] && warn "$XML ($FQDN) not defined in corosync"
 done
