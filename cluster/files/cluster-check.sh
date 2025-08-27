@@ -43,5 +43,5 @@ for XML in /var/lib/virtual/conf/*.xml; do
   [ "$ACTIVE_NODE" == "" ] && warn "- $FQDN ($NAME) is not running!!" && continue
   
   # print vm name
-  echo "- $FQDN running on $ACTIVE_NODE"
+  #echo "- $FQDN running on $ACTIVE_NODE"
 done
