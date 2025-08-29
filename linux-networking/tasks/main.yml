@@ -23,6 +23,15 @@
     name: common/linux-hostname
   tags: configure
 
+- name: disable systemd services
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+    masked: yes
+  with_items:
+    - systemd-resolved
+
 - name: remove resolvconf
   package:
     name: resolvconf
