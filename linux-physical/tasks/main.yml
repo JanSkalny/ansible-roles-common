@@ -10,3 +10,17 @@
       - ipmitool
     state: present
 
+- name: disable fwupd
+  service:
+    name: fwupd
+    state: stopped
+    enabled: no
+    masked: yes
+  when: linux_disable_fwupd
+
+- name: enable fwupd
+  service:
+    name: fwupd
+    enabled: yes
+    masked: no
+  when: not linux_disable_fwupd
