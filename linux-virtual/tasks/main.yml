@@ -9,3 +9,4 @@
     state: stopped
     enabled: no
     masked: yes
+  ignore_errors: yes
