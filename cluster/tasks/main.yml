@@ -11,6 +11,14 @@
     - dlm-controld
   tags: install
 
+- name: remove ocfs and dlmd
+  apt:
+    name:
+      - ocfs2-tools
+      - dlm-controld
+    state: absent
+  tags: install
+
 - name: install additional cluster sw (jammy)
   apt:
     name:
