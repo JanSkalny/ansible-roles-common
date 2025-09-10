@@ -4,6 +4,7 @@ zone "{{ zone }}" {
   zone-statistics no;
   type master;
   file "/etc/bind/master/{{ zone }}";
+  forwarders {};
 };
 {% endfor %}
 
