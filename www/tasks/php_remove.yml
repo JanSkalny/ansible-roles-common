@@ -4,4 +4,5 @@
     name: "php{{ php_version }}*"
     state: absent
     purge: yes
+  ignore_errors: true
 
