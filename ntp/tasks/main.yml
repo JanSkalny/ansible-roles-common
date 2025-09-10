@@ -1,7 +1,41 @@
----
+- name: set distro-specific variables
+  include_vars: '{{ item }}'
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+    - default.yml
+
+- name: uninstall chrony
+  package:
+    name: chrony
+    state: absent
+  tags: install
+
+- name: install ntpdate
+  package:
+    name: ntpdate
+    state: present
+  tags: install
+
+- name: remove ntpdate if-up script (blocks ntp on startup)
+  file:
+    path: "/etc/network/if-up.d/ntpdate"
+    state: absent
+  tags: 
+  - install
+  - configure
+
+- name: disable timesyncd
+  systemd:
+    name: systemd-timesyncd
+    enabled: no
+    state: stopped
+  failed_when: false
+  tags: 
+  - install
+  - configure
 
 - include_tasks: ntp.yml
-  when: ntp_servers is defined and 'ntp' in ntp_service
+  when: ansible_distribution_major_version|int <= 22
 
-- include_tasks: chrony.yml
-  when: ntp_servers is defined and 'chrony' in ntp_service
+- include_tasks: ntpsec.yml
+  when: ansible_distribution_major_version|int >= 24

@@ -1,21 +1,21 @@
-- name: uninstall ntpsec
+- name: uninstall ntp
   package:
-    name: ntpsec
+    name: ntp
     state: absent
   tags: install
 
-- name: install ntp
+- name: install ntpsec
   package:
-    name: ntp
+    name: ntpsec
     state: present
   tags: install
 
 - import_tasks: run-ntpdate.yml
 
-- name: configure ntp
+- name: configure ntpsec
   template:
-    src: ntp.conf
-    dest: /etc/ntp.conf
+    src: ntpsec.conf
+    dest: /etc/ntpsec/ntp.conf
     owner: root
     mode: 0640
   tags: configure
