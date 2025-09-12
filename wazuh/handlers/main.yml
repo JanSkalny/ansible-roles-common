@@ -18,7 +18,28 @@
   debug:
     msg: "FIXME: restart entire wazuh"
 
+
 - name: reload syslog-ng
   ansible.builtin.systemd_service:
     name: syslog-ng
     state: reloaded
+
+
+- name: restart wazuh
+  block:
+  - name: compose down
+    ansible.builtin.shell:
+      docker compose down
+    args:
+      chdir: /opt/wazuh-docker/single-node
+  - set_fact:
+      wazuh_indexer_is_running: false
+    when: wazuh_indexer_is_running
+  - shell:
+      docker compose up -d --remove-orphans
+    args:
+      chdir: /opt/wazuh-docker/single-node
+    when: not wazuh_indexer_is_running
+  - set_fact:
+      wazuh_indexer_is_running: true
+  when: manager_conf.changed or daemonjson.changed
