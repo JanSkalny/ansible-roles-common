@@ -38,30 +38,43 @@
     slice.changed
 
 
-- name: read docker's daemon.json
-  ansible.builtin.shell: cat "/etc/docker/daemon.json"
-  register: jsondata
-  changed_when: false
-  check_mode: no
+- name: slurp
+  ansible.builtin.slurp:
+    src: /etc/docker/daemon.json
+  ignore_errors: true
+  register: daemon
 
-- name: print old daemon.json
+- name: print daemon var
   ansible.builtin.debug:
-    var: jsondata.stdout
+    msg: "{{ daemon }}"
 
-- name: update fact with slice information
+- name: set daemon.json fallback
   ansible.builtin.set_fact:
-    jsondata: "{{ jsondata.stdout | from_json | combine(item, recursive=False) }}"
-  loop:
-    - { "cgroup-parent": "docker.slice" }
+    daemon: "{}"
+  when: |
+    (daemon | type_debug != 'str') and
+    daemon.failed
 
-- name: print new daemon.json
+- name: set daemon.json to just the value on success
+  ansible.builtin.set_fact:
+    daemon: "{{ daemon['content'] | b64decode }}"
+  when: |
+    (daemon | type_debug != 'str') and
+    daemon.failed is false
+
+- name: update daemon.json with slice information
+  ansible.builtin.set_fact:
+    daemon: "{{ daemon | from_json | combine(item, recursive=False) }}"
+  loop:
+    - {"cgroup-parent": "docker.slice"}
+
+- name: print daemon.json
   ansible.builtin.debug:
-    var: jsondata
-  check_mode: no
+    msg: "{{daemon | to_json}}"
 
 - name: save new daemon.json
   ansible.builtin.copy:
-    content: "{{ jsondata | to_nice_json }}"
+    content: "{{ daemon | to_nice_json }}"
     dest: "/etc/docker/daemon.json"
   register: daemonjson
 
