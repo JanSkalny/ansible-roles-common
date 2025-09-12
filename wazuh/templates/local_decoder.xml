@@ -17,7 +17,7 @@
   - status     - event status (success, failure, etc)
   - extra_data - Any extra data
 -->
-{% if wazuh_local_decoders is not defined %}
+{% if wazuh_local_decoders is not defined or wazuh_local_decoders == "" %}
 
 <!-- XXX: Example, but SOMETHING must be present for `wazuh-analysisd -t` to pass -->
 <decoder name="local_decoder_example">
