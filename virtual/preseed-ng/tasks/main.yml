@@ -97,7 +97,8 @@
     --video virtio \
     --noautoconsole \
     --debug \
-    --noreboot
+    --noreboot \
+    --import
 
 - name: wait for vm to finish preseeding
   virt:

@@ -43,6 +43,5 @@
     masked: yes
   with_items:
     - systemd-networkd
-    - systemd-resolved
     - networkd-dispatcher
 

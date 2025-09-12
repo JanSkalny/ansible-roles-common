@@ -1,0 +1,37 @@
+- name: check time difference
+  shell: >
+    ntpdate -q {{ ntp_servers[0] | quote }} |
+    tail -n1 |
+    sed -nE 's/.*offset[[:space:]:]+([+-]?[0-9]+\.[0-9]+).*/\1/p;
+             s/.* ([+-]?[0-9]+\.[0-9]+) \+\/-.*/\1/p'
+  register: ntpdate_offset
+  changed_when: false
+  check_mode: no
+  ignore_errors: true
+  tags:
+  - ntpdate
+  - configure
+
+- set_fact:
+    ntpdate_offset_seconds: "{{ ntpdate_offset.stdout | float | abs }}"
+
+- debug: 
+    msg: "ntp offset {{ ntpdate_offset_seconds }}"
+
+- name: stop ntp_service
+  service:
+    name: "{{ ntp_service }}"
+    state: stopped
+  when: ntpdate_offset_seconds | int > 3
+  notify: restart ntp
+  tags:
+  - ntpdate
+  - configure
+
+- name: syncronize time
+  command: ntpdate {{ ntp_servers[0] | quote }}
+  ignore_errors: true
+  when: ntpdate_offset_seconds | int > 3
+  tags:
+  - ntpdate
+  - configure
