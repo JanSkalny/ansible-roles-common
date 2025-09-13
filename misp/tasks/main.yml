@@ -1,0 +1,38 @@
+ - name: pull misp-docker 
+   git:
+     repo: https://github.com/MISP/misp-docker.git
+     dest: /opt/misp-docker
+     version: master
+   register: res_misp_git
+   #TODO: update only with misp_upgrade=1
+
+ - name: generate .env
+   template:
+     src: template.env
+     dest: /opt/misp-docker/.env
+   register: res_misp_env
+
+ - name: generate docker-compose override
+   template:
+     src: docker-compose.override.yml
+     dest: /opt/misp-docker/docker-compose.override.yml
+
+ - name: check if misp.misp-core is running
+   community.docker.docker_container_info:
+     name: "misp.misp-core"
+   register: misp_core_container
+   check_mode: no
+
+ - set_fact:
+     misp_core_is_running: "{{ misp_core_container.container.State.Running | default(false) }}"
+
+ - debug:
+     msg: "run docker compose down ; docker compose up -d"
+   when: ( res_misp_env.changed or res_misp_git.changed ) and misp_core_is_running
+
+ - name: start misp
+   shell:
+     docker compose up -d && sleep 10
+   args:
+     chdir: /opt/misp-docker
+   when: not misp_core_is_running

@@ -1,0 +1,12 @@
+name: misp
+services:
+  mail:
+    container_name: "misp.mail"
+  redis:
+    container_name: "misp.redis"
+  db:
+    container_name: "misp.db"
+  misp-core:
+    container_name: "misp.misp-core"
+  misp-modules:
+    container_name: "misp.misp-modules"
