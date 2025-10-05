@@ -37,6 +37,7 @@
     - unzip
     - acl
     - expect
+    - util-linux-extra
     #- netsniff-ng
     #- python-pip
     #- python3-pip
