@@ -37,6 +37,7 @@
     - unzip
     - acl
     - expect
+    - fio
     #- netsniff-ng
     #- python-pip
     #- python3-pip
