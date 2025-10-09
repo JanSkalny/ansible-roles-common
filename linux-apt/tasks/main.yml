@@ -7,9 +7,11 @@
     src: "10periodic"
     dest: "/etc/apt/apt.conf.d/10periodic"
   when: ansible_distribution in ['Ubuntu']
+
 - file:
-    path: "/etc/apt/apt.conf.d/{{ item }}"
+    path: "/etc/apt/{{ item }}"
     state: absent
   with_items:
-    - 20auto-upgrades
+    - apt.conf.d/20auto-upgrades
+    - sources.list.d/ubuntu.sources
   when: ansible_distribution in ['Ubuntu']
