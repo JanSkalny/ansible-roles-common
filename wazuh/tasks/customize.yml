@@ -64,9 +64,17 @@
 
 - name: update daemon.json with slice information
   ansible.builtin.set_fact:
-    daemon: "{{ daemon | from_json | combine(item, recursive=False) }}"
+    daemon: "{{ daemon | combine(item, recursive=False) }}"
   loop:
     - {"cgroup-parent": "docker.slice"}
+  when: |
+    (daemon | type_debug != 'str') and
+    daemon != "{}"
+- name: set daemon value on empty daemon.json
+  ansible.builtin.set_fact:
+    daemon: {"cgroup-parent": "docker.slice"}
+  when: |
+    daemon == "{}"
 
 - name: print daemon.json
   ansible.builtin.debug:
