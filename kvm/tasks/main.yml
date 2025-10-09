@@ -54,9 +54,9 @@
   tags:
   - configure
 
-#XXX: ugly
-- name: get rid of default networking
+- name: Remove default libvirt network (destroys virbr0)
   shell:
-    virsh net-destroy default 2>&1 || true
+    cmd: virsh net-destroy default ; virsh net-undefine default
+  ignore_errors: true
   changed_when: false
   tags: install

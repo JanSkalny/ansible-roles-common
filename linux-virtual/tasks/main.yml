@@ -2,3 +2,11 @@
   package: 
     name: "open-vm-tools" 
     state: present
+
+- name: disable fwupd
+  service:
+    name: fwupd
+    state: stopped
+    enabled: no
+    masked: yes
+  ignore_errors: yes

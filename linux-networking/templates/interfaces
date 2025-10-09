@@ -31,8 +31,15 @@ iface lo inet loopback
 	bond-lacp-rate 1
 	#up ip link set $IFACE up
 {% endif %}
+{% if 'bridge_ageing' in iface %}
+	bridge_ageing {{ iface.bridge_ageing }}
+{% endif %}
 {% if 'bridge_ports' in iface %}
+{% if iface.bridge_ports | length == 0 %}
+	bridge_ports none
+{% else %}
 	bridge_ports {{ iface.bridge_ports | join(' ') }}
+{% endif %}
 	bridge_stp off
 	bridge_fd 0
 	bridge_maxwait 0

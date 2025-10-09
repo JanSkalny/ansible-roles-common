@@ -38,6 +38,7 @@
     - acl
     - expect
     - fio
+    - util-linux-extra
     #- netsniff-ng
     #- python-pip
     #- python3-pip
