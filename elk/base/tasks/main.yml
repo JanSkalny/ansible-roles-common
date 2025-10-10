@@ -17,7 +17,7 @@
 
 - name: establish elasticsearch repo
   apt_repository:
-    repo: "deb https://artifacts.elastic.co/packages/{{ (elastic_version | default('8')).split('.') | first | int }}.x/apt stable main"
+    repo: "deb https://artifacts.elastic.co/packages/{{ (elastic_version | default('9')).split('.') | first | int }}.x/apt stable main"
     filename: "elastic"
     update_cache: yes
   tags: install

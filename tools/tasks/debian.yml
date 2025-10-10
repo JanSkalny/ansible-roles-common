@@ -38,11 +38,20 @@
     - acl
     - expect
     - fio
-    - util-linux-extra
     #- netsniff-ng
     #- python-pip
     #- python3-pip
     state: present
+  tags: install
+
+- name: install useful tools (noble and newer)
+  package:
+    name:
+      - util-linux-extra
+    state: present
+  when:
+    - ansible_distribution == "Ubuntu"
+    - ansible_distribution_version <= '24.04'
   tags: install
 
 - name: install ubuntu only package
