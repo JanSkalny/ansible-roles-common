@@ -36,7 +36,7 @@ KerberosAuthentication no
 GSSAPIAuthentication no
 PermitEmptyPasswords no
 
-UsePAM no
+UsePAM {{ use_pam }}
 PubkeyAuthentication yes
 PermitRootLogin without-password
 AuthorizedKeysFile	%h/.ssh/authorized_keys
