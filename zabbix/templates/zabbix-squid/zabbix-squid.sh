@@ -78,7 +78,7 @@ case "$1" in
 		;;
 
   update-stats)
-    snmpwalk -On -v2c -c zabbix 127.0.0.1:3401 1.3.6.1.4.1.3495  | grep '= \(Counter32\|STRING\|INTEGER\|Gauge32\|Timeticks\):' > $LAST_RUN || exit 1
+    snmpwalk -Cc -On -v2c -c zabbix 127.0.0.1:3401 1.3.6.1.4.1.3495  | grep '= \(Counter32\|STRING\|INTEGER\|Gauge32\|Timeticks\):' > $LAST_RUN || exit 1
     wc -l "$LAST_RUN" | awk '{print $1}'
     ;;
 
