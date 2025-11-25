@@ -2,11 +2,7 @@ resource {{drbd_res_name}} {
   protocol C;
 
   device minor {{drbd_res_id}};
-{% if drbd_separate_meta and meta_lv_status.stat.exists | default(False) %}
-  meta-disk /dev/{{ drbd_meta_vg }}/{{ drbd_res_name }}{{ drbd_meta_suffix }};
-{% else %}
   meta-disk internal;
-{% endif %}
 
   startup {
     wfc-timeout 30;
@@ -61,6 +57,16 @@ resource {{drbd_res_name}} {
 #    verify-alg sha1;
   }
 
+{% if drbd_luks2_pass is defined %}
+  on {{drbd_peers[0].name}} {
+    disk /dev/mapper/luks-{{drbd_res_name}};
+    address {{drbd_peers[0].address}}:{{drbd_base_port+drbd_res_id|int}};
+  }
+  on {{drbd_peers[1].name}} {
+    disk /dev/mapper/luks-{{drbd_res_name}};
+    address {{drbd_peers[1].address}}:{{drbd_base_port+drbd_res_id|int}};
+  }
+{% else %}
   on {{drbd_peers[0].name}} {
     disk /dev/{{drbd_peers[0].default_vg | default(drbd_vg)}}/{{drbd_res_name}};
     address {{drbd_peers[0].address}}:{{drbd_base_port+drbd_res_id|int}};
@@ -69,4 +75,5 @@ resource {{drbd_res_name}} {
     disk /dev/{{drbd_peers[1].default_vg | default(drbd_vg)}}/{{drbd_res_name}};
     address {{drbd_peers[1].address}}:{{drbd_base_port+drbd_res_id|int}};
   }
+{% endif %}
 }

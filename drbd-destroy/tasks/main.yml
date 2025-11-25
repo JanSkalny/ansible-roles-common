@@ -5,7 +5,7 @@
   register: drbd_minor
 
 - name: check if resource still configured
-  shell: drbdadm status monarc.verde.sk
+  shell: "drbdadm status {{ drbd_res_name }}"
   check_mode: no
   changed_when: drbd_status.rc == 0
   failed_when: drbd_status.rc not in [0, 1, 10]
@@ -20,7 +20,7 @@
   when: drbd_status.rc not in [1, 10]
 
 - name: check if resource is down
-  shell: drbdadm status monarc.verde.sk
+  shell: "drbdadm status {{ drbd_res_name }}"
   check_mode: no
   changed_when: false
   failed_when: drbd_status.rc not in [0, 1, 10]
@@ -36,7 +36,13 @@
 
 - debug:
     msg: "now go, and `lvremove /dev/{{ drbd_vg }}/{{ drbd_res_name }}` or force using `-e drbd_destroy_lvm=1` "
-  when: not drbd_destroy_lvm|default(false)
+  when: not (drbd_destroy_lvm |default(False) | bool)
+
+- community.crypto.luks_device:
+    device: "/dev/{{ drbd_vg }}/{{ drbd_res_name }}"
+    state: absent
+  ignore_errors: True
+  when: drbd_destroy_lvm | default(False) | bool
 
 - name: destroy lv
   lvol:
@@ -44,13 +50,4 @@
     vg: "{{ drbd_vg }}"
     state: absent
     force: true
-  when: drbd_destroy_lvm|default(false)
-
-- name: destroy meta lv
-  lvol:
-    lv: "{{ drbd_res_name }}{{ drbd_meta_suffix }}"
-    vg: "{{ drbd_meta_vg }}"
-    state: absent
-    force: true
-  when: drbd_separate_meta and drbd_destroy_lvm|default(false)
-
+  when: drbd_destroy_lvm | default(False) | bool

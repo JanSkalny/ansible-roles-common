@@ -12,23 +12,38 @@
     size: "{{ drbd_size }}"
   when: not lv_status.stat.exists
 
-- name: prepare meta lv only for newly created resource
-  lvol:
-    lv: "{{ drbd_res_name }}{{ drbd_meta_suffix }}"
-    vg: "{{ drbd_meta_vg }}"
-    size: "100m"
-  when: not lv_status.stat.exists and drbd_separate_meta
+- name: prepare luks
+  community.crypto.luks_device:
+    device: "/dev/{{ drbd_vg }}/{{ drbd_res_name }}"
+    name: "luks-{{ drbd_res_name }}"
+    state: present
+    type: luks2
+    passphrase: "{{ drbd_luks2_pass }}"
+  when:
+    - drbd_luks2_pass is defined
+    - not lv_status.stat.exists
 
-- name: check if drbd uses separate meta lv
-  stat:
-    path: /dev/{{ drbd_meta_vg }}/{{ drbd_res_name }}{{ drbd_meta_suffix }}
-  check_mode: no
-  register: meta_lv_status
+- name: make sure luks is ready
+  community.crypto.luks_device:
+    device: "/dev/{{ drbd_vg }}/{{ drbd_res_name }}"
+    name: "luks-{{ drbd_res_name }}"
+    state: opened
+    passphrase: "{{ drbd_luks2_pass }}"
+  register: lv_luks_status
+  when:
+    - drbd_luks2_pass is defined
+
+- name: luks is not ready
+  fail:
+    msg: "LUKS not ready on {{ drbd_res_name }}"
+  when:
+    - drbd_luks2_pass is defined
+    - not lv_luks_status.name
 
 - name: create resource config
   template:
     src: "resource"
-    dest: /etc/drbd.d/{{drbd_res_name}}.res
+    dest: "/etc/drbd.d/{{ drbd_res_name }}.res"
   tags: configure
 
 - name: write drbd metadata
@@ -39,7 +54,7 @@
 - name: make resource primary
   shell:
     drbdadm up {{ drbd_res_name }}
-  when: not lv_status.stat.exists 
+  when: not lv_status.stat.exists
 
 - name: make resource primary
   shell:
