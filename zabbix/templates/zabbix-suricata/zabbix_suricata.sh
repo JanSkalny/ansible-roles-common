@@ -7,7 +7,6 @@ fail() {
 
 usage() {
     fail "usage: $0 (discover-apps|get KEY|json|restart-counter)"
-    exit 1
 }
 
 [ $# -lt 1 ] && usage
