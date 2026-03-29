@@ -48,7 +48,7 @@
 
 - name: write drbd metadata
   shell:
-    echo yes | drbdadm create-md {{ drbd_res_name }}
+    echo yes | drbdadm create-md --force {{ drbd_res_name }}
   when: not lv_status.stat.exists
 
 - name: make resource primary
@@ -66,4 +66,11 @@
     drbdadm secondary {{ drbd_res_name }}
   when: ( not lv_status.stat.exists ) and drbd_primary_host != inventory_hostname
   # -- --discard-my-data connect
+  
+# avoid drbd/kernel race conditions...
+- name: sleep...
+  pause:
+    seconds: 5
+  when: not lv_status.stat.exists 
+
 

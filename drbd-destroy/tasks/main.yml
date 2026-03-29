@@ -13,7 +13,7 @@
 
 - fail:
     msg: "drbd_minor and drbd_res_id do not match"
-  when: drbd_minor.stdout != drbd_res_id and drbd_status.rc not in [1, 10]
+  when: drbd_minor.stdout|int != drbd_res_id and drbd_status.rc not in [1, 10]
 
 - name: drbdadm down {{ drbd_res_name }}
   shell: "drbdadm down {{ drbd_res_name }}"
