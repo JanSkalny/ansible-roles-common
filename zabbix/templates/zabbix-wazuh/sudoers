@@ -1,0 +1,2 @@
+zabbix ALL=(ALL) NOPASSWD: /usr/local/bin/zabbix_wazuh.sh
+Defaults:zabbix !requiretty, !syslog, !pam_session

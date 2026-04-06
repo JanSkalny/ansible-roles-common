@@ -16,10 +16,13 @@ services:
       - /opt/nginx-proxy-ssl/:/etc/nginx/certs:ro
   netbox-worker:
     restart: unless-stopped
-  netbox-housekeeping:
-    restart: unless-stopped
+  #netbox-housekeeping:
+  #  restart: unless-stopped
   netbox:
     restart: unless-stopped
+    #XXX: can be removed after initial db import
+    healthcheck:
+      start_period: 300s
     environment:
 {% if netbox_ldap_server_uri | default(False) %}
       REMOTE_AUTH_ENABLED: "true"
@@ -32,9 +35,9 @@ services:
       LDAP_IGNORE_CERT_ERRORS: "true"
       #AUTH_LDAP_GROUP_SEARCH_BASEDN: "ou=groups,{{ netbox_ldap_base }}"
       #AUTH_LDAP_MIRROR_GROUPS: "true"
-      AUTH_LDAP_REQUIRE_GROUP_DN: "cn=AppIpamUsers,ou=groups,{{ netbox_ldap_base }}"
-      AUTH_LDAP_IS_ADMIN_DN: "cn=AppIpamAdmins,ou=groups,{{ netbox_ldap_base }}"
-      AUTH_LDAP_IS_SUPERUSER_DN: "cn=AppIpamAdmins,ou=groups,{{ netbox_ldap_base }}"
+      AUTH_LDAP_REQUIRE_GROUP_DN: "cn={{ netbox_ldap_users_cn | default('AppNetboxUsers') }},ou=groups,{{ netbox_ldap_base }}"
+      AUTH_LDAP_IS_ADMIN_DN: "cn={{ netbox_ldap_admins_cn | default('AppNetboxAdmins') }},ou=groups,{{ netbox_ldap_base }}"
+      AUTH_LDAP_IS_SUPERUSER_DN: "cn={{ netbox_ldap_admins_cn | default('AppNetboxAdmins') }},ou=groups,{{ netbox_ldap_base }}"
 {% endif %}
       CHANGELOG_RETENTION: 1825
       VIRTUAL_HOST: "{{ inventory_hostname }}"

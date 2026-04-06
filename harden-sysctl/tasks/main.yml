@@ -14,6 +14,12 @@
      mode: u=rwX,go=
   changed_when: false 
 
+- name: merge all sysctl_config_* vars (evaluated, not raw Jinja)
+  set_fact:
+    sysctl_config: "{{ sysctl_config | combine(lookup('vars', item), recursive=True) }}"
+  loop: "{{ q('varnames', '^sysctl_config_') }}"
+  when: lookup('vars', item, default=None) is mapping
+
 - name: sysctl hardening 
   sysctl:
      name: "{{ item.key }}"

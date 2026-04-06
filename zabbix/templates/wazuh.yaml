@@ -1,0 +1,6 @@
+wazuh:
+  template: "Wazuh by Zabbix agent"
+  sudoers: "zabbix-wazuh/sudoers"
+  params: "zabbix-wazuh/wazuh.conf"
+  scripts:
+    - "zabbix-wazuh/zabbix_wazuh.sh"

@@ -1,4 +1,9 @@
-sysctl_config: 
+#XXX: this does not evaluate nested templates... :/
+# we're using set_fact w/ loop in tasks
+#sysctl_config: "{{ {} | combine(vars | select('match', '^sysctl_config_') | map('extract', vars) | list) }}"
+sysctl_config: {}
+
+sysctl_config_default: 
     fs.protected_hardlinks: 1
     fs.protected_symlinks: 1
     fs.suid_dumpable: 2

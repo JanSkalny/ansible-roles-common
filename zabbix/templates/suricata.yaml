@@ -2,5 +2,6 @@ suricata:
   template: "Suricata by Zabbix agent"
   params: "zabbix-suricata/suricata.conf"
   crond: "zabbix-suricata/zabbix-suricata-cron"
+  sudoers: "zabbix-suricata/sudoers"
   scripts:
     - "zabbix-suricata/zabbix_suricata.sh"

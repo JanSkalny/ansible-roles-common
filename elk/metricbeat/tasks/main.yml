@@ -22,7 +22,9 @@
     content: "{{ item.config | to_nice_yaml }}"
     dest: "/etc/metricbeat/modules.d/{{ item.name }}.yml"
   with_items: "{{ metricbeat_modules }}"
-  when: item.config | default(False)
+  when: 
+  - item.config is defined
+  - item.config | length > 0
   notify: restart metricbeat
   tags: configure
 

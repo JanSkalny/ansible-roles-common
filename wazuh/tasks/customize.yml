@@ -38,52 +38,44 @@
     slice.changed
 
 
-- name: slurp
+- name: slurp daemon.json
   ansible.builtin.slurp:
     src: /etc/docker/daemon.json
   ignore_errors: true
-  register: daemon
+  register: daemon_slurp
 
-- name: print daemon var
-  ansible.builtin.debug:
-    msg: "{{ daemon }}"
-
-- name: set daemon.json fallback
+- name: initialize daemon as dict
   ansible.builtin.set_fact:
-    daemon: "{}"
-  when: |
-    (daemon | type_debug != 'str') and
-    daemon.failed
+    daemon: {}
 
-- name: set daemon.json to just the value on success
+- name: parse daemon.json if it exists
   ansible.builtin.set_fact:
-    daemon: "{{ daemon['content'] | b64decode }}"
-  when: |
-    (daemon | type_debug != 'str') and
-    daemon.failed is false
+    daemon: "{{ daemon_slurp.content | b64decode | from_json }}"
+  when:
+    - daemon_slurp.failed is false
+    - daemon_slurp.content is defined
+
+- name: ensure daemon is a dict
+  ansible.builtin.assert:
+    that:
+      - daemon is mapping
+    fail_msg: "daemon is not a dict — invalid JSON or overwritten variable"
 
 - name: update daemon.json with slice information
   ansible.builtin.set_fact:
-    daemon: "{{ daemon | combine(item, recursive=False) }}"
-  loop:
-    - {"cgroup-parent": "docker.slice"}
-  when: |
-    (daemon | type_debug != 'str') and
-    daemon != "{}"
-- name: set daemon value on empty daemon.json
-  ansible.builtin.set_fact:
-    daemon: {"cgroup-parent": "docker.slice"}
-  when: |
-    daemon == "{}"
+    daemon: "{{ daemon | combine({'cgroup-parent': 'docker.slice'}) }}"
 
-- name: print daemon.json
+- name: debug daemon.json
   ansible.builtin.debug:
-    msg: "{{daemon | to_json}}"
+    var: daemon
 
 - name: save new daemon.json
   ansible.builtin.copy:
     content: "{{ daemon | to_nice_json }}"
-    dest: "/etc/docker/daemon.json"
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0644'
   register: daemonjson
 
 
@@ -137,28 +129,6 @@
 
 #- debug:
 #    msg: "{{ res_tests }}"
-
-- name: copy sensor-specific decoders to wazuh manager
-  ansible.builtin.copy:
-    src: "{{ root_dir }}/files/detection/wazuh/decoders/{{ item }}_decoders.xml"
-    dest: "/var/lib/docker/volumes/wazuh_wazuh_etc/_data/decoders/{{ item }}_decoders.xml"
-  with_items: "{{ wazuh_decoders }}"
-  when: wazuh_decoders is defined and wazuh_decoders | length > 0
-  notify: restart wazuh manager
-
-- name: copy voidsoc ossec rules to every wazuh manager
-  ansible.builtin.copy:
-    src: "{{ root_dir }}/files/detection/wazuh/rules/1-ossec_rules.xml"
-    dest: "/var/lib/docker/volumes/wazuh_wazuh_etc/_data/rules/1-ossec_rules.xml"
-  notify: restart wazuh manager
-
-- name: copy sensor-specific rules to wazuh manager
-  ansible.builtin.copy:
-    src: "{{ root_dir }}/files/detection/wazuh/rules/1-{{ item }}_rules.xml"
-    dest: "/var/lib/docker/volumes/wazuh_wazuh_etc/_data/rules/1-{{ item }}_rules.xml"
-  with_items: "{{ wazuh_rules }}"
-  when: wazuh_rules is defined and wazuh_rules | length > 0
-  notify: restart wazuh manager
 
 - name: generate config files
   template:
