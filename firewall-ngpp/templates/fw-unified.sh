@@ -4,60 +4,10 @@
 # Template: fw-unified.sh
 #
 
-{%- macro lookup_object(name) -%}
-{% if name in firewall_objects %}
-{# make sure object is array of names or addresses #}
-{% set obj = firewall_objects[name] %}
-{% set entries = obj if obj is iterable and obj is not string else[obj] %}
-{% set results = [] %}
-{% for name_or_addr in entries %}
-{% set trimmed = name_or_addr.strip() %}
-{% if trimmed in firewall_objects %}
-{{ lookup_object(trimmed) }}
-{% else %}
-{% if trimmed | ansible.utils.ipaddr or trimmed.startswith('!') %}
-{{ trimmed }}
-{% else %}
-{{ xxx_invalid|mandatory("Nested object not found and direct DNS referencing not allowed: "+trimmed) }}
-{% endif %}
-{% endif %}
-{% endfor %}
-{% else %}
-{{ xxx_invalid|mandatory("Referenced invalid object and direct DNS referencing not allowed: "+name) }}
-{% endif %}
-{%- endmacro -%}
-
-{%- macro normalize_addrs(rule, attr) -%}
-{% if attr in rule %}
-{% set attrs = ( rule[attr].replace(' ','').split(',') if rule[attr] is string else rule[attr] ) %}
-{% for name_or_addr in attrs %}
-{% set trimmed = name_or_addr.strip() %}
-{% if trimmed in firewall_objects %}
-{{ lookup_object(trimmed) }}
-{% else %}
-{% if trimmed | ansible.utils.ipaddr or trimmed.startswith('!') %}
-{{ trimmed }}
-{% else %}
-{{ xxx_invalid|mandatory("Object not found and direct DNS referencing not allowed: "+name_or_addr+" rule="+(rule|to_json)) }}
-{% endif %}
-{% endif %}
-{% endfor %}
-{% endif %}
-{%- endmacro -%}
-
-{%- macro normalize_ports(rule, proto) -%}
-{%- set ports = rule.proto[proto] if rule.get('proto', {}).get(proto) is not none else [] %}
-{%- if ports is string %}
-  {%- set ports = ports.replace(' ', '').split(',') %}
-{%- elif ports is number %}
-  {%- set ports = [ports] %}
-{%- endif %}
-{{ ports | sort | unique | join(',') }}
-{%- endmacro -%}
-
 {%- macro format_addr(match,addr) -%}
   {%- set trimmed = addr.strip() %}
   {%- if trimmed == "ANY" %}
+    {{- "" -}}
   {%- elif trimmed.startswith('!') %}
     {%- set addrs = trimmed[1:].split() %}
     {%- for addr in addrs %}
@@ -70,7 +20,6 @@
 
 {%- macro format_proto(proto,param) -%}
 {% set proto = proto.strip() %}
-{% set param = param.strip() %}
 {%- if proto != "ANY" %}
  -p {{ proto }}
 {%- if param != "ANY" %}
@@ -88,22 +37,28 @@
 
 {%- macro generate_rule(rule, chain, default_action='LOG_ACCEPT', ip_ver=4) -%}
 # {{ rule | to_json }}
-{% set src_raw = normalize_addrs(rule, 'src').split('\n') | difference(['']) | sort %}
-{% set dst_raw = normalize_addrs(rule, 'dst').split('\n') | difference(['']) | sort %}
-# src addrs: {{ src_raw }}
-# dst addrs: {{ dst_raw }}
-{% set src_addrs = src_raw if src_raw else ['ANY'] %}
-{% set dst_addrs = dst_raw if dst_raw else ['ANY'] %}
+{% set src_addrs = rule | firewall_normalize_addrs('src', firewall_objects) %}
+{% set dst_addrs = rule | firewall_normalize_addrs('dst', firewall_objects) %}
+{#
+# src addrs: {{ src_addrs }}
+# dst addrs: {{ dst_addrs }}
+#}
+{# src ipset match #}
 {% set src_list = " -m set --match-set "+rule.src_list+" src " if rule.src_list|default(False) else "" %}
-{% for src_addr in (src_addrs | sort ) -%}
-{%- for dst_addr in (dst_addrs | sort ) -%}
+{% for src_addr in src_addrs -%}
+{%- for dst_addr in dst_addrs -%}
+{# filter out IPv4 addressess from IPv6 rules and vice versa #}
+{% set is_v4_addr = ip_ver == 4 and ('.' in src_addr or '.' in dst_addr) %}
+{% set is_v6_addr = ip_ver == 6 and (':' in src_addr or ':' in dst_addr) %}
+{% set is_any_any = src_addr == "ANY" and dst_addr == "ANY" %}
+{% if is_v4_addr or is_v6_addr or is_any_any %}
+{# format src/dst addresses using -s / -d #}
 {% set src = format_addr("-s", src_addr) %}
 {% set dst = format_addr("-d", dst_addr) %}
-{% if ((ip_ver == 4 and ('.' in src or '.' in dst)) or (ip_ver == 6 and (':' in src or ':' in dst)) or (src == "ANY" and dst == "ANY")) %}
-{% for rule_proto, rule_ports in (rule.proto if rule.proto is defined else {"ANY": "ANY"}).items() %}
-{% set raw_ports = normalize_ports(rule, rule_proto).split(',') | default([]) | difference(['']) | sort %}
-{% set rule_ports = raw_ports if raw_ports else ['ANY'] %}
+{% for rule_proto in (rule.proto | default({"ANY": "ANY"})).keys() %}
+{% set rule_ports = rule|firewall_normalize_ports(rule_proto) %}
 {% for port in rule_ports %}
+{# format -p ... --dport ... filter #}
 {% set proto = format_proto(rule_proto, port) %}
 $IT{{ ip_ver }} -A {{ chain }}{{ proto }}{{ src_list }}{{ src }}{{ dst }} -j {{ rule.rule | default(default_action) }}
 {% endfor %}
@@ -111,8 +66,25 @@ $IT{{ ip_ver }} -A {{ chain }}{{ proto }}{{ src_list }}{{ src }}{{ dst }} -j {{ 
 {% endif %}
 {% endfor %}
 {% endfor %}
+
 {%- endmacro -%}
 
+{%- macro generate_interface_rules(firewall_iface_name, firewall_iface, ip_ver=4) -%}
+{% set allow_nets = normalize_addrs(firewall_iface, 'allow', ip_ver).split('\n') | difference(['','ANY']) | sort %}
+{% set deny_nets = normalize_addrs(firewall_iface, 'deny', ip_ver).split('\n') | difference(['','ANY']) | sort %}
+{% set allow_dst = '-d '+firewall_iface.allow_dst if 'allow_dst' in firewall_iface else '' %}
+{% for deny_net in deny_nets %}
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ deny_net }} -j {{ firewall_default_rule_checkif_deny }}
+{% endfor %}
+{% for allow_net in allow_nets %}
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -s {{ allow_net }} {{ allow_dst }} -j RETURN
+{% endfor %}
+{% if firewall_iface.default | default('allow' if firewall_interfaces|length == 1 else 'deny') == 'allow' %}
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} {{ allow_dst }} -j RETURN
+{% else %}
+  $IT{{ ip_ver }} -A CHECK_IF -i {{ firewall_iface_name }} -j {{ firewall_default_rule_checkif }}
+{% endif %}
+{%- endmacro -%}
 
 #
 # Simple iptables management script (fw.sh)
@@ -137,6 +109,12 @@ nft flush ruleset
 for M in ip_conntrack ip_conntrack_ftp ip_conntrack_sip; do
   modprobe $M 2>/dev/null
 done
+
+# create lists
+{% for firewall_list in firewall_lists|default([]) %}
+ipset create {{ firewall_list.name }} hash:ip {{ 'timeout '+(firewall_list.ttl|string) if firewall_list.ttl | default(False) else '' }}
+{% endfor %}
+
 
 echo {{ firewall_ip_forward | default(0) | int }} > /proc/sys/net/ipv4/ip_forward
 echo {{ firewall6_ip_forward | default(0) | int }} > /proc/sys/net/ipv6/conf/all/forwarding
@@ -255,6 +233,14 @@ $IT4 -N CHECK_IF
   $IT4 -A CHECK_IF -s 192.0.2.0/24 -j LOG_DROP_CHECKIF_SPOOF     # RFC 3330
   $IT4 -A CHECK_IF -s 204.152.64.0/23 -j LOG_DROP_CHECKIF_SPOOF  # RFC 3330
   $IT4 -A CHECK_IF -s 224.0.0.0/3 -j LOG_DROP_CHECKIF_SPOOF      # multicast
+
+{% for firewall_iface_name, firewall_iface in firewall_interfaces.items() %}
+{{ generate_interface_rules(firewall_iface_name, firewall_iface) }}
+{% endfor %}
+
+  # everything else is dropped!
+  $IT4 -A CHECK_IF -j {{ firewall_default_rule_checkif_global }}
+
 
   #XXX: no per-interface rule evaluation yet
   $IT4 -A CHECK_IF -j RETURN
@@ -476,9 +462,7 @@ $IT4 -t nat -A PREROUTING -i {{ firewall_iface_name }} -d {{ dnat.orig_to }} -j 
 ### custom firewall patches
 
 {% if firewall_final_patch is defined %}
-{% for rule in firewall_final_patch %}
-{{ rule }}
-{% endfor %}
+{{ firewall_final_patch }}
 {% endif %}
 
 
