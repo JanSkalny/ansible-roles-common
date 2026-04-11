@@ -1,0 +1,14 @@
+# /etc/systemd/system/fw.service
+[Unit]
+Description=Custom firewall
+After=network-pre.target
+Before=network.target
+ConditionPathExists=/usr/local/sbin/fw.sh
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/fw.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

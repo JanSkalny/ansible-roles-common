@@ -60,7 +60,15 @@
 {% for port in rule_ports %}
 {# format -p ... --dport ... filter #}
 {% set proto = format_proto(rule_proto, port) %}
+{% if chain != "DOCKER-USER" %}
 $IT{{ ip_ver }} -A {{ chain }}{{ proto }}{{ src_list }}{{ src }}{{ dst }} -j {{ rule.rule | default(default_action) }}
+{% else %}
+{% set firewall_tmp_target = {"LOG_ACCEPT": "LOG_DOCKER_ACCEPT", "LOG_WILL_DROP": "LOG_DOCKER_WILL_DROP", "ACCEPT": "RETURN" }[ rule.rule | default(default_action) ] %}
+$IT{{ ip_ver }} -A DOCKER-USER {{ proto }}{{ src }} -j {{ firewall_tmp_target }}
+{% if firewall_tmp_target == "LOG_DOCKER_ACCEPT" or firewall_tmp_target == "LOG_DOCKER_WILL_DROP" %}
+$IT{{ ip_ver }} -A DOCKER-USER {{ proto }}{{ src }} -j RETURN
+{% endif %}
+{% endif %}
 {% endfor %}
 {% endfor %}
 {% endif %}
@@ -102,21 +110,30 @@ $IT{{ ip_ver }} -A {{ chain }}{{ proto }}{{ src_list }}{{ src }}{{ dst }} -j {{ 
 IT4="{{ firewall_iptables }}"
 IT6="{{ firewall6_iptables }}"
 
+# load additional modules
+for M in xt_conntrack nf_conntrack nf_conntrack_ftp nf_conntrack_sip; do
+  modprobe $M 2>/dev/null
+done
+
 # check if DOCKER-USER chain is present
 iptables -nL DOCKER-USER >/dev/null 2>&1 && DOCKER=1 || DOCKER=0
 
 # check if ipset tool is present
 command -v ipset >/dev/null 2>&1 && IPSET=1 || IPSET=0
 
-logger -t fw.sh "reload DOCKER=$DOCKER IPSET=$IPSET" 2>/dev/null
+# check if iptables support conntrack
+modprobe -n -q xt_conntrack && MODS=1 || MODS=0
+
+logger -t fw.sh "reload DOCKER=$DOCKER IPSET=$IPSET MODS=$MODS" 2>/dev/null
+
+if [ $MODS -eq 0 ]; then
+  echo "missing xt_conntrack module! make sure correct kernel is running and kernel-modules-extra is installed" 1>&2
+  logger -t fw.sh "missing xt_conntrack module! make sure correct kernel is running and kernel-modules-extra is installed"
+  exit 1
+fi
 
 # flush nftables, if docker is not present
 [ $DOCKER -eq 0 ] && nft flush ruleset
-
-# load additional modules
-for M in ip_conntrack ip_conntrack_ftp ip_conntrack_sip; do
-  modprobe $M 2>/dev/null
-done
 
 # create lists
 {% for firewall_list in firewall_lists|default([]) %}
@@ -334,6 +351,7 @@ for PROTO in 4 6; do
     # root (uid 0) can do everything to docker containers and bridges :(
     $IT -A OUTPUT -m owner --uid-owner 0 -o br+ -j ACCEPT
     $IT -A OUTPUT -m owner --uid-owner 0 -o veth+ -j ACCEPT
+    $IT -A OUTPUT -m owner --uid-owner 0 -o docker0 -j ACCEPT
   fi
 
   # connection tracking:
@@ -368,14 +386,28 @@ if [ $DOCKER -eq 1 ]; then
   # log traffic between docker containers?
   #$IT4 -A DOCKER-USER -i veth+ -o veth+ -j LOG_DOCKER_ACCEPT
   #$IT4 -A DOCKER-USER -i veth+ -o br-+ -j LOG_DOCKER_ACCEPT
+  #$IT4 -A DOCKER-USER -i veth+ -o docker0 -j LOG_DOCKER_ACCEPT
   #$IT4 -A DOCKER-USER -i br-+ -o veth+ -j LOG_DOCKER_ACCEPT
   #$IT4 -A DOCKER-USER -i br-+ -o br-+ -j LOG_DOCKER_ACCEPT
+  #$IT4 -A DOCKER-USER -i docker0 -o docker0 -j LOG_DOCKER_ACCEPT
+  #$IT4 -A DOCKER-USER -i docker0 -o veth+ -j LOG_DOCKER_ACCEPT
 
   # everything between docker-containers is handled by docker
   $IT4 -A DOCKER-USER -i veth+ -o veth+ -j RETURN
   $IT4 -A DOCKER-USER -i veth+ -o br-+ -j RETURN
+  $IT4 -A DOCKER-USER -i veth+ -o docker0 -j RETURN
   $IT4 -A DOCKER-USER -i br-+ -o veth+ -j RETURN
   $IT4 -A DOCKER-USER -i br-+ -o br-+ -j RETURN
+  $IT4 -A DOCKER-USER -i docker0 -o docker0 -j RETURN
+  $IT4 -A DOCKER-USER -i docker0 -o veth+ -j RETURN
+
+  # allow only traffic defined in firewall_input
+{% for input_rule in firewall_input|default([]) %}
+{{ generate_rule(input_rule, 'DOCKER-USER', 'LOG_ACCEPT', 4)  | indent(2, true) }}
+{% endfor %}
+
+  # everything else is dropped
+  $IT4 -A DOCKER-USER -j {{ firewall_default_rule_input }}
 fi
 
 {% for input_rule in firewall_input|default([]) %}
@@ -393,7 +425,7 @@ $IT4 -A INPUT -p icmp -m limit --limit {{ firewall_ping_rate | default(20) }}/se
 $IT4 -A INPUT -p icmp -j LOG_DROP_RATELIMIT
 {% endif %}
 
-# default rule is
+# default rule
 $IT4 -A INPUT -j {{ firewall_default_rule_input }}
 
 
@@ -434,7 +466,7 @@ $IT6 -A INPUT -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP_RATELIMIT
 {% endif %}
 {% endif %}
 
-# default rule is
+# default rule
 $IT6 -A INPUT -j {{ firewall_default_rule_input }}
 
 
@@ -448,7 +480,7 @@ $IT6 -A OUTPUT -o lo -j ACCEPT
 {{ generate_rule(output_rule, 'OUTPUT', 'LOG_ACCEPT', 4) }}
 {% endfor %}
 
-# default to drop
+# default rule
 $IT4 -A OUTPUT -j {{ firewall_default_rule_output }}
 
 
@@ -479,7 +511,7 @@ $IT4 -A OUTPUT -j {{ firewall_default_rule_output }}
   $IT6 -A OUTPUT -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP_RATELIMIT
 {% endif %}
 
-# default to drop
+# default rule
 $IT6 -A OUTPUT -j {{ firewall_default_rule_output }}
 
 
@@ -499,7 +531,7 @@ if [ $DOCKER -eq 0 ]; then
   $IT4 -A FORWARD -p icmp -j LOG_DROP_RATELIMIT
 {% endif %}
 
-  # IPv4 default forward rule
+  # default rule
   $IT4 -A FORWARD -j {{ firewall_default_rule_forward }}
 fi
 
@@ -511,23 +543,23 @@ fi
 {% endfor %}
 
 {% if firewall6_allow_all_icmp | default(False) %}
-  $IT6 -A FORWARD -p ipv6-icmp -j RETURN
+$IT6 -A FORWARD -p ipv6-icmp -j RETURN
 {% else %}
-  # IPv6 NDP should not be allowed
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type router-solicitation -j LOG_DROP_HACK
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type router-advertisement -j LOG_DROP_HACK
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type neighbor-solicitation -j LOG_DROP_HACK
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type neighbor-advertisement -j LOG_DROP_HACK
+# IPv6 NDP should not be allowed
+$IT6 -A FORWARD -p ipv6-icmp --icmpv6-type router-solicitation -j LOG_DROP_HACK
+$IT6 -A FORWARD -p ipv6-icmp --icmpv6-type router-advertisement -j LOG_DROP_HACK
+$IT6 -A FORWARD -p ipv6-icmp --icmpv6-type neighbor-solicitation -j LOG_DROP_HACK
+$IT6 -A FORWARD -p ipv6-icmp --icmpv6-type neighbor-advertisement -j LOG_DROP_HACK
 
-  # IPv6 MLD is not allowed (we don't need internet-wide multicast)
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 130 -j LOG_DROP_IPV6
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 131 -j LOG_DROP_IPV6
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 132 -j LOG_DROP_IPV6
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 142 -j LOG_DROP_IPV6
+# IPv6 MLD is not allowed (we don't need internet-wide multicast)
+$IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 130 -j LOG_DROP_IPV6
+$IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 131 -j LOG_DROP_IPV6
+$IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 132 -j LOG_DROP_IPV6
+$IT6 -A FORWARD -p ipv6-icmp --icmpv6-type 142 -j LOG_DROP_IPV6
 
-  # IPv6 ICMP PING (rate limited)
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type echo-request -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
-  $IT6 -A FORWARD -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP_RATELIMIT
+# IPv6 ICMP PING (rate limited)
+$IT6 -A FORWARD -p ipv6-icmp --icmpv6-type echo-request -m limit --limit {{ firewall_ping_rate | default(20) }}/second -j ACCEPT
+$IT6 -A FORWARD -p ipv6-icmp --icmpv6-type echo-request -j LOG_DROP_RATELIMIT
 {% endif %}
 
 # default rule

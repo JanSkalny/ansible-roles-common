@@ -1,2 +1,10 @@
+ - name: reload systemd
+   ansible.builtin.systemd:
+     daemon_reload: true
+ - name: enable fwsh.service
+   ansible.builtin.systemd:
+     name: fwsh.service
+     enabled: true
+     state: started
  - name: reload firewall
-   raw: /etc/init.d/fw.sh
+   raw: /usr/local/sbin/fw.sh

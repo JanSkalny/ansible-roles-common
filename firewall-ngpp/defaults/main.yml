@@ -1,13 +1,19 @@
-# default firewall is strict. change these to "LOG_WILL_DROP" using group_vars/all/ for selective deployment
-firewall_default_rule_input: "LOG_DROP_DEFAULT"              # input rules without match
-firewall_default_rule_output: "LOG_WILL_DROP"                # output rules without match
-firewall_default_rule_forward: "LOG_DROP_DEFAULT"            # forward rules without match
-firewall_default_rule_invalid: "LOG_DROP_INVALID"            # conntrac invalid conenctions
+# default firewall is strict. change these to "LOG_WILL_DROP" using group_vars/all/ for selective deployment!!
+#firewall_default_rule_input: "LOG_WILL_DROP"
+#firewall_default_rule_output: "LOG_WILL_DROP"
+#firewall_default_rule_forward: "LOG_WILL_DROP"
+#firewall_default_rule_checkif_global: "LOG_WILL_DROP_CHECKIF"
+#firewall_default_rule_checkif: "LOG_WILL_DROP_CHECKIF"
+#firewall_default_rule_invalid: "LOG_WILL_DROP_INVALID"
 
+# default firewall actions
+firewall_default_rule_input: "LOG_DROP_DEFAULT"              # input rules without match
+firewall_default_rule_output: "LOG_DROP_DEFAULT"             # output rules without match
+firewall_default_rule_forward: "LOG_DROP_DEFAULT"            # forward rules without match
 firewall_default_rule_checkif_global: "LOG_DROP_CHECKIF"     # unmatched interface rule
 firewall_default_rule_checkif: "LOG_DROP_CHECKIF_POLICY"     # matched interface, unmatched subnet rule
 firewall_default_rule_checkif_deny: "LOG_DROP_CHECKIF_DENY"  # matched interface, matched deny subnet rule
-
+firewall_default_rule_invalid: "LOG_DROP_INVALID"            # conntrac "invalid" conenctions
 
 #  IPv4/IPv6 packet forwarding
 firewall_ip_forward: 0
@@ -92,15 +98,15 @@ firewall_whitelisted_iface: ['lo']
 #      udp: 100:110
 #    rule: LOG_ACCEPT
 
-#XXX: re-integrate with "networking" role
+#FIXME: re-integrate with "networking" role
 firewall_interfaces: {}
 
-# NAT and other final firewall patches via firewall_final_patch. 
+# custom firewall hacks and patches via firewall_final_patch. 
 # example:
-#firewall_final_patch: 
-# - "$IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.97.0/24 -j MASQUERADE"
-# - "$IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.98.0/24 -j MASQUERADE"
-# - "$IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.99.0/24 -j MASQUERADE"
+#firewall_final_patch |
+# $IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.97.0/24 -j MASQUERADE
+# $IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.98.0/24 -j MASQUERADE
+# $IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.99.0/24 -j MASQUERADE
 
 # merge all variables matching prefix "firewall_xxx_*" (or override on per-host basis)
 firewall_input:  "{{ vars | select('match', '^firewall_input_') | map('extract', vars) | flatten }}"
@@ -112,7 +118,7 @@ firewall_objects:  "{{ {} | combine(vars | select('match', '^firewall_objects_')
 firewall_iptables: "$( which iptables )"
 firewall6_iptables: "$( which ip6tables )"
 
-# custom "log-drop" chains 
+# custom "LOG_DROP_..." chains 
 # XXX: don't remove default rules when overriding! most of these are used in templates/fw.sh
 firewall_drop_rules:
   - INVALID
@@ -130,7 +136,7 @@ firewall_drop_rules:
   - RATELIMIT
   - IPV6
 
-# custom "log-will-drop" chains
+# custom "LOG_WILL_DROP_..." chains
 firewall_will_drop_rules:
   - DEFAULT
   - CHECKIF

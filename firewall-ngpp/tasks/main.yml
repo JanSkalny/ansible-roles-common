@@ -1,32 +1,68 @@
-#TODO: make sure iptables, conntrack and nftables are installed
 - name: ensure iptables command is present
-  package:
+  ansible.builtin.package:
     name: 
       - iptables
       - ipset
+      - nftables
     state: present
-  when: ansible_distribution_file_variety == 'Debian'
+  tags: install
+  notify: 
+  - reload firewall
 
-#- debug:
-#    msg: "firewall_objects: {{ firewall_objects }}"
-#- debug:
-#    msg: "firewall_input: {{ firewall_input }}"
+#XXX: y u no work?
+#- name: ensure kernel-modules-extra matches the running kernel
+#  ansible.builtin.package:
+#    name: "kernel-modules-extra-{{ ansible_kernel }}"
+#    state: present
+#  tags: install
+#  when: ansible_distribution == 'AlmaLinux'
+#  notify: 
+#  - reload firewall
+- name: install kernel-modules-extra for the running Alma kernel
+  ansible.builtin.command:
+    cmd: >
+      dnf -y install
+      kernel-modules-extra-{{ ansible_kernel }}
+  when: ansible_distribution == 'AlmaLinux'
+  register: kmextra_install
+  tags: install
+  changed_when: >
+    'Nothing to do.' not in kmextra_install.stdout
+    and 'Complete!' in kmextra_install.stdout
+  notify: 
+  - reload firewall
+
+- name: cleanup init.d fw.sh
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/init.d/fw.sh
+    - /etc/rc2.d/S19fw
 
 - name: generate fw.sh
   template: 
-    src: "fw-unified.sh"
-    dest: /etc/init.d/fw.sh
+    src: "fw.sh"
+    dest: /usr/local/sbin/fw.sh
     owner: root 
     group: root 
     mode: 0750
   tags: configure
-  notify: reload firewall
+  notify: 
+  - reload firewall
 
-- name: load fw.sh on boot
-  file: 
-    src: /etc/init.d/fw.sh 
-    dest: /etc/rc2.d/S19fw 
-    owner: root
-    group: root
-    state: link
-  ignore_errors: "{{ ansible_check_mode }}" # errors not in checking mode
+- name: install fwsh.service
+  ansible.builtin.template:
+    src: service
+    dest: /etc/systemd/system/fwsh.service
+    mode: '0644'
+  notify: 
+  - reload systemd
+  - enable fwsh.service
+
+#- name: disable firewalld
+#  ansible.builtin.systemd:
+#    name: firewalld
+#    enabled: false
+#    state: stopped
+
