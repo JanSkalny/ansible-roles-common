@@ -259,6 +259,12 @@
     <!-- User-defined ruleset -->
     <decoder_dir>etc/{{ wazuh_test_dir | default("") }}decoders</decoder_dir>
     <rule_dir>etc/{{ wazuh_test_dir | default("") }}rules</rule_dir>
+
+    <rule_exclude>0750-github_rules.xml</rule_exclude>
+    <rule_exclude>0390-fortiddos_rules.xml</rule_exclude>
+    <rule_exclude>0391-fortigate_rules.xml</rule_exclude>
+    <rule_exclude>0392-fortimail_rules.xml</rule_exclude>
+    <rule_exclude>0393-fortiauth_rules.xml</rule_exclude>
   </ruleset>
 
   <rule_test>
