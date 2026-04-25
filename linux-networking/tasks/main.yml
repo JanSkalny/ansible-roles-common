@@ -3,7 +3,9 @@
     src: 99_disable_hosts.cfg
     dest: /etc/cloud/cloud.cfg.d/
     owner: root
-  tags: configure
+  tags: 
+    - configure
+    - hosts
 
 - name: generate /etc/mactab
   template:
