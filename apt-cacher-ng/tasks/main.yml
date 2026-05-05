@@ -5,6 +5,15 @@
   tags: install
   notify: restart apt-cacher-ng
 
+- name: Set proxy for apt cacher
+  lineinfile:
+    path: /etc/apt-cacher-ng/acng.conf
+    regexp: '.*Proxy: .*'
+    line: "Proxy: {{ proxy_env.HTTP_PROXY }}"
+    create: no
+    backup: yes
+  notify: restart apt-cacher-ng
+
 - name: make sure service is enabled
   service: 
     name: apt-cacher-ng
