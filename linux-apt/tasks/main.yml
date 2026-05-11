@@ -1,17 +1,2 @@
-- template:
-    src: "{{ ansible_distribution }}.list"
-    dest: "/etc/apt/sources.list"
-  when: ansible_distribution in ['Ubuntu']
-
-- template:
-    src: "10periodic"
-    dest: "/etc/apt/apt.conf.d/10periodic"
-  when: ansible_distribution in ['Ubuntu']
-
-- file:
-    path: "/etc/apt/{{ item }}"
-    state: absent
-  with_items:
-    - apt.conf.d/20auto-upgrades
-    - sources.list.d/ubuntu.sources
-  when: ansible_distribution in ['Ubuntu']
+- ansible.builtin.include_tasks: ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'
