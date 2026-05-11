@@ -91,17 +91,17 @@ discover-metrics)
 
 instance-version)
     PORT=$( get_port "$2" )
-    curl -sS "http://0:$PORT" | jq -r '.["fluent-bit"].version' || fail "failed to get version"
+    ( curl -sS "http://0:$PORT" 2>/dev/null || fail "failed to get version" ) | jq -r '.["fluent-bit"].version'
     ;;
 
 instance-uptime)
     PORT=$( get_port "$2" )
-    curl -sS "http://0:$PORT/api/v1/uptime" | jq .uptime_sec
+    ( curl -sS "http://0:$PORT/api/v1/uptime" 2>/dev/null || fail "failed to get uptime" ) | jq .uptime_sec
     ;;
 
 instance-metrics)
     PORT=$( get_port "$2" )
-    curl -sS "http://0:$PORT/api/v1/metrics" | jq .
+    ( curl -sS "http://0:$PORT/api/v1/metrics" 2>/dev/null || fail "fail to get metrics" ) | jq .
     ;;
 
 *)

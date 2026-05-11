@@ -6,24 +6,70 @@
     state: present
   tags: install
 
-- name: add thehive-project key
-  apt_key:
-    url: "https://raw.githubusercontent.com/TheHive-Project/Cortex/master/PGP-PUBLIC-KEY"
-    keyring: /etc/apt/trusted.gpg.d/thehive.gpg
-    state: present
-  tags: install
+- name: download manifest file
+  uri:
+    url: "https://cortex.download.strangebee.com/manifest.json"
+    method: GET
+    return_content: true
+    headers:
+      Accept: application/json
+  register: cortex_manifest
+  check_mode: no
 
-- name: add thehive-project repo
-  apt_repository:
-    repo: "deb [arch=all] https://deb.thehive-project.org release main"
-    update_cache: yes
-  tags: install
+- name: figure out which version of cortex is installed
+  shell: dpkg-query -W -f='${Version}\n' cortex
+  check_mode: no
+  changed_when: False
+  register: cortex_dpkg_query
+  failed_when: cortex_dpkg_query.rc not in [0, 1]
+ 
+- set_fact:
+    cortex_manifest_json: "{{ (cortex_manifest.content | from_json).products.cortex.latest_by_version[cortex_version].deb }}"
+- debug:
+    msg: "{{ cortex_manifest_json }}"
+- set_fact:
+    cortex_latest_ver: "{{ cortex_manifest_json.version }}"
+    cortex_latest_pkg: "{{ cortex_manifest_json.package_name }}"
+    cortex_latest_url: "{{ cortex_manifest_json.url }}"
+- set_fact:
+    cortex_latest_pkg_ver: "{{ cortex_latest_pkg | regex_replace('^cortex_', '') | regex_replace('_all\\.deb$', '') }}"
+    cortex_installed_ver: "{{ cortex_dpkg_query.stdout }}"
 
-- name: install cortex
-  apt:
+- debug:
+    msg:
+      cortex_installed_ver: "{{ cortex_installed_ver }}"
+      cortex_latest_pkg_ver: "{{ cortex_latest_pkg_ver }}"
+
+- name: download cortex deb file
+  get_url:
+    url: "{{ cortex_latest_url }}"
+    dest: "/tmp/{{ cortex_latest_pkg }}"
+    mode: '0644'
+  tags: install
+  when: cortex_installed_ver == "" or cortex_installed_ver != cortex_latest_pkg_ver
+
+- fail:
+    msg: "upgrade required, but not set. (use -e cortex_upgrade=1)"
+  when:
+    - cortex_installed_ver != ""
+    - cortex_installed_ver != cortex_latest_pkg_ver
+    - not (cortex_upgrade|default(false)|bool)
+
+- name: remove existing cortex if upgrade required
+  ansible.builtin.apt:
     name: cortex
+    state: absent
+    purge: yes
+  when:
+    - cortex_installed_ver != ""
+    - cortex_installed_ver != cortex_latest_pkg_ver
+
+- name: install cortex package (if missing or updated)
+  apt:
+    deb: "/tmp/{{ cortex_latest_pkg }}"
     state: present
-  tags: install
+  when: 
+    - cortex_installed_ver != cortex_latest_pkg_ver
 
 - name: prepare cortex-analyzers dir
   file:

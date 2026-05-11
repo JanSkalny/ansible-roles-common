@@ -4,6 +4,8 @@
 cortex_elasticsearch_uri: "http://127.0.0.1:9200"
 cortex_elasticsearch_index: "cortex"
 
+cortex_version: "4.0"
+
 #cortex_ldap_server_uri: "{{ ldap_server }}:389"
 #cortex_ldap_bind_dn: "uid=cortex,ou=tech,{{ ldap_base_dn }}"
 #cortex_ldap_bind_password: "{{ ldap_tech_users['cortex'] }}"
