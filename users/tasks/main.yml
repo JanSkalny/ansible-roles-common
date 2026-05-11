@@ -1,3 +1,16 @@
+- name: Normalize users list (string OR dict to dict)
+  set_fact:
+    normalized_users: >-
+      {%- set result = [] -%}
+      {%- for u in users -%}
+        {%- if u is string -%}
+          {%- set _ = result.append({'name': u}) -%}
+        {%- else -%}
+          {%- set _ = result.append(u) -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ result }}
+
 - name: remove invalid users
   user:
     name: "{{ item }}"
@@ -6,18 +19,30 @@
 
 - name: create user
   user:
-    name: "{{ item }}"
-    shell: "{{ default_user_shell }}"
+    name: "{{ item.name }}"
+    shell: "{{ item.shell | default(default_user_shell) }}"
     state: present
-    createhome: yes
-    password: "*"
+    createhome: true
+    password: "{{ item.password | default('*') }}"
+    groups: "{{ item.groups | default(omit) }}"
   with_items : "{{ users }}"
+  async: 100
+  poll: 0
+  register: create_user
+
+- name: creating users - wait for completion
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  loop: "{{ create_user.results }}"
+  register: job_results
+  until: job_results.finished
+  retries: 20
+  delay: 3
 
 - name: add authorized_keys
   authorized_key:
     user: "{{ item }}"
     state: present
-    key: "{{ lookup('file', root_dir+'/files/ssh-keys/'+item) }}"
+    key: "{{ lookup('file', root_dir + '/files/ssh-keys/' + item.name) }}"
+  when: '(item.ssh | default(true))'
   with_items: "{{ users }}"
-
-

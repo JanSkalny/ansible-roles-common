@@ -12,8 +12,16 @@
   - proxy_http 
   - headers
   - authnz_ldap
+  - auth_basic
   tags: install
   notify: restart apache2
+
+- name: generate htpasswd
+  copy:
+    content: "{{ item.htpasswd }}"
+    dest: /etc/apache2/htpasswd_{{ item.name }}
+  with_items: "{{ site_forwards }}"
+  when: item.htpasswd is defined
 
 - name: generate apache proxy conf
   template:
