@@ -9,7 +9,16 @@
   lineinfile:
     path: /etc/apt-cacher-ng/acng.conf
     regexp: '.*Proxy: .*'
-    line: "Proxy: {{ proxy_env.HTTP_PROXY }}"
+    line: 'Proxy: {{ proxy_env.HTTP_PROXY }}'
+    create: no
+    backup: yes
+  notify: restart apt-cacher-ng
+
+- name: Set proxy for apt cacher
+  lineinfile:
+    path: /etc/apt-cacher-ng/acng.conf
+    regexp: '.*PassThroughPattern:.*'
+    line: 'PassThroughPattern: ^(.*):443$'
     create: no
     backup: yes
   notify: restart apt-cacher-ng
