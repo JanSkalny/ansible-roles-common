@@ -1,5 +1,6 @@
 - import_role: 
     name: common/virtual/shutdown
+  ignore_errors: True
 
 - name: undefine old vm
   virt:
