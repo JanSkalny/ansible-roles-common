@@ -2,7 +2,9 @@
   package:
     name: 
     - strongswan
-    - strongswan-plugin-eap-mschapv2
+    - strongswan-swanctl
+    - libstrongswan-extra-plugins
+    - libcharon-extra-plugins
   notify: 
   - enable strongswan
   - restart strongswan
