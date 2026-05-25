@@ -4,9 +4,11 @@
     state: absent
   tags: install
 
-- name: install ntpsec
+- name: install ntpsec and ntpsec-date
   package:
-    name: ntpsec
+    name:
+     - ntpsec
+     - ntpsec-ntpdate
     state: present
   tags: install
 

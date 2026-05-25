@@ -10,17 +10,11 @@
     state: absent
   tags: install
 
-- name: install ntpdate
-  package:
-    name: ntpdate
-    state: present
-  tags: install
-
 - name: remove ntpdate if-up script (blocks ntp on startup)
   file:
     path: "/etc/network/if-up.d/ntpdate"
     state: absent
-  tags: 
+  tags:
   - install
   - configure
 
@@ -30,7 +24,7 @@
     enabled: no
     state: stopped
   failed_when: false
-  tags: 
+  tags:
   - install
   - configure
 

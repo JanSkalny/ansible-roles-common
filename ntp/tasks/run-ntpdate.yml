@@ -15,7 +15,7 @@
 - set_fact:
     ntpdate_offset_seconds: "{{ ntpdate_offset.stdout | float | abs }}"
 
-- debug: 
+- debug:
     msg: "ntp offset {{ ntpdate_offset_seconds }}"
 
 - name: stop ntp_service
