@@ -21,10 +21,15 @@
   when: 
     - ansible_distribution_major_version|int < 24
 
-# periodic updates and cleaup on all ubuntus
 - template:
     src: "10periodic"
     dest: "/etc/apt/apt.conf.d/10periodic"
+
+- copy:
+    content: |
+      Acquire::ForceIPv4 "true";
+    dest: "/etc/apt/apt.conf.d/99-force-ipv4"
+
 - file:
     path: "/etc/apt/{{ item }}"
     state: absent
