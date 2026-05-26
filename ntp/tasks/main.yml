@@ -3,6 +3,7 @@
   with_first_found:
     - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
     - default.yml
+  tags: always
 
 - name: uninstall chrony
   package:
@@ -30,6 +31,8 @@
 
 - include_tasks: ntp.yml
   when: ansible_distribution_major_version|int <= 22
+  tags: always
 
 - include_tasks: ntpsec.yml
   when: ansible_distribution_major_version|int >= 24
+  tags: always

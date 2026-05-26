@@ -13,6 +13,7 @@
   tags: install
 
 - import_tasks: run-ntpdate.yml
+  tags: always
 
 - name: configure ntpsec
   template:
