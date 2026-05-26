@@ -8,6 +8,7 @@ ConditionPathExists=/usr/local/sbin/fw.sh
 [Service]
 Type=oneshot
 ExecStart=/usr/local/sbin/fw.sh
+TimeoutStartSec=15s
 RemainAfterExit=yes
 
 [Install]

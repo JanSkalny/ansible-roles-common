@@ -1,13 +1,44 @@
+---
 - name: ensure iptables command is present
   ansible.builtin.package:
-    name: 
+    name:
       - iptables
       - ipset
       - nftables
+      - conntrack
     state: present
   tags: install
-  notify: 
-  - reload firewall
+  when: ansible_os_family != "Archlinux"
+  notify:
+    - reload firewall
+
+- name: ensure iptables command is present (arch)
+  ansible.builtin.package:
+    name:
+      - iptables
+      - ipset
+      - nftables
+      - conntrack-tools
+    state: present
+  #XXX: remove in production!
+  #ignore_errors: true
+  tags: install
+  when: ansible_os_family == "Archlinux"
+  notify:
+    - reload firewall
+
+#- debug:
+#    msg: "firewall_objects: {{ firewall_objects }}"
+#- name: firewall_input.rules
+#  ansible.builtin.debug:
+#    msg: |
+#      {{ firewall_input | to_yaml(indent=2, sort_keys=false) }}
+
+#- name: firewall_input rules
+#  ansible.builtin.debug:
+#    msg: "{{ item | to_yaml(sort_keys=false) }}"
+#  with_items: "{{ firewall_input }}"
+
 
 #XXX: y u no work?
 #- name: ensure kernel-modules-extra matches the running kernel
@@ -16,8 +47,9 @@
 #    state: present
 #  tags: install
 #  when: ansible_distribution == 'AlmaLinux'
-#  notify: 
+#  notify:
 #  - reload firewall
+
 - name: install kernel-modules-extra for the running Alma kernel
   ansible.builtin.command:
     cmd: >
@@ -29,8 +61,8 @@
   changed_when: >
     'Nothing to do.' not in kmextra_install.stdout
     and 'Complete!' in kmextra_install.stdout
-  notify: 
-  - reload firewall
+  notify:
+    - reload firewall
 
 - name: cleanup init.d fw.sh
   file:
@@ -41,28 +73,27 @@
     - /etc/rc2.d/S19fw
 
 - name: generate fw.sh
-  template: 
+  template:
     src: "fw.sh"
     dest: /usr/local/sbin/fw.sh
-    owner: root 
-    group: root 
+    owner: root
+    group: root
     mode: 0750
   tags: configure
-  notify: 
-  - reload firewall
+  notify:
+    - reload firewall
 
 - name: install fwsh.service
   ansible.builtin.template:
     src: service
     dest: /etc/systemd/system/fwsh.service
     mode: '0644'
-  notify: 
-  - reload systemd
-  - enable fwsh.service
+  notify:
+    - reload systemd
+    - enable fwsh.service
 
 #- name: disable firewalld
 #  ansible.builtin.systemd:
 #    name: firewalld
 #    enabled: false
 #    state: stopped
-

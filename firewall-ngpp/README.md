@@ -1,15 +1,14 @@
 # firewall-ng++
 
-Unified IPv4/IPv6 iptables fw.sh generator with docker/podman detection.
+Unified IPv4/IPv6 iptables fw.sh generator with docker/~podman~ detection.
 
 ## Compatibility
 Basic testing was done on:
-- ubuntu22.04 
+- ubuntu22.04
 - ubuntu24.04
 - debian13
 - almalinux10
 - centos-stream10
-
 
 > [!WARNING]
 > almalinux does not come with kernel-modules-extra package by default
@@ -76,7 +75,7 @@ firewall_objects__example:
    EXAMPLE:
      - foo.example.com
      - bar.example.com
-   BAZ: 
+   BAZ:
      - EXAMPLE
      - 1.2.3.0/24
      - 1.1.1.1
@@ -86,7 +85,7 @@ firewall_objects__example:
 Firewall input/output/forward rule can have:
  - one (str) or more (str[]) source (src) IPv4/IPv6 addresses / nets or named firewall objects
  - one (str) or more (str[]) destination (dst) IPv4/IPv6 addresses / nets or named firewall objects
- - optional object with L4 protocol and ports (codes), where 
+ - optional object with L4 protocol and ports (codes), where
    - key is either name or /etc/protocols number
    - value is either one or more (comma separated) port numbers
 
@@ -100,20 +99,20 @@ firewall_input__example:
   - name: specific host from DMZ can't access elastic
     src: bar.example.com
     dst: 10.10.10.0/24
-    proto: 
+    proto:
       tcp: 9300
     rule: LOG_REJECT        # or LOG_DROP
   - name: elastic from DMZ segment (without logging)
     src: DMZ
     dst: 10.10.10.0/24
-    proto: 
+    proto:
       tcp: 9200, 9300
       udp: 100:110
     rule: ACCEPT
   - src: 10.20.30.40
     proto:
       icmp: 13
-      
+
 ```
 
 ## `firewall_interfaces` definitions

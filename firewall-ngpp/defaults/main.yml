@@ -1,45 +1,65 @@
+---
 # default firewall is strict. change these to "LOG_WILL_DROP" using group_vars/all/ for selective deployment!!
-#firewall_default_rule_input: "LOG_WILL_DROP"
-#firewall_default_rule_output: "LOG_WILL_DROP"
-#firewall_default_rule_forward: "LOG_WILL_DROP"
-#firewall_default_rule_checkif_global: "LOG_WILL_DROP_CHECKIF"
-#firewall_default_rule_checkif: "LOG_WILL_DROP_CHECKIF"
-#firewall_default_rule_invalid: "LOG_WILL_DROP_INVALID"
+# s'/LOG_DROP/LOG_WILL_DROP/'
 
 # default firewall actions
-firewall_default_rule_input: "LOG_DROP_DEFAULT"              # input rules without match
-firewall_default_rule_output: "LOG_DROP_DEFAULT"             # output rules without match
-firewall_default_rule_forward: "LOG_DROP_DEFAULT"            # forward rules without match
-firewall_default_rule_checkif_global: "LOG_DROP_CHECKIF"     # unmatched interface rule
-firewall_default_rule_checkif: "LOG_DROP_CHECKIF_POLICY"     # matched interface, unmatched subnet rule
-firewall_default_rule_checkif_deny: "LOG_DROP_CHECKIF_DENY"  # matched interface, matched deny subnet rule
-firewall_default_rule_invalid: "LOG_DROP_INVALID"            # conntrac "invalid" conenctions
+firewall_rule_input_default:       "LOG_DROP_DEFAULT"             # input rules without match
+firewall_rule_output_default:      "LOG_DROP_DEFAULT"             # output rules without match
+firewall_rule_forward_default:     "LOG_DROP_DEFAULT"             # forward rules without match
+firewall_rule_forward_mld:         "LOG_DROP_INVALID_MLD"         # ICMPv6 MLD forwarding
+firewall_rule_forward_ndp:         "LOG_DROP_INVALID_NDP"         # ICMPv6 NDP forwarding
+firewall_rule_invalid_ndp:         "LOG_DROP_INVALID_NDP"         # ICMPv6 NDP with HL < 255
+firewall_rule_invalid_conntrack:   "LOG_DROP_INVALID_CT"          # conntrack "invalid" conenctions
+firewall_rule_checkif_default:     "LOG_DROP_CHECKIF_DEF"         # unmatched interface rule
+firewall_rule_checkif_unmatched:   "LOG_DROP_CHECKIF"             # matched interface, unmatched subnet rule
+firewall_rule_checkif_deny:        "LOG_DROP_CHECKIF_DENY"        # matched interface, matched deny subnet rule
+firewall_rule_checkif_sourceroute: "LOG_DROP_CHECKIF_SR"          # IPv6 source routing (ping-pong traffic)
+firewall_rule_checkif_linklocal:   "LOG_DROP_CHECKIF_LL"          # drop link-local addressess with hl<255
+firewall_rule_checkif_igmp:        "LOG_DROP_CHECKIF_IGMP"        # IGMP traffic on non-igmp iface
+firewall_rule_checkif_dhcp:        "LOG_DROP_CHECKIF_DHCP"        # DHCP traffic on non-dhcp iface
+firewall_rule_checkif_spoof:       "LOG_DROP_CHECKIF_SPOOF"       # invalid source IP address
+firewall_rule_checkif_apipa:       "LOG_DROP_CHECKIF_APIPA"       # use DROP for less noise
+firewall_rule_ping_ratelimit:      "LOG_DROP_RATELIMIT"           # ICMP/ICMPv6 echo over firewall_ping_rate
+
+# change these only if you need more logs :)
+firewall_rule_input_ndp:           "ACCEPT"
+firewall_rule_input_mld:           "ACCEPT"
+firewall_rule_input_slaac:         "LOG_ACCEPT"
+firewall_rule_output_ndp:          "ACCEPT"
+firewall_rule_output_mld:          "ACCEPT"
+firewall_rule_output_slaac:        "LOG_ACCEPT"
 
 #  IPv4/IPv6 packet forwarding
 firewall_ip_forward: 0
-firewall6_ip_forward: 0
+firewall_ip6_forward: 0
 
 # IPv6 is disabled by default
-firewall_enable_ipv6: False
+firewall_enable_ipv6: false
+
+# enable fwsh docker integration
+firewall_enable_docker: true
+
+# rpf enabled by default
+# use 2 for policy-based routing
+firewall_rp_filter: 1
 
 # logging martians is a good thing (on host fw)
 firewall_log_martians: 1
 
+# list of interface names where log_marians is disabled
+firewall_no_martians_ifaces: []
+
 # ignore IPv4 --dst-type BROADCAST traffic
-firewall_ignore_broadcasts: True
+firewall_drop_broadcasts: true
 
 # how many icmp pings and icmp6-pings are allowed (per second)
 firewall_ping_rate: 20
 
-# allow all ICMPv6 traffic (not recommended!)
-firewall6_allow_all_icmp: False
+# allow ICMPv6 router solicitation/advertisement messagess
+firewall_allow_ipv6_slaac: false
 
-# allow ICMP RA messages
-firewall6_allow_ra: True
-
-# some interfaces are whitelisted in input/output (forward in docker template)
-# generally avoid using these
-firewall_whitelisted_iface: ['lo']
+# list of slaac interfaces
+firewall_slaac_ifaces: []
 
 ## EXAMPLES:
 #firewall_interfaces:
@@ -74,15 +94,15 @@ firewall_whitelisted_iface: ['lo']
 #   EXAMPLE:
 #     - foo.example.com
 #     - bar.example.com
-#   BAZ: 
+#   BAZ:
 #     - EXAMPLE
 #     - 1.2.3.0/24
 #     - 1.1.1.1
 
-# firewall input/output/forward rule can have 
+# firewall input/output/forward rule can have
 #  - one (str) or more (str[]) source (src) IPv4/IPv6 addresses / nets or named firewall objects
 #  - one (str) or more (str[]) destination (dst) IPv4/IPv6 addresses / nets or named firewall objects
-#  - optional object with L4 protocol and ports (codes), where 
+#  - optional object with L4 protocol and ports (codes), where
 #    - key is either name or /etc/protocols number
 #    - value is either one or more (comma separated) port numbers
 #firewall_input__example:
@@ -93,7 +113,7 @@ firewall_whitelisted_iface: ['lo']
 #  - name: elastic from DMZ segment
 #    src: DMZ
 #    dst: 10.10.10.0/24
-#    proto: 
+#    proto:
 #      tcp: 9200, 9300
 #      udp: 100:110
 #    rule: LOG_ACCEPT
@@ -101,7 +121,17 @@ firewall_whitelisted_iface: ['lo']
 #FIXME: re-integrate with "networking" role
 firewall_interfaces: {}
 
-# custom firewall hacks and patches via firewall_final_patch. 
+# ipset address lists - can be used via src_list/dst_list attribute inside rules
+# some firewall objects are HUGE so we can pre-populate ipset list using `load: OBJ_NAME`
+firewall_lists: []
+# example:
+#firewall_lists:
+#  - name: BLOCKLIST
+#  - name: O365
+#    load: O365
+
+
+# custom firewall hacks and patches via firewall_final_patch.
 # example:
 #firewall_final_patch |
 # $IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.97.0/24 -j MASQUERADE
@@ -109,42 +139,35 @@ firewall_interfaces: {}
 # $IT4 -t nat -A POSTROUTING -o eth0 -s 172.20.99.0/24 -j MASQUERADE
 
 # merge all variables matching prefix "firewall_xxx_*" (or override on per-host basis)
-firewall_input:  "{{ vars | select('match', '^firewall_input_') | map('extract', vars) | flatten }}"
-firewall_output:  "{{ vars | select('match', '^firewall_output_') | map('extract', vars) | flatten }}"
-firewall_forward:  "{{ vars | select('match', '^firewall_forward_') | map('extract', vars) | flatten }}"
-firewall_objects:  "{{ {} | combine(vars | select('match', '^firewall_objects_') | map('extract', vars) | list) }}"
+firewall_input: "{{ vars | select('match', '^firewall_input_') | map('extract', vars) | flatten }}"
+firewall_output: "{{ vars | select('match', '^firewall_output_') | map('extract', vars) | flatten }}"
+firewall_forward: "{{ vars | select('match', '^firewall_forward_') | map('extract', vars) | flatten }}"
+firewall_objects: "{{ {} | combine(vars | select('match', '^firewall_objects_') | map('extract', vars) | list) }}"
 
 # no need to change these
-firewall_iptables: "$( which iptables )"
-firewall6_iptables: "$( which ip6tables )"
+firewall_iptables: "$( command -v iptables )"
+firewall_ip6tables: "$( command -v ip6tables )"
 
-# custom "LOG_DROP_..." chains 
-# XXX: don't remove default rules when overriding! most of these are used in templates/fw.sh
-firewall_drop_rules:
-  - INVALID
+# custom "LOG_DROP_..." and "LOG_WILL_DROP_..." chains
+# don't remove default rules when overriding! most of these are used in templates/fw.sh
+firewall_custom_actions:
+  - INVALID_CT
+  - INVALID_NDP
+  - INVALID_MLD
   - CHECKIF
+  - CHECKIF_DEF
+  - CHECKIF_DENY
   - CHECKIF_DHCP
   - CHECKIF_SPOOF
-  - CHECKIF_POLICY
-  - CHECKIF_DENY
-  - HONEYPOT
+  - CHECKIF_IGMP
+  - CHECKIF_SR
+  - CHECKIF_LL
+  - CHECKIF_APIPA
   - DEFAULT
   - HACK
   - POLICY
-  - ROGUE
-  - BLACKLIST
   - RATELIMIT
-  - IPV6
-
-# custom "LOG_WILL_DROP_..." chains
-firewall_will_drop_rules:
-  - DEFAULT
-  - CHECKIF
-  - CHECKIF_POLICY
-  - CHECKIF_DENY
-  - POLICY
-  - INVALID
-  - BLACKLIST
-  - HACK
-
+  - HONEYPOT
+  - ROGUE
+  - EDL
 
