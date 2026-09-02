@@ -1,0 +1,70 @@
+- name: check if lv exists
+  stat:
+    path: "/dev/{{ drbd_vg }}/{{ drbd_res_name }}"
+  register: lv_status
+  check_mode: no
+
+- name: get current lv size in GiB
+  command:
+    cmd: "lvs --noheadings --units g --nosuffix -o lv_size /dev/{{ drbd_vg }}/{{ drbd_res_name }}"
+  register: lv_current_size
+  changed_when: false
+  check_mode: no
+  when: lv_status.stat.exists
+
+- name: compare lv size
+  set_fact:
+    lv_size_differs: >-
+      {{
+        lv_status.stat.exists and
+        (
+          (lv_current_size.stdout | trim | float)
+          !=
+          (drbd_size | regex_replace('[gG]$', '') | float)
+        )
+      }}
+
+- block:
+    - name: report lv size mismatch
+      debug:
+        msg: >-
+          LV size differs:
+          current={{ lv_current_size.stdout | trim }}g,
+          configured={{ drbd_size }}
+
+    - name: resize lv
+      lvol:
+        lv: "{{ drbd_res_name }}"
+        vg: "{{ drbd_vg }}"
+        size: "{{ drbd_size }}"
+        shrink: false
+
+    - name: avoid drbd/kernel race conditions
+      pause:
+        seconds: 1
+
+    - name: get local DRBD role
+      command:
+        cmd: "drbdadm role {{ drbd_res_name }}"
+      register: drbd_role
+      changed_when: false
+      check_mode: no
+
+    - name: set local DRBD role
+      set_fact:
+        drbd_local_role: "{{ (drbd_role.stdout | trim).split('/')[0] }}"
+
+    - name: report DRBD role
+      debug:
+        msg: "{{ inventory_hostname }}: DRBD role={{ drbd_local_role }}"
+
+    - name: resize DRBD on Primary
+      command:
+        cmd: "drbdadm resize {{ drbd_res_name }}"
+      when: drbd_local_role == "Primary"
+
+    - name: avoid drbd/kernel race conditions
+      pause:
+        seconds: 2
+
+  when: lv_size_differs
