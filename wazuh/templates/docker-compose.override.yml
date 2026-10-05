@@ -4,6 +4,9 @@ services:
     container_name: "wazuh.manager"
     volumes:
       - /data/logs:/logs:ro
+{% if wazuh_log_analytics is defined %}
+      - /var/tmp/wazuh_log_analytics_credentials:/var/ossec/wodles/credentials/log_analytics_credentials:ro
+{% endif %}
 {% if ( wazuh_custom_ports | type_debug == 'list' ) and (wazuh_custom_ports | length > 0) %}
 {% if wazuh_syslog_listener | d(False) == True %}
     ports: !override {{ wazuh_custom_ports + wazuh_syslog_listener_ports }}

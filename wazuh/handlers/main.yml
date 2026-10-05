@@ -1,6 +1,7 @@
+---
 # https://documentation.wazuh.com/current/deployment-options/docker/wazuh-container.html#change-pwd-existing-usr
 - name: reconfigure wazuh users
-  include_tasks: handler-reconfigure-users.yml 
+  include_tasks: handler-reconfigure-users.yml
 
 #XXX: alternatively run docker restart wazuh.manager
 - name: reconfigure wazuh manager

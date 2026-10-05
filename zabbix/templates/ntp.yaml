@@ -1,4 +1,5 @@
 ntp:
   template: "NTP by Zabbix agent"
   params: "zabbix-ntp/ntp.conf"
-
+  scripts:
+    - "zabbix-ntp/zabbix_ntp.sh"

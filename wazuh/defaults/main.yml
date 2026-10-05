@@ -24,6 +24,9 @@ wazuh_default_ports:
   - "55000:55000"
 
 wazuh_syslog_listener_default_port: 5144
+wazuh_syslog_listener_ports:
+  - "{{ wazuh_syslog_listener_port | default(wazuh_syslog_listener_default_port) }}:514/tcp"
+  - "{{ wazuh_syslog_listener_port | default(wazuh_syslog_listener_default_port) }}:514/udp"
 
 # default technical accounts have passwords based on wazuh_secret
 # feel free to override wazuh_admin_password

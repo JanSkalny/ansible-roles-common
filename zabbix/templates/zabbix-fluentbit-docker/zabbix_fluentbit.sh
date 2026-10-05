@@ -6,23 +6,26 @@ fail() {
 }
 
 usage() {
-    fail "usage: $0 (discover-instances|discover-inputs|discover-outputs|discover-filters|(version|uptime|instance-metrics) [instance])"
+    fail "usage: $0 (discover-instances|discover-inputs|discover-outputs|discover-filters|(instance-version|instance-uptime|instance-metrics) [instance])"
     exit 1
 }
 
 get_port() {
-    CONF="/etc/fluent-bit/$1/fluent-bit.yaml"
-    [ -f "$CONF" ] || fail "missing fluent-bit.yaml file"
-
-    PORT=$( awk '/^service:/ {found=1} found && /http_port:/ {gsub(/"/, "", $2); print $2; exit}' "$CONF" )
-    [ -z "$PORT" ] && fail "invalid http_port"
+    PORT=$( docker port "$1" 8000/tcp 2>/dev/null | cut -d ':' -f 2 )
+    [ -z "$PORT" ] && fail "failed to get instance http_port"
 
     echo "$PORT"
 }
 
 list_instances() {
-    systemctl list-units --all '*fluent-bit*' --no-pager --no-legend --plain \
-        | grep -oP 'fluent-bit@\K[^.]*(?=\.service)'
+	CACHE_FILE="/var/run/zabbix/instances.json"
+
+	[ ! -f "$CACHE_FILE" ] || [ "$(find "$CACHE_FILE" -newermt '-300 seconds' 2>/dev/null)" = "" ] \
+		&& docker ps --format '{{.Image}} {{.Names}}' | grep fluent-bit | awk '{print $2}' > "$CACHE_FILE"
+
+	[ -f "$CACHE_FILE" ] || fail "failed to list instances"
+
+	cat "$CACHE_FILE"
 }
 
 discover_metrics() {

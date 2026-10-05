@@ -1,0 +1,5 @@
+cgroup_load:
+  template: "cgroup load by Zabbix agent"
+  params: "zabbix-cgroup-load/cgroup_load.conf"
+  scripts:
+    - "zabbix-cgroup-load/zabbix_cgroup_load.sh"

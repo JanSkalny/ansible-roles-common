@@ -1,10 +1,4 @@
-- name: set wazuh syslog listener ports
-  ansible.builtin.set_fact:
-    wazuh_syslog_listener_ports:
-      - "{{ wazuh_syslog_listener_port | default(wazuh_syslog_listener_default_port) }}:514/tcp"
-      - "{{ wazuh_syslog_listener_port | default(wazuh_syslog_listener_default_port) }}:514/udp"
-  when: wazuh_syslog_listener | d(False) == True
-
+---
 - name: print wazuh syslog listener port mapping
   ansible.builtin.debug:
     msg: "wazuh syslog listener port will be set to {{ wazuh_syslog_listener_port | default(wazuh_syslog_listener_default_port) }}"

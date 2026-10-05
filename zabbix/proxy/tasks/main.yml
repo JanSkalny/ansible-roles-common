@@ -1,50 +1,39 @@
 - name:
   debug: var=ansible_distribution_major_version
 
-- name: install python-mysqldb
+- name: install zabbix-proxy
   package:
     name:
-    - python-mysqldb
-    state: present
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version <= "18"
-
-- name: install zabbix-proxy and python3-mysqldb
-  apt:
-    name:
-    - python3-mysqldb
-    - zabbix-proxy-mysql
+      - zabbix-proxy-pgsql
+      - zabbix-sql-scripts
+      - python3-psycopg2
     state: present
 
-- name: install additional packages
-  package:
-    name:
-    - zabbix-sql-scripts
-    state: present
-  when: zabbix_version|int >= 6.0
-
-- name: create zabbix database
-  mysql_db:
-    name: "{{ zabbix_proxy_db_name }}"
-    encoding: utf8
-    collation: utf8_bin
-    state: present
-  register: zabbix_proxy_db_present
-  when: not ansible_check_mode
-
-- name: create zabbix user
-  mysql_user:
+- name: Create PostgreSQL user
+  become_user: postgres
+  community.postgresql.postgresql_user:
     name: "{{ zabbix_proxy_db_user }}"
     password: "{{ zabbix_proxy_db_password }}"
-    priv: "{{ zabbix_proxy_db_name }}.*:ALL"
-    state: present
-  when: not ansible_check_mode
+    role_attr_flags: LOGIN
 
-- name: import zabbix database
-  mysql_db:
+- name: Create PostgreSQL database
+  become_user: postgres
+  community.postgresql.postgresql_db:
     name: "{{ zabbix_proxy_db_name }}"
-    state: import
+    owner: "{{ zabbix_proxy_db_user }}"
+    encoding: UTF8
+    state: present
+  register: res
+
+- name: Import SQL file into database
+  community.postgresql.postgresql_db:
+    login_user: "{{ zabbix_proxy_db_user }}"
+    login_password: "{{ zabbix_proxy_db_password }}"
+    login_host: localhost
+    name: "{{ zabbix_proxy_db_name }}"
+    state: restore
     target: "{{ zabbix_proxy_schema_file }}"
-  when: zabbix_proxy_db_present.changed == True
+  when: res.changed
 
 - name: create zabbix server CA file
   copy:

@@ -8,8 +8,8 @@
   when: wazuh_indexer_is_running and git_repo.stdout != wazuh_version and wazuh_upgrade|default(0) == 0
 
 - name: stop wazuh, if already running and version mismatch
-  block: 
-  - shell: 
+  block:
+  - shell:
       docker compose down
     args:
       chdir: /opt/wazuh-docker/single-node
@@ -24,29 +24,58 @@
     dest: /opt/wazuh-docker
     force: "{{ wazuh_upgrade|default(False) }}"
     version: "{{ wazuh_version }}"
-  when: git_repo.failed or git_repo.stdout != wazuh_version 
+  when: git_repo.failed or git_repo.stdout != wazuh_version
 
 - include_tasks: syslog_listener.yml
 
 ## configure wazuh
 - include_tasks: users.yml
+  tags: wazuh-users
 
 ## generate certificates
 - include_tasks: fix-certs-generator.yml
 
 - name: generate certificates
-  shell: 
-    docker compose -f generate-indexer-certs.yml run --rm generator && sleep 10
+  shell:
+    docker compose -f generate-indexer-certs.yml run --rm generator
   args:
     chdir: /opt/wazuh-docker/single-node
-  when: not wazuh_certificates_are_present 
+  when: not wazuh_certificates_are_present
+  register: cert_generation
+
+# Wait for the cert-generator container to finish writing files to disk
+# before proceeding; the former bare 'sleep 10' gave no readiness signal.
+- name: wait for root-ca cert to appear after generation
+  ansible.builtin.wait_for:
+    path: /opt/wazuh-docker/single-node/config/wazuh_indexer_ssl_certs/root-ca.pem
+    state: present
+    timeout: 60
+  when: not wazuh_certificates_are_present
 
 ## install wazuh
 - name: start wazuh
-  shell: 
-    docker compose up -d && sleep 180
+  shell:
+    docker compose up -d
   args:
     chdir: /opt/wazuh-docker/single-node
+  when: not wazuh_indexer_is_running
+
+# Poll the OpenSearch API instead of sleeping a fixed 180s.
+# Mirrors the readiness pattern already used in soitron/opensearch-roles.
+# 30 retries × 10 s delay = up to 300s, generous enough for cold starts.
+- name: wait for wazuh indexer to become ready
+  ansible.builtin.uri:
+    url: "{{ opensearch_url | default('https://localhost:9200') }}/_cluster/health"
+    client_cert: "{{ opensearch_admin_cert | default('/opt/wazuh-docker/single-node/config/wazuh_indexer_ssl_certs/admin.pem') }}"
+    client_key: "{{ opensearch_admin_key | default('/opt/wazuh-docker/single-node/config/wazuh_indexer_ssl_certs/admin-key.pem') }}"
+    validate_certs: false
+    use_proxy: false
+    status_code: 200
+  become: true
+  register: wazuh_indexer_health
+  until: wazuh_indexer_health.status | default(0) == 200
+  retries: 30
+  delay: 10
   when: not wazuh_indexer_is_running
 
 ## re-check facts and make sure wazuh is running
