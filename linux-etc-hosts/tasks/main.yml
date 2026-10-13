@@ -10,3 +10,7 @@
     src: hosts
     dest: /etc/hosts
   tags: configure
+
+- name: set hostname from ansible
+  hostname:
+    name: "{{ inventory_hostname }}"
