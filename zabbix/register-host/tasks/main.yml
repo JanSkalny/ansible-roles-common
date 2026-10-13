@@ -21,22 +21,6 @@
 - debug: msg="zabbix_linked_templates={{ zabbix_linked_templates }}", verbosity=1
 - debug: msg="zabbix_macros={{ zabbix_macros | default([]) }}", verbosity=1
   
-- name: make sure host groups exits
-  vars:
-    ansible_network_os: community.zabbix.zabbix
-    ansible_connection: httpapi
-    ansible_httpapi_port: "{{ zabbix_port | default(443) }}"
-    ansible_httpapi_use_ssl: "{{ zabbix_use_tls | default(true) }}"
-    ansible_httpapi_validate_certs: "{{ zabbix_validate_certs | default(false) }}"
-    ansible_zabbix_auth_key: "{{ zabbix_token }}"
-    ansible_zabbix_url_path: ""
-  become: false
-  delegate_to: "{{ zabbix_server_hostname }}"
-  community.zabbix.zabbix_group:
-    state: present
-    host_groups: "{{ zabbix_groups }}"
-  tags: configure
-
 - name: add host to zabbix server
   vars:
     ansible_network_os: community.zabbix.zabbix
@@ -48,8 +32,8 @@
     ansible_zabbix_url_path: ""
   become: false
   delegate_to: "{{ zabbix_server_hostname }}"
+  throttle: 5
   community.zabbix.zabbix_host:
-    force: yes
     host_name: "{{ inventory_hostname }}"
     visible_name: "{{ inventory_hostname }}"
     host_groups: "{{ zabbix_groups }}"
@@ -67,7 +51,8 @@
     tls_connect: 2 # psk
     tls_accept: 2  # psk
     tls_psk_identity: "{{ inventory_hostname }}"
-    tls_psk: "{{ zabbix_agent_psk | default('00000000000000000000000000000000')}}"
+    tls_psk: "{{ zabbix_agent_psk | mandatory }}"
+    monitored_by: "{{ 'proxy' if zabbix_proxy | default('') else 'zabbix_server' }}"
     proxy: "{{ zabbix_proxy | default('') }}"
   tags: configure
   when: not ansible_check_mode
