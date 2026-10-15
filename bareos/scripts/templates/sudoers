@@ -1,0 +1,5 @@
+{% for bareos_script in ['dump_docker.sh','dump_gitlab.sh','dump_mysql.sh '] %}
+{% if bareos_script in bareos_scripts %}
+bareos ALL=(root) NOPASSWD: /var/backups/scripts/{{ bareos_script }} ""
+{% endif %}
+{% endfor %}

@@ -1,0 +1,6 @@
+bareos_mysql_user: "root"
+
+bareos_scripts: []
+#  - dump_docker.sh
+#  - dump_mysql.sh
+#  - dump_gitlab.sh
