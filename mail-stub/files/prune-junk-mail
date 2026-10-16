@@ -1,8 +1,0 @@
-#!/bin/sh
-
-AFTER=30
-
-find /var/vmail/*/.Junk/cur/ -mtime +$AFTER -type f -print0 | xargs -n1 -0 rm > /dev/null 2>&1
-find /var/vmail/*/.Junk/new/ -mtime +$AFTER -type f -print0 | xargs -n1 -0 rm > /dev/null 2>&1
-
-exit

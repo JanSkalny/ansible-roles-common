@@ -1,9 +1,0 @@
-- opkg:
-    name: ntpd 
-    state: present
-  tags: install
-
-- template:
-    src: ntpd.conf
-    dest: /etc/ntpd.conf
-  tags: configure

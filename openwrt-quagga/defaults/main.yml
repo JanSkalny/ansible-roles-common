@@ -1,4 +1,0 @@
-openwrt_quagga_zebra_password: "changeme!"
-openwrt_quagga_zebra_ifaces: []
-openwrt_quagga_bgp_instances: []
-openwrt_quagga_ospf_instances: []

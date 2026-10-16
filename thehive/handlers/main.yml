@@ -1,9 +1,0 @@
- - name: restart thehive
-   service:
-     name: thehive
-     state: restarted
-
- - name: restart cassandra
-   service:
-     name: cassandra
-     state: restarted
