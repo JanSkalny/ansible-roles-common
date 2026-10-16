@@ -9,6 +9,7 @@
     ansible_zabbix_url_path: ""
   become: false
   delegate_to: "{{ zabbix_server_hostname }}"
+  throttle: 5
   community.zabbix.zabbix_proxy:
     status: active
     state: present

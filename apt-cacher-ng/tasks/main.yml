@@ -5,26 +5,20 @@
   tags: install
   notify: restart apt-cacher-ng
 
-- name: Set proxy for apt cacher
-  lineinfile:
-    path: /etc/apt-cacher-ng/acng.conf
-    regexp: '.*Proxy: .*'
-    line: 'Proxy: {{ proxy_env.HTTP_PROXY }}'
-    create: no
-    backup: yes
+- name: configure apt-cacher
+  template: 
+    src: "{{ item }}"
+    dest: "/etc/apt-cacher-ng/{{ item }}"
+  tags: configure
   notify: restart apt-cacher-ng
-
-- name: Set proxy for apt cacher
-  lineinfile:
-    path: /etc/apt-cacher-ng/acng.conf
-    regexp: '.*PassThroughPattern:.*'
-    line: 'PassThroughPattern: ^(.*):443$'
-    create: no
-    backup: yes
-  notify: restart apt-cacher-ng
+  with_items:
+    - "proxy.conf"
+    - "passthrough.conf"
 
 - name: make sure service is enabled
   service: 
     name: apt-cacher-ng
     enabled: yes
   tags: configure
+
+

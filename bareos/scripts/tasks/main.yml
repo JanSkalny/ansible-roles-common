@@ -1,0 +1,21 @@
+- file: 
+    path: /var/backups/scripts/
+    state: directory
+    mode: "0711"
+    owner: root
+    group: root
+
+- name: deploy bareos sudoers
+  template:
+    src: sudoers
+    dest: /etc/sudoers.d/backup-scripts
+
+- name: deploy bareos scripts
+  template:
+    src: "{{ item }}"
+    dest: "/var/backups/scripts/{{ item }}"
+    mode: "0750"
+    owner: root
+    group: bareos
+  with_items: "{{ bareos_scripts | default([]) }}"
+

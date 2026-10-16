@@ -1,0 +1,6 @@
+acng_passthrough_domains:
+  - download.docker.com
+  - repo.zabbix.com
+  - ppa.launchpadcontent.net
+
+#acng_proxy: https://proxy.example.com:3128
