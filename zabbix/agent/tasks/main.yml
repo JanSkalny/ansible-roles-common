@@ -36,7 +36,7 @@
     - zabbix-sender
     - zabbix-get
     - snmp
-    state: latest
+    state: present
 
 - debug: msg="zabbix_agent_service={{ zabbix_agent_service }}", verbosity=1
 
@@ -44,7 +44,7 @@
   package:
     name:
     - "{{ zabbix_agent_service }}"
-    state: latest
+    state: present
   notify: restart zabbix-agent
 
 - block:
