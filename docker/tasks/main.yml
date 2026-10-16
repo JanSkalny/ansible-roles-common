@@ -13,9 +13,16 @@
     state: present
   tags: install
 
-- name: add docker repo
+- name: remove old Docker repository entry
   apt_repository:
     repo: "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: absent
+    update_cache: false
+  tags: install
+
+- name: add docker repo
+  apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
     update_cache: yes
   tags: install
 
