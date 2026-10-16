@@ -2,9 +2,6 @@ zabbix_etc_groups: []
 # or merge all "zabbix_etc_groups_add_*" variables in your group_vars/all/zabbix.yml
 # zabbix_etc_groups: "{{ vars | select('match', '^zabbix_etc_groups_add_') | map('extract', vars) | list | combine | flatten }}"
 
-zabbix_agent_version: 2
-zabbix_agent_name: "zabbix_agent2"
-zabbix_agent_service: "zabbix-agent2"
 zabbix_agent_port: 10050
 
 zabbix_server_addr: "127.0.0.1"
