@@ -31,7 +31,7 @@ MaxAuthTries {{ sshd_max_auth_tries | default(5) }}
 IgnoreRhosts yes
 HostbasedAuthentication no
 ChallengeResponseAuthentication no
-PasswordAuthentication no
+PasswordAuthentication {{ sshd_password_auth | default("no") }}
 KerberosAuthentication no
 GSSAPIAuthentication no
 PermitEmptyPasswords no

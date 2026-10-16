@@ -3,6 +3,7 @@
   with_first_found:
     - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
     - default.yml
+  tags: always
 
 - name: uninstall chrony
   package:
@@ -10,17 +11,11 @@
     state: absent
   tags: install
 
-- name: install ntpdate
-  package:
-    name: ntpdate
-    state: present
-  tags: install
-
 - name: remove ntpdate if-up script (blocks ntp on startup)
   file:
     path: "/etc/network/if-up.d/ntpdate"
     state: absent
-  tags: 
+  tags:
   - install
   - configure
 
@@ -30,12 +25,14 @@
     enabled: no
     state: stopped
   failed_when: false
-  tags: 
+  tags:
   - install
   - configure
 
 - include_tasks: ntp.yml
   when: ansible_distribution_major_version|int <= 22
+  tags: always
 
 - include_tasks: ntpsec.yml
   when: ansible_distribution_major_version|int >= 24
+  tags: always

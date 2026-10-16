@@ -13,22 +13,23 @@
   when: ansible_os_family == 'Debian'
 
 - name: make sure vim is default editor
-  shell: 
+  shell:
     update-alternatives --set editor /usr/bin/vim.tiny
-  when: 
+  when:
   - ansible_os_family == 'Debian'
   - alternatives_editor.stat.lnk_target != '/usr/bin/vim.tiny'
   tags: configure
 
-- name: configure vim
-  copy: 
-    src: "vimrc" 
-    dest: "/etc/vim/vimrc"
-  tags: configure
+- name: restore original vimrc
+  ansible.builtin.apt:
+    name: vim-common
+    state: present
+    install_recommends: false
+    dpkg_options: force-confmiss
 
 - name: remove old vim configuration
-  file: 
-    path: "/etc/vim/vimrc.local" 
+  file:
+    path: "/etc/vim/vimrc.local"
     state: absent
   tags: configure
 
@@ -41,29 +42,21 @@
     mode: 0640
   tags: configure
 
-- name: fancy issue message
-  copy: 
-    content: "{{ issue }}"
-    dest: "/etc/issue"
-    owner: "root"
-    group: "root"
-    mode: 0644
+- name: fancy .vimrc for root
+  copy:
+    src: "vimrc"
+    dest: "/root/.vimrc"
   tags: configure
 
-- name: fancy motd message
-  copy: 
+- name: set issue/motd/issue.net message
+  copy:
     content: "{{ issue }}"
-    dest: "/etc/motd"
+    dest: "{{ item }}"
     owner: "root"
     group: "root"
     mode: 0644
   tags: configure
-
-- name: fancy issue.net message
-  copy: 
-    content: "{{ issue }}"
-    dest: "/etc/issue.net"
-    owner: "root"
-    group: "root"
-    mode: 0644
-  tags: configure
+  with_items:
+    - /etc/issue
+    - /etc/motd
+    - /etc/issue.net

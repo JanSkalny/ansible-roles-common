@@ -59,8 +59,8 @@
     - cloud_init.cfg
     - network.cfg
 
-- name: generate cloud confgiuration 
-  shell: cloud-localds --network-config=network.cfg seed.qcow2 cloud_init.cfg
+- name: generate cloud-init seed ISO
+  command: cloud-localds --network-config=network.cfg seed.iso cloud_init.cfg
   args:
     chdir: "{{ virtual_dir }}/preseed/{{ virtual.name }}"
 
@@ -92,18 +92,34 @@
     {% else %}
     --disk path="{{ virtual.disk_blk | default(virtual_default_disk_blk) }}",device=disk,bus=virtio,cache=none \
     {% endif %}
-    --disk path="{{ virtual_dir }}/preseed/{{ virtual.name }}/seed.qcow2",device=cdrom \
+    --disk path="{{ virtual_dir }}/preseed/{{ virtual.name }}/seed.iso",device=cdrom,readonly=on \
     --graphics=vnc,port=-1 \
     --video virtio \
+    --serial pty \
+    --console pty,target_type=serial \
+    --wait=0 \
     --noautoconsole \
     --debug \
-    --noreboot \
     --import
+
+- name: ensure vm is running for first cloud-init boot
+  community.libvirt.virt:
+    name: "{{ virtual.name }}"
+    state: running
 
 - name: wait for vm to finish preseeding
   virt:
     command: info
   register: virtual_install
-  until: virtual_install[virtual.name].state == "shutdown"
-  retries: 20
-  delay: 60
+  until:
+    - virtual_install[virtual.name] is defined
+    - virtual_install[virtual.name].state == "shutdown"
+  retries: 180
+  delay: 10
+
+- name: detach seed iso from final vm config
+  command: >
+    virsh detach-disk {{ virtual.name }}
+    {{ virtual_dir }}/preseed/{{ virtual.name }}/seed.iso
+    --config
+  failed_when: false

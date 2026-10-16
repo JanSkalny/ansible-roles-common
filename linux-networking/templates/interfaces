@@ -62,6 +62,15 @@ iface lo inet loopback
 {% endif %}
 {% endfor %}
 {% endif %}
+{% if 'routes6' in iface %}
+{% for route in iface.routes6 %}
+{% if route.net is defined %}
+  up ip -6 route add {{ route.net }} via {{ route.via }} dev {{ iface_name }}
+{% elif route.host is defined %}
+  up ip -6 route add {{ route.host }}/128 via {{ route.via }} dev {{ iface_name }}
+{% endif %}
+{% endfor %}
+{% endif %}
 {% if 'preup' in iface %}
 	pre-up {{ iface.preup }}
 {% endif %}

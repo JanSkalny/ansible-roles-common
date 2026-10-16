@@ -32,7 +32,7 @@
 {% if 'mtu' in iface %}
       mtu: {{ iface.mtu }}
 {% endif %}
-{% if 'routes' in iface or 'gateway' in iface or 'gateway6' in iface %}
+{% if 'routes' in iface or 'gateway' in iface or 'gateway6' in iface or 'blackhole' in iface %}
       routes:
 {% if 'gateway' in iface %}
        - to: 0.0.0.0/0
@@ -46,6 +46,12 @@
 {% for route in iface.routes %}
        - to: {{ route.net }}
          via: {{ route.via }}
+{% endfor %}
+{% endif %}
+{% if 'blackhole' in iface %}
+{% for route in iface.blackhole %}
+       - to: {{ route }}
+         type: blackhole
 {% endfor %}
 {% endif %}
 {% endif %}

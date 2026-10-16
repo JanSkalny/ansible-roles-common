@@ -6,11 +6,14 @@
 
 - name: install ntp
   package:
-    name: ntp
+    name:
+     - ntp
+     - ntpdate
     state: present
   tags: install
 
 - import_tasks: run-ntpdate.yml
+  tags: always
 
 - name: configure ntp
   template:

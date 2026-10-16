@@ -1,3 +1,16 @@
 default_user_shell: "/bin/bash"
 users: []
+# users are acceptable as a list of strings or rather usernames to support backward compatibility
+# they are normalized to a more structured
+# new format that accepts groups and non-ssh users
+#
+# all fields except for 'name' are optional
+#
+# users:
+#   - name: ferko
+#     password: HASHED_PASSWORD
+#     shell: /bin/zsh
+#     groups:
+#       - docker
+#     ssh: false  # defaults to TRUE
 users_remove: []
