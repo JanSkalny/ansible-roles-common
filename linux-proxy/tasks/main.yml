@@ -1,3 +1,0 @@
-- name: configure proxy
-  include_tasks: proxy.yml
-  when: (proxy_host is defined and proxy_port is defined)

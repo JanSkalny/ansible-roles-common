@@ -1,28 +1,13 @@
-- name: disable cloud for /etc/hosts
-  copy:
-    src: 99_disable_hosts.cfg
-    dest: /etc/cloud/cloud.cfg.d/
-    owner: root
-  tags: 
-    - configure
-    - hosts
+- name: generate /etc/hosts and set hostname
+  import_role:
+    name: common/linux-etc-hosts
+  tags: configure
 
 - name: generate /etc/mactab
   template:
     src: mactab
     dest: /etc/mactab
   when: networking is defined
-  tags: configure
-
-- name: generate /etc/hosts
-  template:
-    src: hosts
-    dest: /etc/hosts
-  tags: configure
-
-- name: change hostname
-  import_role:
-    name: common/linux-hostname
   tags: configure
 
 - name: disable systemd services

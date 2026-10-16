@@ -15,6 +15,8 @@
 - import_role:
     name: common/fail2ban
 - import_role:
-    name: common/linux-compact-memory
-- import_role:
     name: common/linux-journal
+- name: cleanup
+  file:
+    path: "/etc/cron.daily/compact-memory"
+    state: absent
