@@ -1,1 +1,3 @@
 bareos_version: 24
+#bareos_url: "https://download.bareos.org"
+bareos_url: "https://mirror.netcologne.de/bareos.org"
