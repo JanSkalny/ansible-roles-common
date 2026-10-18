@@ -23,13 +23,18 @@
   tags: install
 
 - name: add bareos apt repository
-  get_url:
-    #url: "https://download.bareos.org/bareos/release/{{ bareos_version }}/xUbuntu_{{ ansible_distribution_version }}/bareos.list"
-    #url: "https://download.bareos.org/current/xUbuntu_{{ ansible_distribution_version }}/bareos.list"
-    url: "{{ bareos_url }}/current/xUbuntu_{{ ansible_distribution_version }}/bareos.list"
+  template:
+    src: list
     dest: "/etc/apt/sources.list.d/bareos.list"
   register: "bareos_apt_list"
   tags: install
+
+#- name: add bareos apt repository
+#  get_url:
+#    url: "{{ bareos_url }}/current/xUbuntu_{{ ansible_distribution_version }}/bareos.list"
+#    dest: "/etc/apt/sources.list.d/bareos.list"
+#  register: "bareos_apt_list"
+#  tags: install
 
 - name: update apt cache
   apt:
