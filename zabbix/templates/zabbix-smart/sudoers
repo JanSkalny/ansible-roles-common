@@ -1,0 +1,1 @@
+zabbix ALL = (root) NOPASSWD: /usr/sbin/smartctl

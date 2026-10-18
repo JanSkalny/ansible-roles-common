@@ -1,0 +1,3 @@
+mdadm:
+  template: "mdadm by Zabbix agent"
+  params: "zabbix-mdadm/mdadm.conf"

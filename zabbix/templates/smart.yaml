@@ -1,0 +1,3 @@
+smart:
+  template: "SMART by Zabbix agent 2"
+  sudoers: "zabbix-smart/sudoers"
