@@ -32,7 +32,7 @@
     ansible_zabbix_url_path: ""
   become: false
   delegate_to: "{{ zabbix_server_hostname }}"
-  throttle: 5
+  throttle: 1
   community.zabbix.zabbix_host:
     host_name: "{{ inventory_hostname }}"
     visible_name: "{{ inventory_hostname }}"
