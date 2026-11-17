@@ -3,10 +3,38 @@
     name: "{{ reverse_ssh_server_user }}"
     comment: "Reverse SSH user"
 
+#XXX: this file is ignored, if you use harden-ssh 
+# deploy similar match using sshd_append host var
+- name: configure reverse SSH forwarding
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/60-reverse-ssh.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      Match User {{ reverse_ssh_server_user }}
+          AllowTcpForwarding remote
+          AllowStreamLocalForwarding remote
+          StreamLocalBindUnlink yes
+          StreamLocalBindMask 0117
+  notify: reload reverse ssh configuration
+
 - name: prepare directories
   file:
     path: "/home/{{ reverse_ssh_server_user }}/.ssh"
     owner: "{{ reverse_ssh_server_user }}"
     state: directory
-    mode: 0700
+    mode: "0700"
 
+- name: create reverse SSH access group
+  ansible.builtin.group:
+    name: reverse-ssh
+    state: present
+
+- name: prepare socket directory
+  ansible.builtin.file:
+    path: /var/lib/reverse-ssh
+    owner: "{{ reverse_ssh_server_user }}"
+    group: reverse-ssh
+    state: directory
+    mode: "2750"
