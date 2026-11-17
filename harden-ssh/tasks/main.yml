@@ -12,10 +12,12 @@
     path: "/etc/ssh/{{ item }}"
     state: absent
   with_items:
-  - ssh_config~orig
-  - sshd_config~
-  - sshd_config~previous
-  - sshd_config.ucf-old
+    - ssh_config~orig
+    - sshd_config~
+    - sshd_config~previous
+    - sshd_config.ucf-old
+    - sshd_config.d/50-cloud-init.conf
+    - sshd_config.d/60-cloudimg-settings.conf
   notify: ssh restart
   tags: configure
 
@@ -24,8 +26,8 @@
     src: "{{ item }}"
     dest: "/etc/ssh/{{ item }}"
   with_items:
-  - ssh_config
-  - sshd_config
+    - ssh_config
+    - sshd_config
   notify: ssh restart
   tags: configure
 

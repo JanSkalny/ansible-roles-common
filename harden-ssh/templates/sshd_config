@@ -59,4 +59,8 @@ VersionAddendum none
 AcceptEnv LANG LC_*
 
 Subsystem sftp /usr/lib/openssh/sftp-server
+
+#XXX: no
+#Include /etc/ssh/sshd_config.d/*.conf
+
 {{ sshd_append | default("") }}
