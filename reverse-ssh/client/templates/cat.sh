@@ -12,7 +12,9 @@ ssh -NT \
 	-o ConnectTimeout=30 \
 	-o ConnectionAttempts=1 \
 	-p {{ reverse_ssh_server_port | default(22) }} \
+{% if reverse_ssh_client_id is defined %}
 	-R 127.0.0.1:{{ 2000 + reverse_ssh_client_id }}:127.0.0.1:22 \
+{% endif %}
 	-R /var/lib/reverse-ssh/{{ reverse_ssh_client_name }}.sock:127.0.0.1:22 \
 	-l {{ reverse_ssh_server_user }} \
 	{{ reverse_ssh_server_addr }}
