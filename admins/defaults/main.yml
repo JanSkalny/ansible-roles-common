@@ -1,12 +1,40 @@
 ---
 
 default_user_shell: "/bin/bash"
-users: []
-users_remove: []
-jump_users: []
+default_user_groups: ['sudo']
 
-#user_passwords: 
-#  xxx: "{{ 'foo' | password_hash('sha512') }}"
+# list of user accounts for removal
+remove_users: []
 
+# example config:
+#users__foo:
+#  login1:
+#  login2:
+#    password: '$...'
+#  login3:
+#    authorized_keys: login3_ssh_keys_from_different_file
+#  jump:
+#    groups: []
+#    shell: /bin/true
+
+# Merge users__* variables alphabetically; later fragments override earlier ones.
+# Null user entries are treated as {}; groups lists replace earlier lists.
+# authorized_keys selects a filename under {{ root_dir }}/files/ssh-keys/.
+users: "{{ __users_json | ansible.builtin.from_json }}"
+
+# Block templates render as strings; explicitly deserialize their JSON output.
+__users_json: >-
+  {%- set merged = namespace(users={}) -%}
+  {%- for fragment in query('ansible.builtin.varnames', '^users__') | sort -%}
+  {%- set normalized = {} -%}
+  {%- for name, settings in lookup('ansible.builtin.vars', fragment).items() -%}
+  {%- set _ = normalized.update({name: settings | default({}, true)}) -%}
+  {%- endfor -%}
+  {%- set merged.users = merged.users | combine(normalized, recursive=true, list_merge='replace') -%}
+  {%- endfor -%}
+  {{ merged.users | ansible.builtin.to_json }}
+
+# initramfs ssh (with keys from all users)
 initram_ssh_enable: No
 initram_ssh_port: 2222
+
