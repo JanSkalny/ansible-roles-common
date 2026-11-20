@@ -32,3 +32,8 @@
     line: ENABLED=0
   failed_when: False
 
+- name: disable pollinate
+  ansible.builtin.systemd_service:
+    name: pollinate.service
+    enabled: false
+    state: stopped

@@ -31,6 +31,7 @@
     - "php{{php_version}}-pgsql"
     - "php{{php_version}}-xml"
     - "php{{php_version}}-ldap"
+    - "php{{php_version}}-yaml"
 #    - php-gettext
     - php-imagick
     - imagemagick

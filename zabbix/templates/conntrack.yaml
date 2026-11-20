@@ -1,0 +1,6 @@
+conntrack:
+  template: "conntrack by Zabbix agent 2"
+  params: "zabbix-conntrack/conntrack.conf"
+  sudoers: "zabbix-conntrack/sudoers"
+  scripts:
+    - "zabbix-conntrack/zabbix_conntrack.sh"

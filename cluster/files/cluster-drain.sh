@@ -98,7 +98,7 @@ for XML in /var/lib/virtual/conf/*.xml; do
 
   if [[ "$ASK_FOR_CONFIRMATION" == true ]]; then
     # confirm migration
-    read -p "Move $FQDN to $NEXT_NODE? [Y/n] " cont
+    read -p "Move $FQDN ($NAME) to $NEXT_NODE? [Y/n] " cont
     if [[ $cont =~ ^[Yy]$ || $cont == "" ]]; then
       # continue with migration
       echo -n ""

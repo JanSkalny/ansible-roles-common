@@ -13,12 +13,14 @@
   notify: rebuild initramfs
 
 - name: add authorized_keys to initramfs
-  authorized_key:
-    path: /etc/dropbear/initramfs/authorized_keys
-    user: "{{ item }}"
-    state: present
-    exclusive: true
-    key: "{{ lookup('file', root_dir+'/files/ssh-keys/'+item) }}"
-  with_items: "{{ users }}"
+  copy:
+    dest: /etc/dropbear/initramfs/authorized_keys
+    owner: root
+    group: root
+    mode: '0600'
+    content: |
+      {% for name, settings in users.items() %}
+      {{ lookup('file', root_dir ~ '/files/ssh-keys/' ~ (settings.authorized_keys | default(name))) | trim }}
+      {% endfor %}
   notify: rebuild initramfs
   when: not ansible_check_mode

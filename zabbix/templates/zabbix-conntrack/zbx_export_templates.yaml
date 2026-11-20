@@ -1,0 +1,178 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: a83f620bf4514c7a8d32e05791ba64cd
+      name: Templates
+  templates:
+    - uuid: ddf83684f69742e993642c8e3003ded2
+      template: 'conntrack by Zabbix agent 2'
+      name: 'conntrack by Zabbix agent 2'
+      groups:
+        - name: Templates
+      items:
+        - uuid: 8583f54c09a54b34a1894754f9494840
+          name: 'conntrack drop'
+          type: DEPENDENT
+          key: conntrack.drop
+          delay: '0'
+          value_type: FLOAT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.drop
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: conntrack.stats
+          triggers:
+            - uuid: 994cdf5ac21c4a048ee9da715dbe4949
+              expression: 'max(/conntrack by Zabbix agent 2/conntrack.drop,10m)>0'
+              name: 'conntrack is dropping sessions'
+              priority: AVERAGE
+        - uuid: 0e2382e6b1cc45068f55823e8451adfb
+          name: 'conntrack early drop'
+          type: DEPENDENT
+          key: conntrack.early-drop
+          delay: '0'
+          value_type: FLOAT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.early_drop
+            - type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          master_item:
+            key: conntrack.stats
+          triggers:
+            - uuid: 6b963c3a780e44968f6309ecfb052e31
+              expression: 'max(/conntrack by Zabbix agent 2/conntrack.early-drop,10m)>0'
+              name: 'conntrack is dropping sessions (early drop)'
+              priority: WARNING
+        - uuid: 9bc3227ef27b4637937a30231534c2ac
+          name: 'conntrack stats'
+          key: conntrack.stats
+          delay: 5m
+          history: 1d
+          value_type: TEXT
+          trends: '0'
+        - uuid: 887b7207a62b494dbbdc9edf49c0248c
+          name: 'conntrack TCP CLOSE sessions'
+          type: DEPENDENT
+          key: conntrack.tcp-close
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.tcp_close
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: conntrack.stats
+        - uuid: f366c93c7d1d4285af4cc5f1aa670483
+          name: 'conntrack TCP OPEN sessions'
+          type: DEPENDENT
+          key: conntrack.tcp-open
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.tcp_open
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: conntrack.stats
+        - uuid: de1d7bd4bc1d4d69a3df5104754d07a5
+          name: 'conntrack TCP SYN_SENT sessions'
+          type: DEPENDENT
+          key: conntrack.tcp-syn-sent
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.tcp_syn_sent
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: conntrack.stats
+        - uuid: f2c0505ddd2f41a1a19976ff22eb7fc9
+          name: 'conntrack TCP TIME_WAIT sessions'
+          type: DEPENDENT
+          key: conntrack.tcp-time-wait
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.tcp_time_wait
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: conntrack.stats
+        - uuid: 66c8ef6b8f8b48b985da44eae6f89de9
+          name: 'conntrack UDP sessions'
+          type: DEPENDENT
+          key: conntrack.udp
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.udp
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: conntrack.stats
+        - uuid: 69bb6887a5f640c48448eed823d7873e
+          name: 'conntrack table usage'
+          type: CALCULATED
+          key: conntrack.usage
+          units: '%'
+          params: '100 * last(//vfs.file.contents[/proc/sys/net/netfilter/nf_conntrack_count]) / last(//vfs.file.contents[/proc/sys/net/netfilter/nf_conntrack_max])'
+          triggers:
+            - uuid: 580539a756864662814f330c257ef7a8
+              expression: 'last(/conntrack by Zabbix agent 2/conntrack.usage)>50'
+              name: 'conntrack table is getting full'
+              priority: WARNING
+        - uuid: 559ca30e3158479f85cc55db7b29e1b2
+          name: 'Current conntrack entries'
+          key: 'vfs.file.contents[/proc/sys/net/netfilter/nf_conntrack_count]'
+        - uuid: 2a781061e4ba4c719cfedee19b4c9568
+          name: 'Maximum conntrack entries'
+          key: 'vfs.file.contents[/proc/sys/net/netfilter/nf_conntrack_max]'
+          delay: 10m
+  graphs:
+    - uuid: 956ffb9562ca47bb8a9e5d7fbeb614c9
+      name: conntrack
+      type: STACKED
+      graph_items:
+        - drawtype: FILLED_REGION
+          color: 1A7C11
+          calc_fnc: MIN
+          item:
+            host: 'conntrack by Zabbix agent 2'
+            key: conntrack.tcp-close
+        - sortorder: '1'
+          drawtype: FILLED_REGION
+          color: '274482'
+          calc_fnc: MIN
+          item:
+            host: 'conntrack by Zabbix agent 2'
+            key: conntrack.tcp-open
+        - sortorder: '2'
+          color: F63100
+          calc_fnc: MIN
+          item:
+            host: 'conntrack by Zabbix agent 2'
+            key: conntrack.tcp-syn-sent
+        - sortorder: '3'
+          color: 2774A4
+          calc_fnc: MIN
+          item:
+            host: 'conntrack by Zabbix agent 2'
+            key: conntrack.tcp-time-wait
+        - sortorder: '4'
+          color: A54F10
+          calc_fnc: MIN
+          item:
+            host: 'conntrack by Zabbix agent 2'
+            key: conntrack.udp

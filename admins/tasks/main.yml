@@ -25,33 +25,28 @@
     group: root
     mode: 0440
 
-- name: create jump user
-  user:
-    name: "{{ item }}"
-    shell: "/bin/true"
-    password: '{{ user_passwords[item] | default("*") }}'
-    state: present
-    createhome: true
-  with_items: "{{ jump_users }}"
-
 - name: create user
   user:
-    name: "{{ item }}"
-    shell: "{{ default_user_shell }}"
-    password: '{{ user_passwords[item] | default("*") }}'
+    name: "{{ item.key }}"
+    shell: "{{ item.value.shell | default(default_user_shell) }}"
+    password: "{{ item.value.password | default('*') }}"
     state: present
-    groups: sudo
+    groups: "{{ item.value.groups | default(default_user_groups) }}"
     createhome: true
-  with_items: "{{ users }}"
+  loop: "{{ users | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
 
 - name: add authorized_keys
   authorized_key:
-    user: "{{ item }}"
+    user: "{{ item.key }}"
     state: present
     exclusive: true
-    key: "{{ lookup('file', root_dir+'/files/ssh-keys/'+item) }}"
-    path: "/home/{{ item }}/.ssh/authorized_keys"
-  with_items: "{{ users + jump_users }}"
+    key: "{{ lookup('file', root_dir ~ '/files/ssh-keys/' ~ (item.value.authorized_keys | default(item.key))) }}"
+    path: "/home/{{ item.key }}/.ssh/authorized_keys"
+  loop: "{{ users | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
 
 - name: fancy .profile
   template:
@@ -60,7 +55,7 @@
     owner: "{{ item }}"
     group: "{{ item }}"
     mode: 0640
-  with_items: "{{ users }}"
+  loop: "{{ users.keys() | list }}"
   tags: configure
 
 - name: setup initram SSH
@@ -71,4 +66,4 @@
   user:
     name: "{{ item }}"
     state: absent
-  with_items: "{{ users_remove | difference(users + jump_users) }}"
+  loop: "{{ remove_users | difference(users.keys() | list) }}"
