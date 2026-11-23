@@ -23,11 +23,7 @@ case "${1:-}" in
         printf 'status client="%s"\n' "$client" | bconsole
         ;;
     jobs)
-        days=${2:-1}
-        case "$days" in
-            ''|*[!0-9]*) echo 'Days must be an integer' >&2; exit 1 ;;
-        esac
-        printf 'list jobs days=%s\n' "$days" | bconsole |
+        printf 'list jobs days=3\n' | bconsole |
             awk -F'|' 'BEGIN {OFS="\t"}
                 /^\|/ {
                     for (i=2; i<=11; i++)
